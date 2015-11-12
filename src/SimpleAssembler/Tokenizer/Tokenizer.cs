@@ -29,7 +29,7 @@
 
                 if ((current >= 'A' && current <= 'Z')
                     || (current >= 'a' && current <= 'z')
-                    || (current >= 0 && current <= 9))
+                    || (current >= '0' && current <= '9'))
                 {
                     if (state == ReadState.None || state == ReadState.AlphaNum)
                     {

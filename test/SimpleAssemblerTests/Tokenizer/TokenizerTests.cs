@@ -66,5 +66,35 @@
             Assert.IsType(typeof(CommaToken), token2);
             Assert.Equal(",", token2.Value);
         }
+
+        [Fact]
+        public void TokenizerHexDigit()
+        {
+            var tokenizer = new Tokenizer("0x10");
+            var token = tokenizer.Next();
+
+            Assert.IsType(typeof(NumberToken), token);
+            Assert.Equal("0x10", token.Value);
+            Assert.Equal(16, (token as NumberToken).IntValue());
+        }
+
+
+        [Fact]
+        public void TokenizerInstructionWithTwoParams()
+        {
+            var tokenizer = new Tokenizer("mov r1, ");
+            var token1 = tokenizer.Next();
+            var token2 = tokenizer.Next();
+            var token3 = tokenizer.Next();
+
+            Assert.IsType(typeof(AlphaNumToken), token1);
+            Assert.Equal("mov", token1.Value);
+
+            Assert.IsType(typeof(AlphaNumToken), token2);
+            Assert.Equal("r1", token2.Value);
+
+            Assert.IsType(typeof(CommaToken), token3);
+            Assert.Equal(",", token3.Value);
+        }
     }
 }
