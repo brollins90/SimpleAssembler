@@ -7,11 +7,6 @@
         private int _intValue;
         private string _overrideValue;
 
-        public new string Value()
-        {
-            return _overrideValue;
-        }
-
         public NumberToken(string value)
             : base(value)
         {
@@ -25,6 +20,11 @@
                 _intValue = Convert.ToInt32(value, 10);
                 _overrideValue = $"0x{HexString()}";
             }
+        }
+
+        public new string Value()
+        {
+            return _overrideValue;
         }
 
         public int IntValue()

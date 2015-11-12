@@ -28,8 +28,7 @@
                 char current = _inputString[_index];
 
                 if ((current >= 'A' && current <= 'Z')
-                    || (current >= 'a' && current <= 'z')
-                    || (current >= '0' && current <= '9'))
+                    || (current >= 'a' && current <= 'z'))
                 {
                     if (state == ReadState.None || state == ReadState.AlphaNum)
                     {
@@ -37,9 +36,64 @@
                         tokenString += current;
                         _index++;
                     }
+                    else if (state == ReadState.Hex0)
+                    {
+                        if (current == 'x' || current == 'X')
+                        {
+                            state = ReadState.Hex0x;
+                            tokenString += current;
+                            _index++;
+                        }
+                        else
+                        {
+                            throw new SyntaxException();
+                        }
+                    }
                     else
                     {
-                        stillReading = false;
+                        throw new SyntaxException();
+                        //stillReading = false;
+                    }
+                }
+                else if (current >= '0' && current <= '9')
+                {
+                    if (state == ReadState.None)
+                    {
+                        if (current == '0')
+                        {
+                            state = ReadState.Hex0;
+                            tokenString += current;
+                            _index++;
+                        }
+                    }
+                    else if (state == ReadState.AlphaNum)
+                    {
+                        state = ReadState.AlphaNum;
+                        tokenString += current;
+                        _index++;
+                    }
+                    else if (state == ReadState.DecimalNumber)
+                    {
+                        state = ReadState.DecimalNumber;
+                        tokenString += current;
+                        _index++;
+                    }
+                    else if (state == ReadState.Hex0x)
+                    {
+                        state = ReadState.HexNumber;
+                        tokenString += current;
+                        _index++;
+                    }
+                    else if (state == ReadState.HexNumber)
+                    {
+                        state = ReadState.HexNumber;
+                        tokenString += current;
+                        _index++;
+                    }
+                    else
+                    {
+                        throw new SyntaxException();
+                        //stillReading = false;
                     }
                 }
                 else if (current == ' ' || current == '\t')
@@ -67,8 +121,8 @@
                     }
                     else if (state == ReadState.AlphaNum)
                     {
+                        // do not increment but return
                         stillReading = false;
-                        // do not increment
                     }
                     else
                     {
@@ -81,18 +135,36 @@
                     {
                         state = ReadState.Comma;
                         tokenString += current;
-                        stillReading = false;
                         _index++;
-                    }
-                    else if (state == ReadState.AlphaNum)
-                    {
                         stillReading = false;
-                        // do not increment
+                    }
+                    else if (state == ReadState.AlphaNum
+                          || state == ReadState.HexNumber)
+                    {
+                        // do not increment but return
+                        stillReading = false;
                     }
                     else
                     {
                         throw new SyntaxException();
                     }
+                }
+                else if (current == '#')
+                {
+                    if (state == ReadState.None)
+                    {
+                        state = ReadState.DecimalNumber;
+                        // dont add the # to the string
+                        _index++;
+                    }
+                    else
+                    {
+                        throw new SyntaxException();
+                    }
+                }
+                else
+                {
+                    throw new SyntaxException();
                 }
             }
 
@@ -100,12 +172,18 @@
             {
                 case ReadState.AlphaNum:
                     return new AlphaNumToken(tokenString);
-                case ReadState.None:
-                    break;
                 case ReadState.Colon:
                     return new ColonToken(tokenString);
                 case ReadState.Comma:
                     return new CommaToken(tokenString);
+                case ReadState.HexNumber:
+                case ReadState.DecimalNumber:
+                    return new NumberToken(tokenString);
+                case ReadState.Hex0:
+                case ReadState.Hex0x:
+                case ReadState.None:
+                    throw new SyntaxException();
+                    break;
             }
 
             return null;
@@ -122,6 +200,10 @@
         None,
         AlphaNum,
         Colon,
-        Comma
+        Comma,
+        DecimalNumber,
+        Hex0,
+        Hex0x,
+        HexNumber
     }
 }

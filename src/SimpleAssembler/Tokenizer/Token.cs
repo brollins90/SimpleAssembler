@@ -2,12 +2,16 @@
 {
     public class Token
     {
-
-        public string Value { get; }
+        private string _value;
 
         public Token(string value)
         {
-            Value = value;
+            _value = value;
+        }
+
+        public string Value()
+        {
+            return _value;
         }
     }
 }

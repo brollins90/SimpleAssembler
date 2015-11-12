@@ -16,7 +16,7 @@
             var token = tokenizer.Next();
 
             Assert.IsType(typeof(AlphaNumToken), token);
-            Assert.Equal("MOV", token.Value);
+            Assert.Equal("MOV", token.Value());
         }
 
         [Fact]
@@ -26,7 +26,7 @@
             var token = tokenizer.Next();
 
             Assert.IsType(typeof(ColonToken), token);
-            Assert.Equal(":", token.Value);
+            Assert.Equal(":", token.Value());
         }
 
         [Fact]
@@ -36,7 +36,7 @@
             var token = tokenizer.Next();
 
             Assert.IsType(typeof(CommaToken), token);
-            Assert.Equal(",", token.Value);
+            Assert.Equal(",", token.Value());
         }
 
         [Fact]
@@ -47,10 +47,10 @@
             var token2 = tokenizer.Next();
 
             Assert.IsType(typeof(AlphaNumToken), token1);
-            Assert.Equal("loop", token1.Value);
+            Assert.Equal("loop", token1.Value());
 
             Assert.IsType(typeof(ColonToken), token2);
-            Assert.Equal(":", token2.Value);
+            Assert.Equal(":", token2.Value());
         }
 
         [Fact]
@@ -61,10 +61,10 @@
             var token2 = tokenizer.Next();
 
             Assert.IsType(typeof(AlphaNumToken), token1);
-            Assert.Equal("r1", token1.Value);
+            Assert.Equal("r1", token1.Value());
 
             Assert.IsType(typeof(CommaToken), token2);
-            Assert.Equal(",", token2.Value);
+            Assert.Equal(",", token2.Value());
         }
 
         [Fact]
@@ -74,8 +74,19 @@
             var token = tokenizer.Next();
 
             Assert.IsType(typeof(NumberToken), token);
-            Assert.Equal("0x10", token.Value);
+            Assert.Equal("0x10", token.Value());
             Assert.Equal(16, (token as NumberToken).IntValue());
+        }
+
+        [Fact]
+        public void TokenizerDecimalDigit()
+        {
+            var tokenizer = new Tokenizer("#4");
+            var token = tokenizer.Next();
+
+            Assert.IsType(typeof(NumberToken), token);
+            Assert.Equal("0x100", token.Value());
+            Assert.Equal(4, (token as NumberToken).IntValue());
         }
 
 
@@ -88,13 +99,13 @@
             var token3 = tokenizer.Next();
 
             Assert.IsType(typeof(AlphaNumToken), token1);
-            Assert.Equal("mov", token1.Value);
+            Assert.Equal("mov", token1.Value());
 
             Assert.IsType(typeof(AlphaNumToken), token2);
-            Assert.Equal("r1", token2.Value);
+            Assert.Equal("r1", token2.Value());
 
             Assert.IsType(typeof(CommaToken), token3);
-            Assert.Equal(",", token3.Value);
+            Assert.Equal(",", token3.Value());
         }
     }
 }
