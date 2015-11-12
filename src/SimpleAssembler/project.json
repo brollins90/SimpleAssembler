@@ -1,0 +1,19 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "SimpleAssembler Console Application",
+  "authors": [ "brollins" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "dependencies": {
+  },
+
+  "commands": {
+    "SimpleAssembler": "SimpleAssembler"
+  },
+
+  "frameworks": {
+    "dnx46": { }
+  }
+}
