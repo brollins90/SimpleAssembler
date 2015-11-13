@@ -22,7 +22,7 @@
             }
         }
 
-        public new string Value()
+        public override string Value()
         {
             return _overrideValue;
         }

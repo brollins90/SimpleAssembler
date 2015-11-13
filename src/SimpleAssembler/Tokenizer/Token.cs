@@ -9,7 +9,7 @@
             _value = value;
         }
 
-        public string Value()
+        public virtual string Value()
         {
             return _value;
         }

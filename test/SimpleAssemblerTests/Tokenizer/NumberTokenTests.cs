@@ -26,5 +26,23 @@
             Assert.Equal("0x10", token.Value());
             Assert.Equal(16, token.IntValue());
         }
+
+        [Fact]
+        public void NumberTokenToBinaryString()
+        {
+            NumberToken token = new NumberToken("0x10");
+
+            Assert.Equal("0x10", token.Value());
+            Assert.Equal("10000", token.BinString());
+        }
+
+        [Fact]
+        public void NumberTokenToOctString()
+        {
+            NumberToken token = new NumberToken("0x10");
+
+            Assert.Equal("0x10", token.Value());
+            Assert.Equal("20", token.OctString());
+        }
     }
 }

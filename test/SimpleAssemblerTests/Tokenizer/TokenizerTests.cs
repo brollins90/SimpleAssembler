@@ -40,6 +40,28 @@
         }
 
         [Fact]
+        public void TokenizerHexDigitIsNumberToken()
+        {
+            var tokenizer = new Tokenizer("0x10");
+            var token = tokenizer.Next();
+
+            Assert.IsType(typeof(NumberToken), token);
+            Assert.Equal("0x10", token.Value());
+            Assert.Equal(16, (token as NumberToken).IntValue());
+        }
+
+        [Fact]
+        public void TokenizerDecimalDigitIsNumberToken()
+        {
+            var tokenizer = new Tokenizer("#4");
+            var token = tokenizer.Next();
+
+            Assert.IsType(typeof(NumberToken), token);
+            Assert.Equal("0x4", token.Value());
+            Assert.Equal(4, (token as NumberToken).IntValue());
+        }
+
+        [Fact]
         public void TokenizerWordAndColonIsAlphaNumAndColon()
         {
             var tokenizer = new Tokenizer("loop:");
@@ -68,35 +90,13 @@
         }
 
         [Fact]
-        public void TokenizerHexDigit()
-        {
-            var tokenizer = new Tokenizer("0x10");
-            var token = tokenizer.Next();
-
-            Assert.IsType(typeof(NumberToken), token);
-            Assert.Equal("0x10", token.Value());
-            Assert.Equal(16, (token as NumberToken).IntValue());
-        }
-
-        [Fact]
-        public void TokenizerDecimalDigit()
-        {
-            var tokenizer = new Tokenizer("#4");
-            var token = tokenizer.Next();
-
-            Assert.IsType(typeof(NumberToken), token);
-            Assert.Equal("0x100", token.Value());
-            Assert.Equal(4, (token as NumberToken).IntValue());
-        }
-
-
-        [Fact]
         public void TokenizerInstructionWithTwoParams()
         {
-            var tokenizer = new Tokenizer("mov r1, ");
+            var tokenizer = new Tokenizer("mov r1, #0");
             var token1 = tokenizer.Next();
             var token2 = tokenizer.Next();
             var token3 = tokenizer.Next();
+            var token4 = tokenizer.Next();
 
             Assert.IsType(typeof(AlphaNumToken), token1);
             Assert.Equal("mov", token1.Value());
@@ -106,6 +106,10 @@
 
             Assert.IsType(typeof(CommaToken), token3);
             Assert.Equal(",", token3.Value());
+
+            Assert.IsType(typeof(NumberToken), token4);
+            Assert.Equal("0x0", token4.Value());
+            Assert.Equal(0, (token4 as NumberToken).IntValue());
         }
     }
 }
