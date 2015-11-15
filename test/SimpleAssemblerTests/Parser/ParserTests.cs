@@ -10,8 +10,8 @@
         [Fact]
         public void ParserReturnsIntArray()
         {
-            SimpleAssembler.Parser parser = new SimpleAssembler.Parser();
-            var result = parser.ParseToIntArray("");
+            SimpleAssembler.Parser parser = new SimpleAssembler.Parser("");
+            var result = parser.Parse();
 
             Assert.IsType(typeof(int[]), result);
         }
