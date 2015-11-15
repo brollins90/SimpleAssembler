@@ -1,4 +1,4 @@
-﻿namespace SimpleAssembler.Tokenizer
+﻿namespace SimpleAssembler.Tokenizer.Tokens
 {
     using System;
 

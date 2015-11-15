@@ -1,8 +1,8 @@
 ﻿namespace SimpleAssemblerTests.Parser
 {
     using SimpleAssembler.Tokenizer;
+    using SimpleAssembler.Tokenizer.Tokens;
     using System;
-    using System.Collections.Generic;
     using Xunit;
 
     public class ParserTests

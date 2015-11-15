@@ -1,8 +1,8 @@
 ﻿namespace SimpleAssembler.Parser
 {
-    using Tokenizer;
-    using System;
     using System.Collections.Generic;
+    using Tokenizer;
+    using Tokenizer.Tokens;
 
     public class Parser
     {
