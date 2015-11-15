@@ -1,10 +1,6 @@
 ﻿namespace SimpleAssemblerTests.Tokenizer
 {
     using SimpleAssembler.Tokenizer;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
     using Xunit;
 
     public class NumberTokenTests

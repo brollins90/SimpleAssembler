@@ -8,9 +8,10 @@
         Stack<Token> _tokenStack;
         ITokenizer _tokenizer;
 
-        public TokenStream()
+        public TokenStream(string fileData)
         {
             _tokenStack = new Stack<Token>();
+            _tokenizer = new Tokenizer(fileData);
         }
 
         public bool HasNext()
@@ -23,15 +24,6 @@
             {
                 return _tokenizer.HasNext();
             }
-        }
-
-        public void Load(string s)
-        {
-            if (_tokenizer.HasNext())
-            {
-                throw new InvalidOperationException();
-            }
-            _tokenizer = new Tokenizer(s);
         }
 
         public Token Next()
