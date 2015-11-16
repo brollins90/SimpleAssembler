@@ -7,8 +7,6 @@
 
     public class Parser
     {
-        //private string _fileString;
-        //private List<int> _kernelImgList;
         private uint _kernelIndex;
         private Dictionary<string, uint> _labelTable;
 
@@ -17,14 +15,6 @@
             _kernelIndex = 0;
             _labelTable = new Dictionary<string, uint>();
         }
-
-        //public Parser(string fileString)
-        //{
-        //    _fileString = fileString;
-        //    _kernelIndex = 0;
-        //    _kernelImgList = new List<int>();
-        //    
-        //}
 
         public int GetCurrentIndex()
         {
@@ -78,7 +68,10 @@
             //else 
             if (TryParseDataProc(tokenStream, out encodedOperation)) { }
             else if (TryParseLoadStore(tokenStream, out encodedOperation)) { }
-            else { throw new SyntaxException(); }
+            else
+            {
+                throw new SyntaxException($"Unknown instruction: {operation.Value()}");
+            }
 
             return encodedOperation;
         }
@@ -105,18 +98,20 @@
         public bool TryParseDataProc(ITokenStream tokenStream, out uint encodedOperation)
         {
             var operation = tokenStream.Next();
-            var arg1 = tokenStream.Next();
-            var comma = tokenStream.Next();
-            var arg2 = tokenStream.Next();
             var parseResult = true;
             encodedOperation = 0;
 
             // MOVT
-            if (operation.Value().ToLowerInvariant().Equals("movt") &&
-                arg1.GetType() == typeof(AlphaNumToken) &&
-                comma.GetType() == typeof(CommaToken) &&
-                arg2.GetType() == typeof(NumberToken))
+            if (operation.Value().ToLowerInvariant().Equals("movt"))
+            //&&
+            //arg1.GetType() == typeof(AlphaNumToken) &&
+            //comma.GetType() == typeof(CommaToken) &&
+            //arg2.GetType() == typeof(NumberToken))
             {
+                var arg1 = tokenStream.Next();
+                var comma = tokenStream.Next();
+                var arg2 = tokenStream.Next();
+
                 int intVal = (arg2 as NumberToken).IntValue();
                 if (intVal > 0xffff)
                 {
@@ -135,11 +130,17 @@
             }
 
             // MOVW
-            else if (operation.Value().ToLowerInvariant().Equals("movw") &&
-                arg1.GetType() == typeof(AlphaNumToken) &&
-                comma.GetType() == typeof(CommaToken) &&
-                arg2.GetType() == typeof(NumberToken))
+            else if (operation.Value().ToLowerInvariant().Equals("movw")
+                //&&
+                //arg1.GetType() == typeof(AlphaNumToken) &&
+                //comma.GetType() == typeof(CommaToken) &&
+                //arg2.GetType() == typeof(NumberToken)
+                )
             {
+                var arg1 = tokenStream.Next();
+                var comma = tokenStream.Next();
+                var arg2 = tokenStream.Next();
+
                 int intVal = (arg2 as NumberToken).IntValue();
                 if (intVal > 0xffff)
                 {
@@ -156,11 +157,44 @@
                 encodedOperation = Convert.ToUInt32(opString, 16);
                 parseResult = true;
             }
+
+            // SUBS
+            else if (operation.Value().ToLowerInvariant().Equals("subs")
+                //&&
+                //arg1.GetType() == typeof(AlphaNumToken) &&
+                //comma1.GetType() == typeof(CommaToken) &&
+                //arg2.GetType() == typeof(AlphaNumToken) &&
+                //comma2.GetType() == typeof(CommaToken) &&
+                //arg3.GetType() == typeof(NumberToken)
+                )
+            {
+                var arg1 = tokenStream.Next();
+                var comma1 = tokenStream.Next();
+                var arg2 = tokenStream.Next();
+                var comma2 = tokenStream.Next();
+                var arg3 = tokenStream.Next();
+
+                int intVal = (arg3 as NumberToken).IntValue();
+                if (intVal > 0xfff)
+                {
+                    throw new SyntaxException("On SUBS, op2 cannot be larger than 0xFFF");
+                }
+
+                string condition = "e";
+                string op = "25";
+                string rn = RegisterToHex(arg1);
+                string rd = RegisterToHex(arg2);
+                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+                string opString = $"{condition}{op}{rn}{rd}{imm12}";
+                encodedOperation = Convert.ToUInt32(opString, 16);
+                parseResult = true;
+            }
             else
             {
-                tokenStream.UnGet(arg2);
-                tokenStream.UnGet(comma);
-                tokenStream.UnGet(arg1);
+                //tokenStream.UnGet(arg2);
+                //tokenStream.UnGet(comma);
+                //tokenStream.UnGet(arg1);
                 tokenStream.UnGet(operation);
                 parseResult = false;
             }

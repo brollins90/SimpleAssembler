@@ -56,25 +56,25 @@
             SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
 
             var myProgram =
-                "MOVT r0, 0x3f20 //e343 0f20" + Environment.NewLine +
-                "MOVW r0, 0x0 //e300 0000" + Environment.NewLine +
-                "MOVT r1, 0x20 //e340 1020" + Environment.NewLine +
-                "MOVW r1, 0x0 //e300 1000" + Environment.NewLine +
+                "MOVT r0, 0x3f20" + Environment.NewLine +
+                "MOVW r0, 0x0" + Environment.NewLine +
+                "MOVT r1, 0x20" + Environment.NewLine +
+                "MOVW r1, 0x0" + Environment.NewLine +
                 "" + Environment.NewLine +
-                "STR r1, r0, 0x10 //e580 1010" + Environment.NewLine +
-                "MOV r2, 0x80000 //e3a0 2a08" + Environment.NewLine +
+                "STR r1, r0, 0x10" + Environment.NewLine +
+                "MOVW r2, 0x8000" + Environment.NewLine +
                 "" + Environment.NewLine +
-                "loop: STR r2, r0, 0x20 //e580 2020" + Environment.NewLine +
-                "wait1: MOVW r3, 0x0 //e300 3000" + Environment.NewLine +
-                "  MOVT r3, 0x10 //e340 3010" + Environment.NewLine +
-                "  SUBS r3, r3, 0x01 //e253 3001" + Environment.NewLine +
+                "loop: STR r2, r0, 0x20" + Environment.NewLine +
+                "wait1: MOVW r3, 0x0" + Environment.NewLine +
+                "  MOVT r3, 0x10" + Environment.NewLine +
+                "  SUBS r3, r3, 0x01" + Environment.NewLine +
                 "  BNE wait1 //1aff fffd - (BNE 0xfffffd[-3])" + Environment.NewLine +
                 "" + Environment.NewLine +
-                "STR r2, r0, 0x2c //e580 202c" + Environment.NewLine +
+                "STR r2, r0, 0x2c" + Environment.NewLine +
                 "" + Environment.NewLine +
-                "wait2: MOVW r3, 0x0 //e300 3000" + Environment.NewLine +
-                "  MOVT r3, 0x10 //e340 3010" + Environment.NewLine +
-                "  SUBS r3, r3, 0x01 //e253 3001" + Environment.NewLine +
+                "wait2: MOVW r3, 0x0" + Environment.NewLine +
+                "  MOVT r3, 0x10" + Environment.NewLine +
+                "  SUBS r3, r3, 0x01" + Environment.NewLine +
                 "  BNE wait2 //1aff fffd - (BNE 0xfffffd[-3])" + Environment.NewLine +
                 "" + Environment.NewLine +
                 "BAL loop //eaff fff4 - (BAL 0xfffff4[-12])" + Environment.NewLine;
@@ -82,6 +82,15 @@
             var output = parser.Parse(myProgram);
 
             Assert.Equal(0xe3430f20, output[0]);
+            Assert.Equal(0xe3000000, output[1]);
+            Assert.Equal(0xe3401020, output[2]);
+            Assert.Equal(0xe3001000, output[3]);
+            Assert.Equal(0xe5801010, output[4]);
+            Assert.Equal(0xe3082000, output[5]);
+            Assert.Equal(0xe5802020, output[6]);
+            Assert.Equal(0xe3003000, output[7]);
+            Assert.Equal(0xe3403010, output[8]);
+            // subs
         }
 
         [Fact]
@@ -197,6 +206,9 @@
                 parser.TryParseInstruction(tokenStream, out instruction);
             });
         }
+        #endregion
+
+        #region STR
 
         [Fact]
         public void ParserParseSTRParse10()
@@ -220,6 +232,41 @@
 
             var myProgram =
                 "STR r1, r2, 0x1000" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                uint instruction;
+                parser.TryParseInstruction(tokenStream, out instruction);
+            });
+        }
+        #endregion
+
+        #region SUBS
+
+        [Fact]
+        public void ParserParseSUBSParse01()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "SUBS r3, r3, 0x01" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+            uint instruction;
+            parser.TryParseInstruction(tokenStream, out instruction);
+
+            Assert.Equal(0xe2533001, instruction);
+        }
+
+        [Fact]
+        public void ParserParseSUBSTooLarge()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "SUBS r3, r3, 0x1000" + Environment.NewLine;
 
             ITokenStream tokenStream = new TokenStream(myProgram);
 
