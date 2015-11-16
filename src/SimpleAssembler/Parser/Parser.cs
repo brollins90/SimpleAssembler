@@ -77,7 +77,7 @@
             //if (TryParseBranch(tokenStream, out encodedOperation)) { }
             //else 
             if (TryParseDataProc(tokenStream, out encodedOperation)) { }
-            //else if (TryParseLoadStore(tokenStream, out encodedOperation)) { }
+            else if (TryParseLoadStore(tokenStream, out encodedOperation)) { }
             else { throw new SyntaxException(); }
 
             return encodedOperation;
@@ -105,7 +105,6 @@
         public bool TryParseDataProc(ITokenStream tokenStream, out uint encodedOperation)
         {
             var operation = tokenStream.Next();
-            //int argCount = GetArgCount(operation);
             var arg1 = tokenStream.Next();
             var comma = tokenStream.Next();
             var arg2 = tokenStream.Next();
@@ -144,7 +143,7 @@
                 int intVal = (arg2 as NumberToken).IntValue();
                 if (intVal > 0xffff)
                 {
-                    throw new SyntaxException("On MOVT, op2 cannot be larger than 0xFFFF");
+                    throw new SyntaxException("On MOVW, op2 cannot be larger than 0xFFFF");
                 }
 
                 string condition = "e";
@@ -159,6 +158,59 @@
             }
             else
             {
+                tokenStream.UnGet(arg2);
+                tokenStream.UnGet(comma);
+                tokenStream.UnGet(arg1);
+                tokenStream.UnGet(operation);
+                parseResult = false;
+            }
+
+            return parseResult;
+        }
+
+        public bool TryParseLoadStore(ITokenStream tokenStream, out uint encodedOperation)
+        {
+            var operation = tokenStream.Next();
+            var arg1 = tokenStream.Next();
+            var comma1 = tokenStream.Next();
+            var arg2 = tokenStream.Next();
+            var comma2 = tokenStream.Next();
+            var arg3 = tokenStream.Next();
+            var parseResult = true;
+            encodedOperation = 0;
+
+            // STR
+            if (operation.Value().ToLowerInvariant().Equals("str") &&
+                arg1.GetType() == typeof(AlphaNumToken) &&
+                comma1.GetType() == typeof(CommaToken) &&
+                arg2.GetType() == typeof(AlphaNumToken) &&
+                comma2.GetType() == typeof(CommaToken) &&
+                arg3.GetType() == typeof(NumberToken))
+            {
+                int intVal = (arg3 as NumberToken).IntValue();
+                if (intVal > 0xfff)
+                {
+                    throw new SyntaxException("On STR, op2 cannot be larger than 0xFFF");
+                }
+
+                string condition = "e";
+                string op = "58";
+                string rt = RegisterToHex(arg1);
+                string rn = RegisterToHex(arg2);
+                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+                string opString = $"{condition}{op}{rn}{rt}{imm12}";
+                encodedOperation = Convert.ToUInt32(opString, 16);
+                parseResult = true;
+            }
+            else
+            {
+                tokenStream.UnGet(arg3);
+                tokenStream.UnGet(comma2);
+                tokenStream.UnGet(arg2);
+                tokenStream.UnGet(comma1);
+                tokenStream.UnGet(arg1);
+                tokenStream.UnGet(operation);
                 parseResult = false;
             }
 
@@ -171,19 +223,14 @@
             return Convert.ToString(ret, 16);
         }
 
-        private string ByteToHexString(byte b)
-        {
-            return Convert.ToString(b, 16);
-        }
-
         private string RegisterToHex(Token arg)
         {
             if (arg.GetType() == typeof(AlphaNumToken) &&
                 arg.Value().StartsWith("r", StringComparison.InvariantCultureIgnoreCase))
             {
                 string decimalString = arg.Value().Substring(1);
-                byte b = Convert.ToByte(decimalString);
-                return ByteToHexString(b);
+                int i = Convert.ToInt32(decimalString);
+                return IntToHexString(i, 0);
             }
             throw new SyntaxException($"{arg.Value()} is not a register");
         }
@@ -210,15 +257,6 @@
             }
             return parseResult;
         }
-
-        //public bool TryParseLoadStore(ITokenStream tokenStream)
-        //{
-        //    var parseResult = true;
-
-        //    parseResult = false;
-
-        //    return parseResult;
-        //}
 
         //public int GetArgCount(Token operation)
         //{

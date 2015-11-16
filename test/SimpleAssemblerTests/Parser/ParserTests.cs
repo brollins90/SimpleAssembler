@@ -197,6 +197,38 @@
                 parser.TryParseInstruction(tokenStream, out instruction);
             });
         }
+
+        [Fact]
+        public void ParserParseSTRParse10()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "STR r1, r0, 0x10" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+            uint instruction;
+            parser.TryParseInstruction(tokenStream, out instruction);
+
+            Assert.Equal(0xe5801010, instruction);
+        }
+
+        [Fact]
+        public void ParserParseSTRTooLarge()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "STR r1, r2, 0x1000" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                uint instruction;
+                parser.TryParseInstruction(tokenStream, out instruction);
+            });
+        }
         #endregion
     }
 }
