@@ -28,7 +28,25 @@
             {
                 char current = _inputString[_index];
 
-                if ((current >= 'A' && current <= 'Z')
+                if (state == ReadState.Comment2)
+                {
+                    if (/*current == '\r' || */current == '\n')
+                    {
+                        state = ReadState.Comment2;
+                        _index++;
+                        // if we get to the end of a comment, we can reset the state
+                        tokenString = "";
+                        state = ReadState.None;
+                    }
+                    else
+                    {
+                        state = ReadState.Comment2;
+                        tokenString += current;
+                        _index++;
+                    }
+                }
+
+                else if ((current >= 'A' && current <= 'Z')
                     || (current >= 'a' && current <= 'z'))
                 {
                     if (state == ReadState.None || state == ReadState.AlphaNum)
@@ -169,6 +187,25 @@
                         throw new SyntaxException();
                     }
                 }
+                else if (current == '/')
+                {
+                    if (state == ReadState.None)
+                    {
+                        state = ReadState.Comment1;
+                        tokenString += current;
+                        _index++;
+                    }
+                    if (state == ReadState.Comment1)
+                    {
+                        state = ReadState.Comment2;
+                        tokenString += current;
+                        _index++;
+                    }
+                    else
+                    {
+                        throw new SyntaxException();
+                    }
+                }
                 else
                 {
                     throw new SyntaxException();
@@ -208,6 +245,8 @@
         AlphaNum,
         Colon,
         Comma,
+        Comment1,
+        Comment2,
         DecimalNumber,
         Hex0,
         Hex0x,

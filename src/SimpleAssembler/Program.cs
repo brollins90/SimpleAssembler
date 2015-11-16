@@ -13,9 +13,11 @@
         public void Go()
         {
             var myProgram =
-                "MOV r0, 0x3f000000 //e3a0 043f" + Environment.NewLine +
-                "MOV r1, 0x200000 //e3a0 1602" + Environment.NewLine +
-                "ORR r0, r0, r1 //e180 0001" + Environment.NewLine +
+                "MOVT r0, 0x3f20 //e343 0f20" + Environment.NewLine +
+                "MOVW r0, 0x0 //e300 0000" + Environment.NewLine +
+                "MOVT r1, 0x20 //e340 1020" + Environment.NewLine +
+                "MOVW r1, 0x0 //e300 1000" + Environment.NewLine +
+                "" + Environment.NewLine +
                 "STR r1, r0, 0x10 //e580 1010" + Environment.NewLine +
                 "MOV r2, 0x80000 //e3a0 2a08" + Environment.NewLine +
                 "" + Environment.NewLine +
