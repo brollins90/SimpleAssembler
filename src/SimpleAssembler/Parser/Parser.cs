@@ -101,100 +101,20 @@
             var parseResult = true;
             encodedOperation = 0;
 
-            // MOVT
             if (operation.Value().ToLowerInvariant().Equals("movt"))
-            //&&
-            //arg1.GetType() == typeof(AlphaNumToken) &&
-            //comma.GetType() == typeof(CommaToken) &&
-            //arg2.GetType() == typeof(NumberToken))
             {
-                var arg1 = tokenStream.Next();
-                var comma = tokenStream.Next();
-                var arg2 = tokenStream.Next();
-
-                int intVal = (arg2 as NumberToken).IntValue();
-                if (intVal > 0xffff)
-                {
-                    throw new SyntaxException("On MOVT, op2 cannot be larger than 0xFFFF");
-                }
-
-                string condition = "e";
-                string op = "34";
-                string imm4 = IntToHexString(intVal, 3);
-                string rd = RegisterToHex(arg1);
-                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
-
-                string opString = $"{condition}{op}{imm4}{rd}{imm12}";
-                encodedOperation = Convert.ToUInt32(opString, 16);
-                parseResult = true;
+                parseResult = TryEncodeMOVT(tokenStream, out encodedOperation);
             }
-
-            // MOVW
-            else if (operation.Value().ToLowerInvariant().Equals("movw")
-                //&&
-                //arg1.GetType() == typeof(AlphaNumToken) &&
-                //comma.GetType() == typeof(CommaToken) &&
-                //arg2.GetType() == typeof(NumberToken)
-                )
+            else if (operation.Value().ToLowerInvariant().Equals("movw"))
             {
-                var arg1 = tokenStream.Next();
-                var comma = tokenStream.Next();
-                var arg2 = tokenStream.Next();
-
-                int intVal = (arg2 as NumberToken).IntValue();
-                if (intVal > 0xffff)
-                {
-                    throw new SyntaxException("On MOVW, op2 cannot be larger than 0xFFFF");
-                }
-
-                string condition = "e";
-                string op = "30";
-                string imm4 = IntToHexString(intVal, 3);
-                string rd = RegisterToHex(arg1);
-                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
-
-                string opString = $"{condition}{op}{imm4}{rd}{imm12}";
-                encodedOperation = Convert.ToUInt32(opString, 16);
-                parseResult = true;
+                parseResult = TryEncodeMOVW(tokenStream, out encodedOperation);
             }
-
-            // SUBS
-            else if (operation.Value().ToLowerInvariant().Equals("subs")
-                //&&
-                //arg1.GetType() == typeof(AlphaNumToken) &&
-                //comma1.GetType() == typeof(CommaToken) &&
-                //arg2.GetType() == typeof(AlphaNumToken) &&
-                //comma2.GetType() == typeof(CommaToken) &&
-                //arg3.GetType() == typeof(NumberToken)
-                )
+            else if (operation.Value().ToLowerInvariant().Equals("subs"))
             {
-                var arg1 = tokenStream.Next();
-                var comma1 = tokenStream.Next();
-                var arg2 = tokenStream.Next();
-                var comma2 = tokenStream.Next();
-                var arg3 = tokenStream.Next();
-
-                int intVal = (arg3 as NumberToken).IntValue();
-                if (intVal > 0xfff)
-                {
-                    throw new SyntaxException("On SUBS, op2 cannot be larger than 0xFFF");
-                }
-
-                string condition = "e";
-                string op = "25";
-                string rn = RegisterToHex(arg1);
-                string rd = RegisterToHex(arg2);
-                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
-
-                string opString = $"{condition}{op}{rn}{rd}{imm12}";
-                encodedOperation = Convert.ToUInt32(opString, 16);
-                parseResult = true;
+                parseResult = TryEncodeSUBS(tokenStream, out encodedOperation);
             }
             else
             {
-                //tokenStream.UnGet(arg2);
-                //tokenStream.UnGet(comma);
-                //tokenStream.UnGet(arg1);
                 tokenStream.UnGet(operation);
                 parseResult = false;
             }
@@ -205,49 +125,234 @@
         public bool TryParseLoadStore(ITokenStream tokenStream, out uint encodedOperation)
         {
             var operation = tokenStream.Next();
-            var arg1 = tokenStream.Next();
-            var comma1 = tokenStream.Next();
-            var arg2 = tokenStream.Next();
-            var comma2 = tokenStream.Next();
-            var arg3 = tokenStream.Next();
             var parseResult = true;
             encodedOperation = 0;
 
-            // STR
-            if (operation.Value().ToLowerInvariant().Equals("str") &&
-                arg1.GetType() == typeof(AlphaNumToken) &&
-                comma1.GetType() == typeof(CommaToken) &&
-                arg2.GetType() == typeof(AlphaNumToken) &&
-                comma2.GetType() == typeof(CommaToken) &&
-                arg3.GetType() == typeof(NumberToken))
+            if (operation.Value().ToLowerInvariant().Equals("subs"))
             {
-                int intVal = (arg3 as NumberToken).IntValue();
-                if (intVal > 0xfff)
-                {
-                    throw new SyntaxException("On STR, op2 cannot be larger than 0xFFF");
-                }
-
-                string condition = "e";
-                string op = "58";
-                string rt = RegisterToHex(arg1);
-                string rn = RegisterToHex(arg2);
-                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
-
-                string opString = $"{condition}{op}{rn}{rt}{imm12}";
-                encodedOperation = Convert.ToUInt32(opString, 16);
-                parseResult = true;
+                parseResult = TryEncodeSUBS(tokenStream, out encodedOperation);
             }
             else
             {
-                tokenStream.UnGet(arg3);
-                tokenStream.UnGet(comma2);
-                tokenStream.UnGet(arg2);
-                tokenStream.UnGet(comma1);
-                tokenStream.UnGet(arg1);
                 tokenStream.UnGet(operation);
                 parseResult = false;
             }
 
+            return parseResult;
+        }
+
+        public bool TryEncodeMOVT(ITokenStream tokenStream, out uint encodedOperation)
+        {
+            var parseResult = true;
+            encodedOperation = 0;
+
+            try
+            {
+                var arg1 = tokenStream.Next();
+                var comma1 = tokenStream.Next();
+                var arg2 = tokenStream.Next();
+
+                if (arg1.GetType() == typeof(AlphaNumToken) &&
+                    comma1.GetType() == typeof(CommaToken) &&
+                    arg2.GetType() == typeof(NumberToken))
+                {
+
+                    int intVal = (arg2 as NumberToken).IntValue();
+                    if (intVal > 0xffff)
+                    {
+                        throw new SyntaxException("On MOVT, op2 cannot be larger than 0xFFFF");
+                    }
+
+                    string condition = "e";
+                    string op = "34";
+                    string imm4 = IntToHexString(intVal, 3);
+                    string rd = RegisterToHex(arg1);
+                    string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+                    string opString = $"{condition}{op}{imm4}{rd}{imm12}";
+                    encodedOperation = Convert.ToUInt32(opString, 16);
+                    parseResult = true;
+                }
+                else
+                {
+                    tokenStream.UnGet(arg2);
+                    tokenStream.UnGet(comma1);
+                    tokenStream.UnGet(arg1);
+                    parseResult = false;
+                }
+            }
+            catch (SyntaxException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+            return parseResult;
+        }
+
+        public bool TryEncodeMOVW(ITokenStream tokenStream, out uint encodedOperation)
+        {
+            var parseResult = true;
+            encodedOperation = 0;
+
+            try
+            {
+                var arg1 = tokenStream.Next();
+                var comma1 = tokenStream.Next();
+                var arg2 = tokenStream.Next();
+
+                if (arg1.GetType() == typeof(AlphaNumToken) &&
+                    comma1.GetType() == typeof(CommaToken) &&
+                    arg2.GetType() == typeof(NumberToken))
+                {
+
+                    int intVal = (arg2 as NumberToken).IntValue();
+                    if (intVal > 0xffff)
+                    {
+                        throw new SyntaxException("On MOVW, op2 cannot be larger than 0xFFFF");
+                    }
+
+                    string condition = "e";
+                    string op = "30";
+                    string imm4 = IntToHexString(intVal, 3);
+                    string rd = RegisterToHex(arg1);
+                    string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+                    string opString = $"{condition}{op}{imm4}{rd}{imm12}";
+                    encodedOperation = Convert.ToUInt32(opString, 16);
+                    parseResult = true;
+                }
+                else
+                {
+                    tokenStream.UnGet(arg2);
+                    tokenStream.UnGet(comma1);
+                    tokenStream.UnGet(arg1);
+                    parseResult = false;
+                }
+            }
+            catch (SyntaxException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+            return parseResult;
+        }
+
+        public bool TryEncodeSTR(ITokenStream tokenStream, out uint encodedOperation)
+        {
+            var parseResult = true;
+            encodedOperation = 0;
+
+            try
+            {
+                var arg1 = tokenStream.Next();
+                var comma1 = tokenStream.Next();
+                var arg2 = tokenStream.Next();
+                var comma2 = tokenStream.Next();
+                var arg3 = tokenStream.Next();
+
+                if (arg1.GetType() == typeof(AlphaNumToken) &&
+                    comma1.GetType() == typeof(CommaToken) &&
+                    arg2.GetType() == typeof(AlphaNumToken) &&
+                    comma2.GetType() == typeof(CommaToken) &&
+                    arg3.GetType() == typeof(NumberToken))
+                {
+                    int intVal = (arg3 as NumberToken).IntValue();
+                    if (intVal > 0xfff)
+                    {
+                        throw new SyntaxException("On STR, op2 cannot be larger than 0xFFF");
+                    }
+
+                    string condition = "e";
+                    string op = "58";
+                    string rt = RegisterToHex(arg1);
+                    string rn = RegisterToHex(arg2);
+                    string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+                    string opString = $"{condition}{op}{rn}{rt}{imm12}";
+                    encodedOperation = Convert.ToUInt32(opString, 16);
+                    parseResult = true;
+                }
+                else
+                {
+                    tokenStream.UnGet(arg3);
+                    tokenStream.UnGet(comma2);
+                    tokenStream.UnGet(arg2);
+                    tokenStream.UnGet(comma1);
+                    tokenStream.UnGet(arg1);
+                    parseResult = false;
+                }
+            }
+            catch (SyntaxException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+            return parseResult;
+        }
+
+        public bool TryEncodeSUBS(ITokenStream tokenStream, out uint encodedOperation)
+        {
+            var parseResult = true;
+            encodedOperation = 0;
+
+            try
+            {
+                var arg1 = tokenStream.Next();
+                var comma1 = tokenStream.Next();
+                var arg2 = tokenStream.Next();
+                var comma2 = tokenStream.Next();
+                var arg3 = tokenStream.Next();
+
+                if (arg1.GetType() == typeof(AlphaNumToken) &&
+                    comma1.GetType() == typeof(CommaToken) &&
+                    arg2.GetType() == typeof(AlphaNumToken) &&
+                    comma2.GetType() == typeof(CommaToken) &&
+                    arg3.GetType() == typeof(NumberToken))
+                {
+
+                    int intVal = (arg3 as NumberToken).IntValue();
+                    if (intVal > 0xffff)
+                    {
+                        throw new SyntaxException("On SUBS, op2 cannot be larger than 0xFFF");
+                    }
+
+                    string condition = "e";
+                    string op = "25";
+                    string rn = RegisterToHex(arg1);
+                    string rd = RegisterToHex(arg2);
+                    string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+                    string opString = $"{condition}{op}{rn}{rd}{imm12}";
+                    encodedOperation = Convert.ToUInt32(opString, 16);
+                    parseResult = true;
+                }
+                else
+                {
+                    tokenStream.UnGet(arg3);
+                    tokenStream.UnGet(comma2);
+                    tokenStream.UnGet(arg2);
+                    tokenStream.UnGet(comma1);
+                    tokenStream.UnGet(arg1);
+                    parseResult = false;
+                }
+            }
+            catch (SyntaxException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
             return parseResult;
         }
 
@@ -343,30 +448,6 @@
 
         //    return false;
 
-        //}
-
-        //public bool IsValidBranch(Token token)
-        //{
-        //    var isValid = true;
-
-        //    if (token.Value().Equals("BAL", StringComparison.InvariantCultureIgnoreCase)
-        //        && token.Value().Equals("BNE", StringComparison.InvariantCultureIgnoreCase))
-        //    { }
-        //    else { isValid = false; }
-
-        //    return isValid;
-        //}
-
-        //public bool IsValidDataProc(Token token)
-        //{
-        //    var isValid = true;
-
-        //    if (token.Value().Equals("MOV", StringComparison.InvariantCultureIgnoreCase)
-        //        && token.Value().Equals("ORR", StringComparison.InvariantCultureIgnoreCase))
-        //    { }
-        //    else { isValid = false; }
-
-        //    return isValid;
         //}
     }
 }

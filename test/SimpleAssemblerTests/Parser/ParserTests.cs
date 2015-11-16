@@ -266,7 +266,7 @@
             SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
 
             var myProgram =
-                "SUBS r3, r3, 0x1000" + Environment.NewLine;
+                "SUBS r3, r3, 0x10000" + Environment.NewLine;
 
             ITokenStream tokenStream = new TokenStream(myProgram);
 
