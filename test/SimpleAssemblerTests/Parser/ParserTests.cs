@@ -65,19 +65,19 @@
                 "MOVW r2, 0x8000" + Environment.NewLine +
                 "" + Environment.NewLine +
                 "loop: STR r2, r0, 0x20" + Environment.NewLine +
-                "wait1: MOVW r3, 0x0" + Environment.NewLine +
-                "  MOVT r3, 0x10" + Environment.NewLine +
-                "  SUBS r3, r3, 0x01" + Environment.NewLine +
-                "  BNE wait1 //1aff fffd - (BNE 0xfffffd[-3])" + Environment.NewLine +
+                "MOVW r3, 0x0" + Environment.NewLine +
+                "MOVT r3, 0x10" + Environment.NewLine +
+                "wait1: SUBS r3, r3, 0x01" + Environment.NewLine +
+                "  BNE wait1" + Environment.NewLine +
                 "" + Environment.NewLine +
                 "STR r2, r0, 0x2c" + Environment.NewLine +
                 "" + Environment.NewLine +
-                "wait2: MOVW r3, 0x0" + Environment.NewLine +
-                "  MOVT r3, 0x10" + Environment.NewLine +
-                "  SUBS r3, r3, 0x01" + Environment.NewLine +
-                "  BNE wait2 //1aff fffd - (BNE 0xfffffd[-3])" + Environment.NewLine +
+                "MOVW r3, 0x0" + Environment.NewLine +
+                "MOVT r3, 0x10" + Environment.NewLine +
+                "wait2: SUBS r3, r3, 0x01" + Environment.NewLine +
+                "  BNE wait2" + Environment.NewLine +
                 "" + Environment.NewLine +
-                "BAL loop //eaff fff4 - (BAL 0xfffff4[-12])" + Environment.NewLine;
+                "BAL loop" + Environment.NewLine;
 
             var output = parser.Parse(myProgram);
 
@@ -90,7 +90,14 @@
             Assert.Equal(0xe5802020, output[6]);
             Assert.Equal(0xe3003000, output[7]);
             Assert.Equal(0xe3403010, output[8]);
-            // subs
+            Assert.Equal(0xe2533001, output[9]);
+            Assert.Equal((uint)0x1afffffd, output[10]);
+            Assert.Equal(0xe580202c, output[11]);
+            Assert.Equal(0xe3003000, output[12]);
+            Assert.Equal(0xe3403010, output[13]);
+            Assert.Equal(0xe2533001, output[14]);
+            Assert.Equal((uint)0x1afffffd, output[15]);
+            Assert.Equal(0xeafffff4, output[16]);
         }
 
         [Fact]

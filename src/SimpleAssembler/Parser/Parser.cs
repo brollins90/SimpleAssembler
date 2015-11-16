@@ -64,9 +64,8 @@
             tokenStream.UnGet(operation);
             //int argCount = GetArgCount(operation);
 
-            //if (TryParseBranch(tokenStream, out encodedOperation)) { }
-            //else 
-            if (TryParseDataProc(tokenStream, out encodedOperation)) { }
+            if (TryParseBranch(tokenStream, out encodedOperation)) { }
+            else if (TryParseDataProc(tokenStream, out encodedOperation)) { }
             else if (TryParseLoadStore(tokenStream, out encodedOperation)) { }
             else
             {
@@ -76,24 +75,57 @@
             return encodedOperation;
         }
 
-        //public bool TryParseBranch(ITokenStream tokenStream)
-        //{
-        //    var operation = tokenStream.Next();
-        //    var label = tokenStream.Next();
-        //    var parseResult = true;
+        public bool TryParseBranch(ITokenStream tokenStream, out uint encodedOperation)
+        {
+            var operation = tokenStream.Next();
+            var label = tokenStream.Next();
+            var parseResult = true;
+            encodedOperation = 0;
 
-        //    if (operation.GetType() == typeof(AlphaNumToken)
-        //        && IsValidBranch(operation)
-        //        && label.GetType() == typeof(AlphaNumToken)
-        //        && _labelTable.ContainsKey(label.Value()))
-        //    {
-        //        // encode operation
-        //        // append op to kernel img
-        //    }
-        //    else { parseResult = false; }
+            string condition = null;
 
-        //    return parseResult;
-        //}
+            if (operation.Value().ToLowerInvariant().Equals("bne"))
+            {
+                condition = "1";
+            }
+            else if (operation.Value().ToLowerInvariant().Equals("bal"))
+            {
+                condition = "e";
+            }
+
+            if (condition != null
+                && operation.GetType() == typeof(AlphaNumToken)
+                && label.GetType() == typeof(AlphaNumToken))
+            {
+                if (!_labelTable.ContainsKey(label.Value()))
+                {
+                    throw new SyntaxException($"Label {label.Value()} not in label table");
+                }
+
+                //string condition = "e";
+                string op = "a";
+
+                uint offset = _labelTable[label.Value()] - _kernelIndex;
+                offset = offset - 2;
+
+                //string imm4 = IntToHexString(intVal, 3);
+                //string rd = RegisterToHex(arg1);
+                //string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+                string offsetString = Convert.ToString(offset, 16);
+                offsetString = offsetString.Substring(2);
+                string opString = $"{condition}{op}{offsetString}";
+                encodedOperation = Convert.ToUInt32(opString, 16);
+                parseResult = true;
+            }
+            else
+            {
+                tokenStream.UnGet(label);
+                tokenStream.UnGet(operation);
+                parseResult = false;
+            }
+
+            return parseResult;
+        }
 
         public bool TryParseDataProc(ITokenStream tokenStream, out uint encodedOperation)
         {
@@ -379,6 +411,11 @@
             labelIndex = uint.MaxValue;
             var label = tokenStream.Next();
             var colon = tokenStream.Next();
+            if (label == null || colon == null)
+            {
+                Console.WriteLine();
+            }
+
             var parseResult = true;
 
             if (label.GetType() == typeof(AlphaNumToken) &&
