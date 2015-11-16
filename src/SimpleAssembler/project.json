@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "description": "SimpleAssembler Console Application",
   "authors": [ "brollins" ],
@@ -7,6 +7,7 @@
   "licenseUrl": "",
 
   "dependencies": {
+    "CommandLineParser": "1.9.71"
   },
 
   "commands": {

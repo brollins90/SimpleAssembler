@@ -81,10 +81,10 @@
 
             var output = parser.Parse(myProgram);
 
-            Assert.Equal(0xe3430f20, output[0]);
-            Assert.Equal(0xe3000000, output[1]);
-            Assert.Equal(0xe3401020, output[2]);
-            Assert.Equal(0xe3001000, output[3]);
+            Assert.Equal(0xe3000000, output[0]);
+            Assert.Equal(0xe3430f20, output[1]);
+            Assert.Equal(0xe3001000, output[2]);
+            Assert.Equal(0xe3401020, output[3]);
             Assert.Equal(0xe5801010, output[4]);
             Assert.Equal(0xe3082000, output[5]);
             Assert.Equal(0xe5802020, output[6]);
