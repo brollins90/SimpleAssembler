@@ -50,6 +50,12 @@
                             throw new SyntaxException();
                         }
                     }
+                    else if (state == ReadState.Hex0x || state == ReadState.HexNumber)
+                    {
+                        state = ReadState.HexNumber;
+                        tokenString += current;
+                        _index++;
+                    }
                     else
                     {
                         throw new SyntaxException();
@@ -97,7 +103,7 @@
                         //stillReading = false;
                     }
                 }
-                else if (current == ' ' || current == '\t')
+                else if (current == ' ' || current == '\t' || current == '\r' || current == '\n')
                 {
                     if (state == ReadState.None)
                     {
@@ -183,7 +189,7 @@
                 case ReadState.Hex0:
                 case ReadState.Hex0x:
                 case ReadState.None:
-                    throw new SyntaxException();
+                    //throw new SyntaxException();
                     break;
             }
 

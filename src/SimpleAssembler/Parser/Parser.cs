@@ -1,5 +1,6 @@
 ﻿namespace SimpleAssembler.Parser
 {
+    using System;
     using System.Collections.Generic;
     using Tokenizer;
     using Tokenizer.Tokens;
@@ -8,13 +9,13 @@
     {
         //private string _fileString;
         //private List<int> _kernelImgList;
-        private int _kernelIndex;
-        private Dictionary<string, int> _labelTable;
+        private uint _kernelIndex;
+        private Dictionary<string, uint> _labelTable;
 
         public Parser()
         {
             _kernelIndex = 0;
-            _labelTable = new Dictionary<string, int>();
+            _labelTable = new Dictionary<string, uint>();
         }
 
         //public Parser(string fileString)
@@ -25,39 +26,62 @@
         //    
         //}
 
-        public int[] Parse(string fileData)
+        public int GetCurrentIndex()
         {
-            List<int> imageList = new List<int>();
+            return (int)_kernelIndex;
+        }
+
+        public uint[] Parse(string fileData)
+        {
+            List<uint> imageList = new List<uint>();
             ITokenStream tokenStream = new TokenStream(fileData);
 
             while (tokenStream.HasNext())
             {
-                int instruction = ParseInstruction(tokenStream);
-                imageList.Add(instruction);
+                uint instruction;
+                if (TryParseInstruction(tokenStream, out instruction))
+                {
+                    imageList.Insert((int)_kernelIndex++, instruction);
+                }
             }
 
-            int[] outputArray = imageList.ToArray();
+            uint[] outputArray = imageList.ToArray();
             return outputArray;
         }
 
-        public int ParseInstruction(ITokenStream tokenStream)
+        public bool TryParseInstruction(ITokenStream tokenStream, out uint instruction)
         {
-            int instruction = 0;
-            if (TryParseLabel(tokenStream, out instruction)) { return instruction; }
-            //else if (TryParseOperation(tokenStream, out instruction)) { return instruction; }
-            else { throw new SyntaxException("Unable to parse instruction"); }
+            uint labelIndex = uint.MaxValue;
+            if (TryParseLabel(tokenStream, out labelIndex))
+            {
+                instruction = labelIndex;
+                return false;
+            }
+
+            instruction = ParseOperation(tokenStream);
+
+            if (instruction == uint.MaxValue)
+            {
+                throw new SyntaxException("Unable to parse instruction");
+            }
+            return true;
         }
 
-        //public void ParseOperation(ITokenStream tokenStream)
-        //{
-        //    var operation = tokenStream.Next();
-        //    int argCount = GetArgCount(operation);
+        public uint ParseOperation(ITokenStream tokenStream)
+        {
+            uint encodedOperation = 0;
+            var operation = tokenStream.Next();
+            tokenStream.UnGet(operation);
+            //int argCount = GetArgCount(operation);
 
-        //    if (TryParseBranch(tokenStream)) { }
-        //    else if (TryParseDataProc(tokenStream)) { }
-        //    else if (TryParseLoadStore(tokenStream)) { }
-        //    else { throw new SyntaxException(); }
-        //}
+            //if (TryParseBranch(tokenStream, out encodedOperation)) { }
+            //else 
+            if (TryParseDataProc(tokenStream, out encodedOperation)) { }
+            //else if (TryParseLoadStore(tokenStream, out encodedOperation)) { }
+            else { throw new SyntaxException(); }
+
+            return encodedOperation;
+        }
 
         //public bool TryParseBranch(ITokenStream tokenStream)
         //{
@@ -78,20 +102,87 @@
         //    return parseResult;
         //}
 
-        //public bool TryParseDataProc(ITokenStream tokenStream)
-        //{
-        //    var operation = tokenStream.Next();
-        //    int argCount = GetArgCount(operation);
-        //    var parseResult = true;
-
-        //    parseResult = false;
-
-        //    return parseResult;
-        //}
-
-        public bool TryParseLabel(ITokenStream tokenStream, out int labelIndex)
+        public bool TryParseDataProc(ITokenStream tokenStream, out uint encodedOperation)
         {
-            labelIndex = -1;
+            var operation = tokenStream.Next();
+            //int argCount = GetArgCount(operation);
+            var arg1 = tokenStream.Next();
+            var comma = tokenStream.Next();
+            var arg2 = tokenStream.Next();
+            var parseResult = true;
+            encodedOperation = 0;
+
+            // MOVT
+            if (operation.Value().ToLowerInvariant().Equals("movt") &&
+                arg1.GetType() == typeof(AlphaNumToken) &&
+                comma.GetType() == typeof(CommaToken) &&
+                arg2.GetType() == typeof(NumberToken))
+            {
+                int intVal = (arg2 as NumberToken).IntValue();
+
+                string condition = "e";
+                string op = "34";
+                string imm4 = IntToHexString(intVal, 3);
+                string rd = RegisterToHex(arg1);
+                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+                string opString = $"{condition}{op}{imm4}{rd}{imm12}";
+                encodedOperation = Convert.ToUInt32(opString, 16);
+                parseResult = true;
+            }
+
+            // MOVW
+            else if (operation.Value().ToLowerInvariant().Equals("movw") &&
+                arg1.GetType() == typeof(AlphaNumToken) &&
+                comma.GetType() == typeof(CommaToken) &&
+                arg2.GetType() == typeof(NumberToken))
+            {
+                int intVal = (arg2 as NumberToken).IntValue();
+
+                string condition = "e";
+                string op = "30";
+                string imm4 = IntToHexString(intVal, 3);
+                string rd = RegisterToHex(arg1);
+                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+                string opString = $"{condition}{op}{imm4}{rd}{imm12}";
+                encodedOperation = Convert.ToUInt32(opString, 16);
+                parseResult = true;
+            }
+            else
+            {
+                parseResult = false;
+            }
+
+            return parseResult;
+        }
+
+        private string IntToHexString(int i, int nibble)
+        {
+            int ret = (i >> (4 * nibble)) & 0xF;
+            return Convert.ToString(ret, 16);
+        }
+
+        private string ByteToHexString(byte b)
+        {
+            return Convert.ToString(b, 16);
+        }
+
+        private string RegisterToHex(Token arg)
+        {
+            if (arg.GetType() == typeof(AlphaNumToken) &&
+                arg.Value().StartsWith("r", StringComparison.InvariantCultureIgnoreCase))
+            {
+                string decimalString = arg.Value().Substring(1);
+                byte b = Convert.ToByte(decimalString);
+                return ByteToHexString(b);
+            }
+            throw new SyntaxException($"{arg.Value()} is not a register");
+        }
+
+        public bool TryParseLabel(ITokenStream tokenStream, out uint labelIndex)
+        {
+            labelIndex = uint.MaxValue;
             var label = tokenStream.Next();
             var colon = tokenStream.Next();
             var parseResult = true;
