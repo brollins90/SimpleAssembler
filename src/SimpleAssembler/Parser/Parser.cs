@@ -128,9 +128,9 @@
             var parseResult = true;
             encodedOperation = 0;
 
-            if (operation.Value().ToLowerInvariant().Equals("subs"))
+            if (operation.Value().ToLowerInvariant().Equals("str"))
             {
-                parseResult = TryEncodeSUBS(tokenStream, out encodedOperation);
+                parseResult = TryEncodeSTR(tokenStream, out encodedOperation);
             }
             else
             {
