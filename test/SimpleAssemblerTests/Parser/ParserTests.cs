@@ -97,6 +97,23 @@
         }
 
         [Fact]
+        public void ParserParseMOVTTooLarge()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "MOVT r0, 0x10000" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                uint instruction;
+                parser.TryParseInstruction(tokenStream, out instruction);
+            });
+        }
+
+        [Fact]
         public void ParserParseMOVWParse0()
         {
             SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
@@ -124,6 +141,23 @@
             parser.TryParseInstruction(tokenStream, out instruction);
 
             Assert.Equal(0xe3001001, instruction);
+        }
+
+        [Fact]
+        public void ParserParseMOVWTooLarge()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "MOVW r0, 0x10000" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                uint instruction;
+                parser.TryParseInstruction(tokenStream, out instruction);
+            });
         }
     }
 }

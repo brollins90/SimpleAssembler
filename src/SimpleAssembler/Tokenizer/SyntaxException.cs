@@ -4,7 +4,7 @@
     using System.Runtime.Serialization;
 
     [Serializable]
-    internal class SyntaxException : Exception
+    public class SyntaxException : Exception
     {
         public SyntaxException()
         {

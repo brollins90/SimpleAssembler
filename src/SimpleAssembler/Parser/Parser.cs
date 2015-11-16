@@ -119,6 +119,10 @@
                 arg2.GetType() == typeof(NumberToken))
             {
                 int intVal = (arg2 as NumberToken).IntValue();
+                if (intVal > 0xffff)
+                {
+                    throw new SyntaxException("On MOVT, op2 cannot be larger than 0xFFFF");
+                }
 
                 string condition = "e";
                 string op = "34";
@@ -138,6 +142,10 @@
                 arg2.GetType() == typeof(NumberToken))
             {
                 int intVal = (arg2 as NumberToken).IntValue();
+                if (intVal > 0xffff)
+                {
+                    throw new SyntaxException("On MOVT, op2 cannot be larger than 0xFFFF");
+                }
 
                 string condition = "e";
                 string op = "30";
