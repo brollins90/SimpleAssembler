@@ -56,10 +56,10 @@
             SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
 
             var myProgram =
-                "MOVT r0, 0x3f20" + Environment.NewLine +
                 "MOVW r0, 0x0" + Environment.NewLine +
-                "MOVT r1, 0x20" + Environment.NewLine +
+                "MOVT r0, 0x3f20" + Environment.NewLine +
                 "MOVW r1, 0x0" + Environment.NewLine +
+                "MOVT r1, 0x20" + Environment.NewLine +
                 "" + Environment.NewLine +
                 "STR r1, r0, 0x10" + Environment.NewLine +
                 "MOVW r2, 0x8000" + Environment.NewLine +
