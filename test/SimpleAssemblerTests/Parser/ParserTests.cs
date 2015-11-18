@@ -439,7 +439,7 @@
             var output = parser.Parse(myProgram);
 
             Assert.Equal(0xe3000000, output[0]);
-            Assert.Equal((uint)0x1afffffd, output[1]);
+            Assert.Equal(0xebfffffd, output[1]);
         }
 
         [Fact]
@@ -453,7 +453,7 @@
 
             var output = parser.Parse(myProgram);
 
-            Assert.Equal((uint)0x1afffffd, output[0]);
+            Assert.Equal(0xebffffff, output[0]);
             Assert.Equal(0xe3000000, output[1]);
         }
         #endregion

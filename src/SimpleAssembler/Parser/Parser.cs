@@ -38,13 +38,13 @@
                 uint instruction;
                 if (TryParseInstruction(tokenStream, out instruction, false))
                 {
+                    // dont save anything, just increment the index so we can populate the label table
                     _kernelIndex++;
-                    //Console.WriteLine($"{_kernelIndex}: {Convert.ToString(instruction, 16)}");
-                    //imageList.Insert((int)_kernelIndex++, instruction);
                 }
             }
 
             List<uint> imageList = new List<uint>();
+            // reset the stuff after the first go round that found the label locations
             tokenStream = new TokenStream(fileData);
             _kernelIndex = 0;
             _lineNumber = 0;
@@ -129,19 +129,29 @@
             encodedOperation = 0;
 
             string condition = null;
+            string opCode = null;
 
             if (operation != null &&
-                operation.Value().ToLowerInvariant().Equals("bne"))
-            {
-                condition = "1";
-            }
-            else if (operation != null &&
                 operation.Value().ToLowerInvariant().Equals("bal"))
             {
-                condition = "e";
+                condition = "e"; // Always
+                opCode = "a"; // No Link
+            }
+            else if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("bne"))
+            {
+                condition = "1"; // Not Equal
+                opCode = "a"; // No Link
+            }
+            else if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("bl"))
+            {
+                condition = "e"; // Always
+                opCode = "b"; // Link
             }
 
             if (condition != null &&
+                opCode != null &&
                 operation != null &&
                 operation.GetType() == typeof(AlphaNumToken) &&
                 label != null &&
@@ -160,14 +170,12 @@
                     }
                 }
 
-                string op = "a";
-
                 uint offset = labelLocation - _kernelIndex;
                 offset = offset - 2;
 
                 string offsetString = Convert.ToString(offset, 16);
                 offsetString = offsetString.Substring(2);
-                string opString = $"{condition}{op}{offsetString}";
+                string opString = $"{condition}{opCode}{offsetString}";
                 encodedOperation = Convert.ToUInt32(opString, 16);
                 parseResult = true;
             }
