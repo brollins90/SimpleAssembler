@@ -30,14 +30,31 @@
 
         public uint[] Parse(string fileData)
         {
-            List<uint> imageList = new List<uint>();
+            // First round to construct the label table
             ITokenStream tokenStream = new TokenStream(fileData);
+
+            while (tokenStream.HasNext())
+            {
+                uint instruction;
+                if (TryParseInstruction(tokenStream, out instruction, false))
+                {
+                    _kernelIndex++;
+                    //Console.WriteLine($"{_kernelIndex}: {Convert.ToString(instruction, 16)}");
+                    //imageList.Insert((int)_kernelIndex++, instruction);
+                }
+            }
+
+            List<uint> imageList = new List<uint>();
+            tokenStream = new TokenStream(fileData);
+            _kernelIndex = 0;
+            _lineNumber = 0;
 
             while (tokenStream.HasNext())
             {
                 uint instruction;
                 if (TryParseInstruction(tokenStream, out instruction))
                 {
+                    Console.WriteLine($"{_kernelIndex}: {Convert.ToString(instruction, 16)}");
                     imageList.Insert((int)_kernelIndex++, instruction);
                 }
             }
@@ -45,16 +62,15 @@
             return imageList.ToArray();
         }
 
-        public bool TryParseInstruction(ITokenStream tokenStream, out uint instruction)
+        public bool TryParseInstruction(ITokenStream tokenStream, out uint instruction, bool throwOnLabelNotFound = true)
         {
             uint labelIndex = uint.MaxValue;
-            if (TryParseLabel(tokenStream, out labelIndex))
+            if (TryParseLabel(tokenStream, out labelIndex, throwOnLabelNotFound))
             {
                 instruction = labelIndex;
                 return false;
             }
-
-            instruction = ParseOperation(tokenStream);
+            instruction = ParseOperation(tokenStream, throwOnLabelNotFound);
 
             if (instruction == uint.MaxValue || instruction == 0)
             {
@@ -75,7 +91,6 @@
                 if (token != null &&
                     token.GetType() == typeof(NewLineToken))
                 {
-                    Console.WriteLine("new line");
                     _lineNumber++;
                     TryParseNewLine(tokenStream);
                 }
@@ -86,7 +101,7 @@
             }
         }
 
-        public uint ParseOperation(ITokenStream tokenStream)
+        public uint ParseOperation(ITokenStream tokenStream, bool throwOnLabelNotFound)
         {
             uint encodedOperation = 0;
             var operation = tokenStream.Next();
@@ -94,7 +109,7 @@
 
             if (operation != null)
             {
-                if (TryParseBranch(tokenStream, out encodedOperation)) { }
+                if (TryParseBranch(tokenStream, out encodedOperation, throwOnLabelNotFound)) { }
                 else if (TryParseDataProc(tokenStream, out encodedOperation)) { }
                 else if (TryParseLoadStore(tokenStream, out encodedOperation)) { }
                 else
@@ -106,7 +121,7 @@
             return encodedOperation;
         }
 
-        public bool TryParseBranch(ITokenStream tokenStream, out uint encodedOperation)
+        public bool TryParseBranch(ITokenStream tokenStream, out uint encodedOperation, bool throwOnLabelNotFound)
         {
             var operation = tokenStream.Next();
             var label = tokenStream.Next();
@@ -132,14 +147,22 @@
                 label != null &&
                 label.GetType() == typeof(AlphaNumToken))
             {
-                if (!_labelTable.ContainsKey(label.Value()))
+                uint labelLocation = 0;
+                if (_labelTable.ContainsKey(label.Value()))
                 {
-                    throw new SyntaxException($"Label {label.Value()} not in label table");
+                    labelLocation = _labelTable[label.Value()];
+                }
+                else
+                {
+                    if (throwOnLabelNotFound)
+                    {
+                        throw new SyntaxException($"Label {label.Value()} not in label table");
+                    }
                 }
 
                 string op = "a";
 
-                uint offset = _labelTable[label.Value()] - _kernelIndex;
+                uint offset = labelLocation - _kernelIndex;
                 offset = offset - 2;
 
                 string offsetString = Convert.ToString(offset, 16);
@@ -389,7 +412,7 @@
             return parseResult;
         }
 
-        public bool TryParseLabel(ITokenStream tokenStream, out uint labelIndex)
+        public bool TryParseLabel(ITokenStream tokenStream, out uint labelIndex, bool throwOnLabelNotFound)
         {
             labelIndex = uint.MaxValue;
             var label = tokenStream.Next();
@@ -402,7 +425,18 @@
                 colon.GetType() == typeof(ColonToken))
             {
                 // add to label table
-                _labelTable.Add(label.Value(), _kernelIndex);
+                if (throwOnLabelNotFound)
+                {
+                    //_labelTable.Add(label.Value(), _kernelIndex);
+                    // dont add anything, it should be there already
+                }
+                else
+                {
+                    if (!_labelTable.ContainsKey(label.Value()))
+                    {
+                        _labelTable.Add(label.Value(), _kernelIndex);
+                    }
+                }
                 labelIndex = _kernelIndex;
             }
             else

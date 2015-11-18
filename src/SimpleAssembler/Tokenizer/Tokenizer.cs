@@ -112,7 +112,7 @@
                             tokenString += current;
                             _index++;
                         }
-                        else if (current == ':' || current == ',' || current == ' ')
+                        else if (current == ':' || current == ',' || current == ' ' || current == '\t')
                         {
                             stillReading = false;
                         }
@@ -159,7 +159,7 @@
                             tokenString += current;
                             _index++;
                         }
-                        else if (current == '\r' || current == '\n')
+                        else if (current == '\r' || current == '\n' || current == ' ' || current == '\t')
                         {
                             stillReading = false;
                         }
@@ -176,7 +176,7 @@
                             tokenString += current;
                             _index++;
                         }
-                        else if (current == '\r' || current == '\n')
+                        else if (current == '\r' || current == '\n' || current == ' ' || current == '\t')
                         {
                             stillReading = false;
                         }
