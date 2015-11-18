@@ -1,13 +1,12 @@
 ﻿namespace SimpleAssembler.Tokenizer
 {
-    using System;
     using System.Collections.Generic;
     using Tokens;
 
     public class TokenStream : ITokenStream
     {
-        Stack<Token> _tokenStack;
-        ITokenizer _tokenizer;
+        private Stack<Token> _tokenStack;
+        private ITokenizer _tokenizer;
 
         public TokenStream(string fileData)
         {
@@ -17,25 +16,12 @@
 
         public bool HasNext()
         {
-            if (_tokenizer == null)
-            {
-                return false;
-            }
-            else
-            {
-                return _tokenizer.HasNext();
-            }
+            return (_tokenizer == null) ? false : _tokenizer.HasNext();
         }
 
         public Token Next()
         {
-            if (_tokenizer == null)
-            {
-                throw new InvalidOperationException();
-            }
-            Token token = (_tokenStack.Count > 0) ? _tokenStack.Pop() : _tokenizer.Next();
-
-            return token;
+            return (_tokenStack.Count > 0) ? _tokenStack.Pop() : _tokenizer.Next();
         }
 
         public void UnGet(Token token)

@@ -1,9 +1,5 @@
 ﻿namespace SimpleAssembler.Tokenizer
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Text.RegularExpressions;
     using Tokens;
 
     public class Tokenizer : ITokenizer
@@ -103,7 +99,7 @@
                         // else
                         else
                         {
-                            throw new SyntaxException();
+                            throw new SyntaxException($"Cannot start an instruction with a '{current}'");
                         }
 
                         break;
@@ -126,7 +122,7 @@
                         }
                         else
                         {
-                            throw new SyntaxException();
+                            throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
                         }
                         break;
 
@@ -139,7 +135,7 @@
                         }
                         else
                         {
-                            throw new SyntaxException();
+                            throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
                         }
                         break;
 
@@ -169,7 +165,7 @@
                         }
                         else
                         {
-                            throw new SyntaxException();
+                            throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
                         }
                         break;
 
@@ -186,7 +182,7 @@
                         }
                         else
                         {
-                            throw new SyntaxException();
+                            throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
                         }
                         break;
 
@@ -199,7 +195,7 @@
                         }
                         else
                         {
-                            throw new SyntaxException();
+                            throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
                         }
                         break;
 
@@ -213,11 +209,9 @@
                         }
                         else
                         {
-                            throw new SyntaxException();
+                            throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
                         }
                         break;
-
-
                 }
             }
 
@@ -235,11 +229,11 @@
                 case ReadState.NewLine:
                     return new NewLineToken(tokenString);
                 case ReadState.Hex0:
-                    throw new SyntaxException();
+                    throw new SyntaxException($"A '{state}' is not a valid state");
                 case ReadState.None:
                     return null;
             }
-            throw new SyntaxException();
+            throw new SyntaxException("Unknown state");
             //return null;
         }
 
@@ -259,7 +253,6 @@
         Comment2,
         DecimalNumber,
         Hex0,
-        //Hex0x,
         HexNumber,
         NewLineR,
         NewLine
