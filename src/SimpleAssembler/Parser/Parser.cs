@@ -174,7 +174,11 @@
                 offset = offset - 2;
 
                 string offsetString = Convert.ToString(offset, 16);
-                offsetString = offsetString.Substring(2);
+                if (offset > 0xfffffff) offsetString = offsetString.Substring(1);
+                if (offset > 0xffffff) offsetString = offsetString.Substring(1);
+                else offsetString = offsetString.PadLeft(6, '0');
+                //offsetString = (offset > 0xffffff) ? Convert.ToString(offset, 16) : $"{("" + offset).PadLeft(12, '0')}";
+                //offsetString = offsetString.Substring(2);
                 string opString = $"{condition}{opCode}{offsetString}";
                 encodedOperation = Convert.ToUInt32(opString, 16);
                 parseResult = true;
@@ -196,6 +200,11 @@
             encodedOperation = 0;
 
             if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("mov"))
+            {
+                parseResult = TryEncodeMOV(tokenStream, out encodedOperation);
+            }
+            else if (operation != null &&
                 operation.Value().ToLowerInvariant().Equals("movt"))
             {
                 parseResult = TryEncodeMOVT(tokenStream, out encodedOperation);
@@ -233,6 +242,40 @@
             else
             {
                 tokenStream.UnGet(operation);
+                parseResult = false;
+            }
+
+            return parseResult;
+        }
+
+        public bool TryEncodeMOV(ITokenStream tokenStream, out uint encodedOperation)
+        {
+            var parseResult = true;
+            encodedOperation = 0;
+
+            var arg1 = tokenStream.Next();
+            var comma1 = tokenStream.Next();
+            var arg2 = tokenStream.Next();
+
+            if (arg1 != null &&
+                arg1.GetType() == typeof(AlphaNumToken) &&
+                comma1 != null &&
+                comma1.GetType() == typeof(CommaToken) &&
+                arg2 != null &&
+                arg2.GetType() == typeof(AlphaNumToken))
+            {
+                string rd = RegisterToHex(arg1);
+                string rm = RegisterToHex(arg2);
+
+                string opString = $"e1a0{rd}00{rm}";
+                encodedOperation = Convert.ToUInt32(opString, 16);
+                parseResult = true;
+            }
+            else
+            {
+                tokenStream.UnGet(arg2);
+                tokenStream.UnGet(comma1);
+                tokenStream.UnGet(arg1);
                 parseResult = false;
             }
 

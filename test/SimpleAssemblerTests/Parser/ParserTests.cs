@@ -154,6 +154,55 @@
             Assert.Equal(2, lineNumber);
         }
 
+        #region MOV
+        [Fact]
+        public void ParserParseMOVParser0r0()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "MOV r0, r0" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+            uint instruction;
+            parser.TryParseInstruction(tokenStream, out instruction, false);
+
+            Assert.Equal(0xe1a00000, instruction);
+        }
+
+        [Fact]
+        public void ParserParseMOVParser0r1()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "MOV r0, r1" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+            uint instruction;
+            parser.TryParseInstruction(tokenStream, out instruction, false);
+
+            Assert.Equal(0xe1a00001, instruction);
+        }
+
+        [Fact]
+        public void ParserParseMOVNotRegr18()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "MOV r0, r18" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                uint instruction;
+                parser.TryParseInstruction(tokenStream, out instruction, false);
+            });
+        }
+        #endregion
+
         #region MOVT
         [Fact]
         public void ParserParseMOVTParse0()
