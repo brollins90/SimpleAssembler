@@ -9,11 +9,11 @@
         [Fact]
         public void TokenizerMovIsAlphaNum()
         {
-            var tokenizer = new Tokenizer("MOV");
+            var tokenizer = new Tokenizer("mov");
             var token = tokenizer.Next();
 
             Assert.IsType(typeof(AlphaNumToken), token);
-            Assert.Equal("MOV", token.Value());
+            Assert.Equal("mov", token.Value());
         }
 
         [Fact]

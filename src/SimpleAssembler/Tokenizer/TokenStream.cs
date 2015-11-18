@@ -29,20 +29,21 @@
 
         public Token Next()
         {
-            if (_tokenStack.Count > 0)
-            {
-                return _tokenStack.Pop();
-            }
             if (_tokenizer == null)
             {
                 throw new InvalidOperationException();
             }
-            return _tokenizer.Next();
+            Token token = (_tokenStack.Count > 0) ? _tokenStack.Pop() : _tokenizer.Next();
+
+            return token;
         }
 
         public void UnGet(Token token)
         {
-            _tokenStack.Push(token);
+            if (token != null)
+            {
+                _tokenStack.Push(token);
+            }
         }
     }
 }

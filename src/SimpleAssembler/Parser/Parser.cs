@@ -9,6 +9,7 @@
     {
         private uint _kernelIndex;
         private Dictionary<string, uint> _labelTable;
+        private uint _lineNumber = 0;
 
         public Parser()
         {
@@ -16,9 +17,14 @@
             _labelTable = new Dictionary<string, uint>();
         }
 
-        public int GetCurrentIndex()
+        public int GetCurrentKernelIndex()
         {
             return (int)_kernelIndex;
+        }
+
+        public int GetCurrentLineNumber()
+        {
+            return (int)_lineNumber;
         }
 
         public uint[] Parse(string fileData)
@@ -31,7 +37,11 @@
                 uint instruction;
                 if (TryParseInstruction(tokenStream, out instruction))
                 {
-                    imageList.Insert((int)_kernelIndex++, instruction);
+                    // The last parse instruction will read the final new line and return a 0
+                    if (instruction != 0)
+                    {
+                        imageList.Insert((int)_kernelIndex++, instruction);
+                    }
                 }
             }
 
@@ -54,7 +64,33 @@
             {
                 throw new SyntaxException("Unable to parse instruction");
             }
+
+
+            TryParseNewLine(tokenStream);
+
+
             return true;
+        }
+
+        public void TryParseNewLine(ITokenStream tokenStream)
+        {
+            // try to clean the new lines
+            if (tokenStream.HasNext())
+            {
+                var token = tokenStream.Next();
+
+                if (token != null &&
+                    token.GetType() == typeof(NewLineToken))
+                {
+                    Console.WriteLine("new line");
+                    _lineNumber++;
+                    TryParseNewLine(tokenStream);
+                }
+                else
+                {
+                    tokenStream.UnGet(token);
+                }
+            }
         }
 
         public uint ParseOperation(ITokenStream tokenStream)
@@ -64,12 +100,16 @@
             tokenStream.UnGet(operation);
             //int argCount = GetArgCount(operation);
 
-            if (TryParseBranch(tokenStream, out encodedOperation)) { }
-            else if (TryParseDataProc(tokenStream, out encodedOperation)) { }
-            else if (TryParseLoadStore(tokenStream, out encodedOperation)) { }
-            else
+            if (operation != null)
             {
-                throw new SyntaxException($"Unknown instruction: {operation.Value()}");
+
+                if (TryParseBranch(tokenStream, out encodedOperation)) { }
+                else if (TryParseDataProc(tokenStream, out encodedOperation)) { }
+                else if (TryParseLoadStore(tokenStream, out encodedOperation)) { }
+                else
+                {
+                    throw new SyntaxException($"Unknown instruction: {operation.Value()}");
+                }
             }
 
             return encodedOperation;
@@ -84,18 +124,22 @@
 
             string condition = null;
 
-            if (operation.Value().ToLowerInvariant().Equals("bne"))
+            if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("bne"))
             {
                 condition = "1";
             }
-            else if (operation.Value().ToLowerInvariant().Equals("bal"))
+            else if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("bal"))
             {
                 condition = "e";
             }
 
-            if (condition != null
-                && operation.GetType() == typeof(AlphaNumToken)
-                && label.GetType() == typeof(AlphaNumToken))
+            if (condition != null &&
+                operation != null &&
+                operation.GetType() == typeof(AlphaNumToken) &&
+                label != null &&
+                label.GetType() == typeof(AlphaNumToken))
             {
                 if (!_labelTable.ContainsKey(label.Value()))
                 {
@@ -133,15 +177,18 @@
             var parseResult = true;
             encodedOperation = 0;
 
-            if (operation.Value().ToLowerInvariant().Equals("movt"))
+            if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("movt"))
             {
                 parseResult = TryEncodeMOVT(tokenStream, out encodedOperation);
             }
-            else if (operation.Value().ToLowerInvariant().Equals("movw"))
+            else if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("movw"))
             {
                 parseResult = TryEncodeMOVW(tokenStream, out encodedOperation);
             }
-            else if (operation.Value().ToLowerInvariant().Equals("subs"))
+            else if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("subs"))
             {
                 parseResult = TryEncodeSUBS(tokenStream, out encodedOperation);
             }
@@ -160,7 +207,8 @@
             var parseResult = true;
             encodedOperation = 0;
 
-            if (operation.Value().ToLowerInvariant().Equals("str"))
+            if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("str"))
             {
                 parseResult = TryEncodeSTR(tokenStream, out encodedOperation);
             }
@@ -184,8 +232,11 @@
                 var comma1 = tokenStream.Next();
                 var arg2 = tokenStream.Next();
 
-                if (arg1.GetType() == typeof(AlphaNumToken) &&
+                if (arg1 != null &&
+                    arg1.GetType() == typeof(AlphaNumToken) &&
+                    comma1 != null &&
                     comma1.GetType() == typeof(CommaToken) &&
+                    arg2 != null &&
                     arg2.GetType() == typeof(NumberToken))
                 {
 
@@ -235,8 +286,11 @@
                 var comma1 = tokenStream.Next();
                 var arg2 = tokenStream.Next();
 
-                if (arg1.GetType() == typeof(AlphaNumToken) &&
+                if (arg1 != null &&
+                    arg1.GetType() == typeof(AlphaNumToken) &&
+                    comma1 != null &&
                     comma1.GetType() == typeof(CommaToken) &&
+                    arg2 != null &&
                     arg2.GetType() == typeof(NumberToken))
                 {
 
@@ -288,10 +342,15 @@
                 var comma2 = tokenStream.Next();
                 var arg3 = tokenStream.Next();
 
-                if (arg1.GetType() == typeof(AlphaNumToken) &&
+                if (arg1 != null &&
+                    arg1.GetType() == typeof(AlphaNumToken) &&
+                    comma1 != null &&
                     comma1.GetType() == typeof(CommaToken) &&
+                    arg2 != null &&
                     arg2.GetType() == typeof(AlphaNumToken) &&
+                    comma2 != null &&
                     comma2.GetType() == typeof(CommaToken) &&
+                    arg3 != null &&
                     arg3.GetType() == typeof(NumberToken))
                 {
                     int intVal = (arg3 as NumberToken).IntValue();
@@ -344,10 +403,15 @@
                 var comma2 = tokenStream.Next();
                 var arg3 = tokenStream.Next();
 
-                if (arg1.GetType() == typeof(AlphaNumToken) &&
+                if (arg1 != null &&
+                    arg1.GetType() == typeof(AlphaNumToken) &&
+                    comma1 != null &&
                     comma1.GetType() == typeof(CommaToken) &&
+                    arg2 != null &&
                     arg2.GetType() == typeof(AlphaNumToken) &&
+                    comma2 != null &&
                     comma2.GetType() == typeof(CommaToken) &&
+                    arg3 != null &&
                     arg3.GetType() == typeof(NumberToken))
                 {
 
@@ -411,14 +475,11 @@
             labelIndex = uint.MaxValue;
             var label = tokenStream.Next();
             var colon = tokenStream.Next();
-            if (label == null || colon == null)
-            {
-                Console.WriteLine();
-            }
-
             var parseResult = true;
 
-            if (label.GetType() == typeof(AlphaNumToken) &&
+            if (label != null &&
+                label.GetType() == typeof(AlphaNumToken) &&
+                colon != null &&
                 colon.GetType() == typeof(ColonToken))
             {
                 // add to label table
@@ -431,6 +492,7 @@
                 tokenStream.UnGet(label);
                 parseResult = false;
             }
+
             return parseResult;
         }
 

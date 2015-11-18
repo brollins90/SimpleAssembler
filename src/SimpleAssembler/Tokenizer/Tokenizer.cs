@@ -27,39 +27,113 @@
             while (_index < _inputString.Length && stillReading)
             {
                 char current = _inputString[_index];
+                string currentLower = $"{current}".ToLowerInvariant();
+                current = currentLower[0];
 
-                if (state == ReadState.Comment2)
+                switch (state)
                 {
-                    if (/*current == '\r' || */current == '\n')
-                    {
-                        state = ReadState.Comment2;
-                        _index++;
-                        // if we get to the end of a comment, we can reset the state
-                        tokenString = "";
-                        state = ReadState.None;
-                    }
-                    else
-                    {
-                        state = ReadState.Comment2;
-                        tokenString += current;
-                        _index++;
-                    }
-                }
+                    case ReadState.None:
 
-                else if ((current >= 'A' && current <= 'Z')
-                    || (current >= 'a' && current <= 'z'))
-                {
-                    if (state == ReadState.None || state == ReadState.AlphaNum)
-                    {
-                        state = ReadState.AlphaNum;
-                        tokenString += current;
-                        _index++;
-                    }
-                    else if (state == ReadState.Hex0)
-                    {
-                        if (current == 'x' || current == 'X')
+                        // alphanum
+                        if (current >= 'a' && current <= 'z')
                         {
-                            state = ReadState.Hex0x;
+                            state = ReadState.AlphaNum;
+                            tokenString += current;
+                            _index++;
+                        }
+                        else if (current == ' ' || current == '\t')
+                        {
+                            // eat whitespace
+                            _index++;
+                        }
+
+                        // starting comment
+                        else if (current == '/')
+                        {
+                            state = ReadState.Comment1;
+                            tokenString += current;
+                            _index++;
+                        }
+
+                        // newline
+                        else if (current == '\r')
+                        {
+                            state = ReadState.NewLineR;
+                            tokenString += current;
+                            _index++;
+                        }
+                        else if (current == '\n')
+                        {
+                            state = ReadState.NewLine;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+
+                        // number
+                        else if (current == '#')
+                        {
+                            state = ReadState.DecimalNumber;
+                            // dont add the # to the string
+                            _index++;
+                        }
+                        else if (current == '0')
+                        {
+                            state = ReadState.Hex0;
+                            tokenString += current;
+                            _index++;
+                        }
+
+                        // specials
+                        else if (current == ':')
+                        {
+                            state = ReadState.Colon;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+                        else if (current == ',')
+                        {
+                            state = ReadState.Comma;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+
+                        // else
+                        else
+                        {
+                            throw new SyntaxException();
+                        }
+
+                        break;
+
+                    case ReadState.AlphaNum:
+
+                        if ((current >= 'a' && current <= 'z')
+                            || (current >= '0' && current <= '9'))
+                        {
+                            tokenString += current;
+                            _index++;
+                        }
+                        else if (current == ':' || current == ',' || current == ' ')
+                        {
+                            stillReading = false;
+                        }
+                        else if (current == '\r' || current == '\n')
+                        {
+                            stillReading = false;
+                        }
+                        else
+                        {
+                            throw new SyntaxException();
+                        }
+                        break;
+
+                    case ReadState.Comment1:
+                        if (current == '/')
+                        {
+                            state = ReadState.Comment2;
                             tokenString += current;
                             _index++;
                         }
@@ -67,148 +141,83 @@
                         {
                             throw new SyntaxException();
                         }
-                    }
-                    else if (state == ReadState.Hex0x || state == ReadState.HexNumber)
-                    {
-                        state = ReadState.HexNumber;
-                        tokenString += current;
-                        _index++;
-                    }
-                    else
-                    {
-                        throw new SyntaxException();
-                        //stillReading = false;
-                    }
-                }
-                else if (current >= '0' && current <= '9')
-                {
-                    if (state == ReadState.None)
-                    {
-                        if (current == '0')
+                        break;
+
+                    case ReadState.Comment2:
+                        if (current == '\r' || current == '\n')
                         {
-                            state = ReadState.Hex0;
+                            // if we get to the end of a comment, we can reset the state
+                            tokenString = "";
+                            state = ReadState.None;
+                        }
+                        else
+                        {
                             tokenString += current;
                             _index++;
                         }
-                    }
-                    else if (state == ReadState.AlphaNum)
-                    {
-                        state = ReadState.AlphaNum;
-                        tokenString += current;
-                        _index++;
-                    }
-                    else if (state == ReadState.DecimalNumber)
-                    {
-                        state = ReadState.DecimalNumber;
-                        tokenString += current;
-                        _index++;
-                    }
-                    else if (state == ReadState.Hex0x)
-                    {
-                        state = ReadState.HexNumber;
-                        tokenString += current;
-                        _index++;
-                    }
-                    else if (state == ReadState.HexNumber)
-                    {
-                        state = ReadState.HexNumber;
-                        tokenString += current;
-                        _index++;
-                    }
-                    else
-                    {
-                        throw new SyntaxException();
-                        //stillReading = false;
-                    }
-                }
-                else if (current == ' ' || current == '\t' || current == '\r' || current == '\n')
-                {
-                    if (state == ReadState.None)
-                    {
-                        state = ReadState.None;
-                        _index++;
-                    }
-                    else
-                    {
-                        // eat whitespace and return
-                        stillReading = false;
-                        _index++;
-                    }
-                }
-                else if (current == ':')
-                {
-                    if (state == ReadState.None)
-                    {
-                        state = ReadState.Colon;
-                        tokenString += current;
-                        stillReading = false;
-                        _index++;
-                    }
-                    else if (state == ReadState.AlphaNum)
-                    {
-                        // do not increment but return
-                        stillReading = false;
-                    }
-                    else
-                    {
-                        throw new SyntaxException();
-                    }
-                }
-                else if (current == ',')
-                {
-                    if (state == ReadState.None)
-                    {
-                        state = ReadState.Comma;
-                        tokenString += current;
-                        _index++;
-                        stillReading = false;
-                    }
-                    else if (state == ReadState.AlphaNum
-                          || state == ReadState.HexNumber)
-                    {
-                        // do not increment but return
-                        stillReading = false;
-                    }
-                    else
-                    {
-                        throw new SyntaxException();
-                    }
-                }
-                else if (current == '#')
-                {
-                    if (state == ReadState.None)
-                    {
-                        state = ReadState.DecimalNumber;
-                        // dont add the # to the string
-                        _index++;
-                    }
-                    else
-                    {
-                        throw new SyntaxException();
-                    }
-                }
-                else if (current == '/')
-                {
-                    if (state == ReadState.None)
-                    {
-                        state = ReadState.Comment1;
-                        tokenString += current;
-                        _index++;
-                    }
-                    if (state == ReadState.Comment1)
-                    {
-                        state = ReadState.Comment2;
-                        tokenString += current;
-                        _index++;
-                    }
-                    else
-                    {
-                        throw new SyntaxException();
-                    }
-                }
-                else
-                {
-                    throw new SyntaxException();
+                        break;
+
+                    case ReadState.DecimalNumber:
+                        if (current >= '0' && current <= '9')
+                        {
+                            tokenString += current;
+                            _index++;
+                        }
+                        else if (current == '\r' || current == '\n')
+                        {
+                            stillReading = false;
+                        }
+                        else
+                        {
+                            throw new SyntaxException();
+                        }
+                        break;
+
+                    case ReadState.HexNumber:
+                        if ((current >= '0' && current <= '9')
+                            || (current >= 'a' && current <= 'f'))
+                        {
+                            tokenString += current;
+                            _index++;
+                        }
+                        else if (current == '\r' || current == '\n')
+                        {
+                            stillReading = false;
+                        }
+                        else
+                        {
+                            throw new SyntaxException();
+                        }
+                        break;
+
+                    case ReadState.Hex0:
+                        if (current == 'x')
+                        {
+                            state = ReadState.HexNumber;
+                            tokenString += current;
+                            _index++;
+                        }
+                        else
+                        {
+                            throw new SyntaxException();
+                        }
+                        break;
+
+                    case ReadState.NewLineR:
+                        if (current == '\n')
+                        {
+                            state = ReadState.NewLine;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+                        else
+                        {
+                            throw new SyntaxException();
+                        }
+                        break;
+
+
                 }
             }
 
@@ -223,14 +232,15 @@
                 case ReadState.HexNumber:
                 case ReadState.DecimalNumber:
                     return new NumberToken(tokenString);
+                case ReadState.NewLine:
+                    return new NewLineToken(tokenString);
                 case ReadState.Hex0:
-                case ReadState.Hex0x:
+                    throw new SyntaxException();
                 case ReadState.None:
-                    //throw new SyntaxException();
-                    break;
+                    return null;
             }
-
-            return null;
+            throw new SyntaxException();
+            //return null;
         }
 
         public bool HasNext()
@@ -249,7 +259,9 @@
         Comment2,
         DecimalNumber,
         Hex0,
-        Hex0x,
-        HexNumber
+        //Hex0x,
+        HexNumber,
+        NewLineR,
+        NewLine
     }
 }
