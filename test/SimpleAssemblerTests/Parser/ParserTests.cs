@@ -302,6 +302,42 @@
         }
         #endregion
 
+        #region LDRIA
+
+        [Fact]
+        public void ParserParseLDRIAv4v80x0()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "LDRIA v4, v8, 0x0" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+            uint instruction;
+            parser.TryParseInstruction(tokenStream, out instruction, false);
+
+            Assert.Equal(0xe4bb7000, instruction);
+        }
+        #endregion
+
+        #region STRDB
+
+        [Fact]
+        public void ParserParseSTRDBv4v80x0()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "STRDB v4, v8, 0x0" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+            uint instruction;
+            parser.TryParseInstruction(tokenStream, out instruction, false);
+
+            Assert.Equal(0xe52b7000, instruction);
+        }
+        #endregion
+
         #region STR
 
         [Fact]

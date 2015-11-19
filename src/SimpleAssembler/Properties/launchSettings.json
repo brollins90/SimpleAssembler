@@ -2,7 +2,7 @@
   "profiles": {
     "SimpleAssembler": {
       "commandName": "SimpleAssembler",
-      "commandLineArgs": "-i\"C:\\_pi-class\\5\\lab5.assembly\" -o\"C:\\_pi-class\\kernel7.img\""
+      "commandLineArgs": "-i\"C:\\_pi-class\\6\\lab6.assembly\" -o\"C:\\_pi-class\\kernel7.img\""
     }
   }
 }
