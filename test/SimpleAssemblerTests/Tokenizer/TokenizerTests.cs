@@ -108,15 +108,5 @@
             Assert.Equal("0x0", token4.Value());
             Assert.Equal(0, (token4 as NumberToken).IntValue());
         }
-
-        [Fact]
-        public void TokenizerRegisterList()
-        {
-            var tokenizer = new Tokenizer("{R0-R12, LR, PC}");
-            var token1 = tokenizer.Next();
-
-            Assert.IsType(typeof(RegisterListToken), token1);
-            Assert.Equal("{r0-r12, lr, pc}", token1.Value());
-        }
     }
 }

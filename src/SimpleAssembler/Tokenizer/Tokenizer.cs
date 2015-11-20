@@ -96,14 +96,6 @@
                             stillReading = false;
                         }
 
-                        // Reigster list
-                        else if (current == '{')
-                        {
-                            state = ReadState.RegisterListStart;
-                            tokenString += current;
-                            _index++;
-                        }
-
                         // else
                         else
                         {
@@ -220,25 +212,6 @@
                             throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
                         }
                         break;
-
-                    case ReadState.RegisterListStart:
-                        if (current == '\r' || current == '\n')
-                        {
-                            throw new SyntaxException($"Cannot end a line before the register list is closed");
-                        }
-                        else if (current == '}')
-                        {
-                            state = ReadState.RegisterList;
-                            tokenString += current;
-                            _index++;
-                            stillReading = false;
-                        }
-                        else
-                        {
-                            tokenString += current;
-                            _index++;
-                        }
-                        break;
                 }
             }
 
@@ -257,12 +230,10 @@
                     return new NewLineToken(tokenString);
                 case ReadState.Hex0:
                     throw new SyntaxException($"A '{state}' is not a valid state");
-                case ReadState.RegisterList:
-                    return new RegisterListToken(tokenString);
                 case ReadState.None:
                     return null;
             }
-            throw new SyntaxException($"Unknown tokenizer state.  (tokenString is {tokenString})");
+            throw new SyntaxException("Unknown state");
             //return null;
         }
 
@@ -284,8 +255,6 @@
         Hex0,
         HexNumber,
         NewLineR,
-        NewLine,
-        RegisterListStart,
-        RegisterList
+        NewLine
     }
 }
