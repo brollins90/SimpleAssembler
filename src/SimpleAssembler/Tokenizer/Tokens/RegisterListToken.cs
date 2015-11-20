@@ -1,8 +1,8 @@
 ﻿namespace SimpleAssembler.Tokenizer.Tokens
 {
-    public class OpCodeToken: AlphaNumToken
+    public class RegisterListToken: Token
     {
-        public OpCodeToken(string value)
+        public RegisterListToken(string value)
             : base(value)
         {
         }
