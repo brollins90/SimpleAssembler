@@ -1,6 +1,6 @@
 ﻿namespace SimpleAssembler.Tokenizer.Tokens
 {
-    public class Token
+    public abstract class Token
     {
         private string _value;
 
