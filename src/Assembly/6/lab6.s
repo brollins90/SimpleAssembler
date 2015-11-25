@@ -5,6 +5,52 @@ MOVT a1, 0x3f20 // GPIO Base
 MOVW a2, 0x1000
 MOVT a2, 0x3f20 // UART Base
 
+PUSH a1
+PUSH a2
+BL initialize_uart
+POP a2
+POP a1
+
+
+loop: MOVW a3, 0x0048
+STR a3, a2, 0x0 // write 'H'
+MOVW a3, 0x0
+MOVT a3, 0x10
+PUSH a3
+BL delay
+POP a3
+
+MOVW a3, 0x0069
+STR a3, a2, 0x0 // write 'i'
+MOVW a3, 0x0
+MOVT a3, 0x10
+PUSH a3
+BL delay
+POP a3
+
+MOVW a3, 0x0020
+STR a3, a2, 0x0 // write ' '
+MOVW a3, 0x0
+MOVT a3, 0x10
+PUSH a3
+BL delay
+POP a3
+
+BAL loop
+
+
+
+
+
+
+initialize_uart:
+PUSH lr
+PUSH a1
+PUSH a2
+PUSH a3
+
+LDR a1, sp, 0x10
+LDR a2, sp, 0xc
 
 MOVW a3, 0x0
 // disable UART0
@@ -53,32 +99,15 @@ STR a3, a2, 0x38 // write(UART0_IMSC, (1<<1) | (1<<4) | (1<<5) | (1<<6) | (1<<7)
 MOVW a3, 0x301
 STR a3, a2, 0x30 // write(UART0_CR, (1<<0) | (1<<8) | (1<<9))
 
-
-loop: MOVW a3, 0x0048
-STR a3, a2, 0x0 // write 'H'
-MOVW a3, 0x0
-MOVT a3, 0x10
-PUSH a3
-BL delay
 POP a3
+POP a2
+POP a1
+POP lr
+MOV pc, lr
 
-MOVW a3, 0x0069
-STR a3, a2, 0x0 // write 'i'
-MOVW a3, 0x0
-MOVT a3, 0x10
-PUSH a3
-BL delay
-POP a3
 
-MOVW a3, 0x0020
-STR a3, a2, 0x0 // write ' '
-MOVW a3, 0x0
-MOVT a3, 0x10
-PUSH a3
-BL delay
-POP a3
 
-BAL loop
+
 
 
 
