@@ -79,7 +79,8 @@ BL delay
 
 BAL loop
 
-delay: LDIIA a3, sp, 0x0
+delay: 
+POP a3
 
 wait: SUBS a3, a3, 0x01
 BNE wait
