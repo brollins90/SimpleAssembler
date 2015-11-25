@@ -70,6 +70,7 @@
                 instruction = labelIndex;
                 return false;
             }
+            TryParseNewLine(tokenStream);
             instruction = ParseOperation(tokenStream, throwOnLabelNotFound);
 
             if (instruction == uint.MaxValue || instruction == 0)
@@ -155,7 +156,10 @@
                 operation != null &&
                 operation.GetType() == typeof(AlphaNumToken) &&
                 label != null &&
-                label.GetType() == typeof(AlphaNumToken))
+                (
+                    label.GetType() == typeof(AlphaNumToken) ||
+                    label.GetType() == typeof(AlphaNumUnderscoreToken)
+                ))
             {
                 uint labelLocation = 0;
                 if (_labelTable.ContainsKey(label.Value()))
@@ -235,20 +239,35 @@
             encodedOperation = 0;
 
             if (operation != null &&
-                operation.Value().ToLowerInvariant().Equals("ldria"))
+                operation.Value().ToLowerInvariant().Equals("ldr"))
             {
-                parseResult = TryEncodeLDRIA(tokenStream, out encodedOperation);
+                parseResult = TryEncodeLDR(tokenStream, out encodedOperation);
+            }
+            //else if (operation != null &&
+            //    operation.Value().ToLowerInvariant().Equals("ldiia"))
+            //{
+            //    parseResult = TryEncodeLDIIA(tokenStream, out encodedOperation);
+            //}
+            else if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("pop"))
+            {
+                parseResult = TryEncodePOP(tokenStream, out encodedOperation);
+            }
+            else if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("push"))
+            {
+                parseResult = TryEncodePUSH(tokenStream, out encodedOperation);
             }
             else if (operation != null &&
                 operation.Value().ToLowerInvariant().Equals("str"))
             {
                 parseResult = TryEncodeSTR(tokenStream, out encodedOperation);
             }
-            else if (operation != null &&
-                operation.Value().ToLowerInvariant().Equals("strdb"))
-            {
-                parseResult = TryEncodeSTRDB(tokenStream, out encodedOperation);
-            }
+            //else if (operation != null &&
+            //    operation.Value().ToLowerInvariant().Equals("strdb"))
+            //{
+            //    parseResult = TryEncodeSTRDB(tokenStream, out encodedOperation);
+            //}
             else
             {
                 tokenStream.UnGet(operation);
@@ -375,7 +394,7 @@
             return parseResult;
         }
 
-        public bool TryEncodeLDRIA(ITokenStream tokenStream, out uint encodedOperation)
+        public bool TryEncodeLDR(ITokenStream tokenStream, out uint encodedOperation)
         {
             var parseResult = true;
             encodedOperation = 0;
@@ -400,24 +419,26 @@
                 int intVal = (arg3 as NumberToken).IntValue();
                 if (intVal > 0xfff)
                 {
-                    throw new SyntaxException("On LDRIA, op2 cannot be larger than 0xFFF");
+                    throw new SyntaxException("On LDR, op2 cannot be larger than 0xFFF");
                 }
-                // p 0 = post, 1 = pre
-                // u 0 = down, 1 = up,
+                // p 0 = post, 1 = pre (when using immediate, p=1
+                // u 0 = down, 1 = up, (is imm12 positive or negative)
                 // b 0 = word, 1 = byte
-                // w 0 = no write back, 1 = write back
+                // w 0 = no write back, 1 = write back (when using immediate, w=0)
                 // l 0 = store, 1 = load
 
                 // A8.8.204
                 // {cond}010{P}{U}0{W}1{Rn}{Rt}{imm12}
-                // 1110  0100   1011    rn rt imm12
-                // e     4      b     
+                // 1110  0101   1 0 0 1 
+                // 1110  0101   1001    rn rt imm12
+                // e     5      9     
 
-                string rd = RegisterToHex(arg1);
+                string posNeg = ((arg3 as NumberToken).IsNegative()) ? "1" : "9";
+                string rt = RegisterToHex(arg1);
                 string rn = RegisterToHex(arg2);
                 string offset = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
 
-                string opString = $"e4b{rn}{rd}{offset}";
+                string opString = $"e5{posNeg}{rn}{rt}{offset}";
                 encodedOperation = Convert.ToUInt32(opString, 16);
                 parseResult = true;
             }
@@ -433,63 +454,270 @@
             return parseResult;
         }
 
-        public bool TryEncodeSTRDB(ITokenStream tokenStream, out uint encodedOperation)
+        //public bool TryEncodeLDIIA(ITokenStream tokenStream, out uint encodedOperation)
+        //{
+        //    var parseResult = true;
+        //    encodedOperation = 0;
+
+        //    var arg1 = tokenStream.Next();
+        //    var comma1 = tokenStream.Next();
+        //    var arg2 = tokenStream.Next();
+        //    var comma2 = tokenStream.Next();
+        //    var arg3 = tokenStream.Next();
+
+        //    if (arg1 != null &&
+        //        arg1.GetType() == typeof(AlphaNumToken) &&
+        //        comma1 != null &&
+        //        comma1.GetType() == typeof(CommaToken) &&
+        //        arg2 != null &&
+        //        arg2.GetType() == typeof(AlphaNumToken) &&
+        //        comma2 != null &&
+        //        comma2.GetType() == typeof(CommaToken) &&
+        //        arg3 != null &&
+        //        arg3.GetType() == typeof(NumberToken))
+        //    {
+        //        int intVal = (arg3 as NumberToken).IntValue();
+        //        if (intVal > 0xfff)
+        //        {
+        //            throw new SyntaxException("On LDIIA, op2 cannot be larger than 0xFFF");
+        //        }
+        //        // p 0 = post, 1 = pre
+        //        // u 0 = down, 1 = up,
+        //        // b 0 = word, 1 = byte
+        //        // w 0 = no write back, 1 = write back
+        //        // l 0 = store, 1 = load
+
+        //        // A8.8.204
+        //        // {cond}010{P}{U}0{W}1{Rn}{Rt}{imm12}
+        //        // 1110  0100   1011    rn rt imm12
+        //        // e     4      b     
+
+        //        string rd = RegisterToHex(arg1);
+        //        string rn = RegisterToHex(arg2);
+        //        string offset = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+        //        string opString = $"e4b{rn}{rd}{offset}";
+        //        encodedOperation = Convert.ToUInt32(opString, 16);
+        //        parseResult = true;
+        //    }
+        //    else
+        //    {
+        //        tokenStream.UnGet(arg3);
+        //        tokenStream.UnGet(comma2);
+        //        tokenStream.UnGet(arg2);
+        //        tokenStream.UnGet(comma1);
+        //        tokenStream.UnGet(arg1);
+        //        parseResult = false;
+        //    }
+        //    return parseResult;
+        //}
+
+        public bool TryEncodePOP(ITokenStream tokenStream, out uint encodedOperation)
         {
             var parseResult = true;
             encodedOperation = 0;
 
             var arg1 = tokenStream.Next();
-            var comma1 = tokenStream.Next();
-            var arg2 = tokenStream.Next();
-            var comma2 = tokenStream.Next();
-            var arg3 = tokenStream.Next();
 
             if (arg1 != null &&
-                arg1.GetType() == typeof(AlphaNumToken) &&
-                comma1 != null &&
-                comma1.GetType() == typeof(CommaToken) &&
-                arg2 != null &&
-                arg2.GetType() == typeof(AlphaNumToken) &&
-                comma2 != null &&
-                comma2.GetType() == typeof(CommaToken) &&
-                arg3 != null &&
-                arg3.GetType() == typeof(NumberToken))
+                arg1.GetType() == typeof(AlphaNumToken))
             {
-                int intVal = (arg3 as NumberToken).IntValue();
-                if (intVal > 0xfff)
-                {
-                    throw new SyntaxException("On STRDB, op2 cannot be larger than 0xFFF");
-                }
-                // p 0 = post, 1 = pre
-                // u 0 = down, 1 = up,
-                // b 0 = word, 1 = byte
-                // w 0 = no write back, 1 = write back
-                // l 0 = store, 1 = load
-
-                // A8.8.204
-                // {cond}010{P}{U}0{W}0{Rn}{Rt}{imm12}
-                // 1110  0101   0010    rn rt imm12
-                // e     5      2     
-
                 string rt = RegisterToHex(arg1);
-                string rn = RegisterToHex(arg2);
-                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
 
-                string opString = $"e52{rn}{rt}{imm12}";
+                //0xe49d{rt}004
+
+                string opString = $"e49d{rt}004";
                 encodedOperation = Convert.ToUInt32(opString, 16);
                 parseResult = true;
             }
+            else if (arg1 != null &&
+                arg1.GetType() == typeof(LeftCurlyToken))
+
+            {
+                var reg1 = tokenStream.Next();
+                List<Token> registerList = new List<Token>();
+                registerList.Add(reg1);
+
+                var next = tokenStream.Next();
+                while (next.GetType() != typeof(RightCurlyToken))
+                {
+                    registerList.Add(next);
+                    next = tokenStream.Next();
+                }
+
+                if (registerList.Count == 1)
+                {
+                    string rt = RegisterToHex(reg1);
+
+                    //0xe49d{rt}004
+
+                    string opString = $"e49d{rt}004";
+                    encodedOperation = Convert.ToUInt32(opString, 16);
+                    parseResult = true;
+                }
+                else
+                {
+                    int registerInt = 0;
+                    for (int i = 0; i < registerList.Count; i++)
+                    {
+                        var token = registerList[i];
+                        if (token.GetType() == typeof(AlphaNumToken))
+                        {
+                            string regNumString = RegisterToHex(token);
+                            int regNum = Convert.ToInt32(regNumString, 16);
+                            int bit = (1 << regNum);
+                            registerInt |= bit;
+                        }
+                    }
+                    string registerIntToString = Convert.ToString(registerInt, 16).PadLeft(4, '0');
+
+                    //0xe49d{rt}004
+
+                    string opString = $"e8bd{registerIntToString}";
+                    encodedOperation = Convert.ToUInt32(opString, 16);
+                    parseResult = true;
+                }
+            }
             else
             {
-                tokenStream.UnGet(arg3);
-                tokenStream.UnGet(comma2);
-                tokenStream.UnGet(arg2);
-                tokenStream.UnGet(comma1);
                 tokenStream.UnGet(arg1);
                 parseResult = false;
             }
             return parseResult;
         }
+
+        public bool TryEncodePUSH(ITokenStream tokenStream, out uint encodedOperation)
+        {
+            var parseResult = true;
+            encodedOperation = 0;
+
+            var arg1 = tokenStream.Next();
+
+            if (arg1 != null &&
+                arg1.GetType() == typeof(AlphaNumToken))
+            {
+                string rt = RegisterToHex(arg1);
+
+                //0xe52d{rt}004
+
+                string opString = $"e52d{rt}004";
+                encodedOperation = Convert.ToUInt32(opString, 16);
+                parseResult = true;
+            }
+            else if (arg1 != null &&
+                arg1.GetType() == typeof(LeftCurlyToken))
+
+            {
+                var reg1 = tokenStream.Next();
+
+                List<Token> registerList = new List<Token>();
+                registerList.Add(reg1);
+
+                var next = tokenStream.Next();
+                while (next.GetType() != typeof(RightCurlyToken))
+                {
+                    registerList.Add(next);
+                    next = tokenStream.Next();
+                }
+
+                if (registerList.Count == 1)
+                {
+                    string rt = RegisterToHex(reg1);
+
+                    //0xe52d{rt}004
+
+                    string opString = $"e52d{rt}004";
+                    encodedOperation = Convert.ToUInt32(opString, 16);
+                    parseResult = true;
+                }
+                else
+                {
+                    int registerInt = 0;
+                    for (int i = 0; i < registerList.Count; i++)
+                    {
+                        var token = registerList[i];
+                        if (token.GetType() == typeof(AlphaNumToken))
+                        {
+                            string regNumString = RegisterToHex(token);
+                            int regNum = Convert.ToInt32(regNumString, 16);
+                            int bit = (1 << regNum);
+                            registerInt |= bit;
+                        }
+                    }
+                    string registerIntToString = Convert.ToString(registerInt, 16).PadLeft(4, '0');
+
+                    //0xe49d{rt}004
+
+                    string opString = $"e92d{registerIntToString}";
+                    encodedOperation = Convert.ToUInt32(opString, 16);
+                    parseResult = true;
+                }
+            }
+            else
+            {
+                tokenStream.UnGet(arg1);
+                parseResult = false;
+            }
+            return parseResult;
+        }
+
+        //public bool TryEncodeSTRDB(ITokenStream tokenStream, out uint encodedOperation)
+        //{
+        //    var parseResult = true;
+        //    encodedOperation = 0;
+
+        //    var arg1 = tokenStream.Next();
+        //    var comma1 = tokenStream.Next();
+        //    var arg2 = tokenStream.Next();
+        //    var comma2 = tokenStream.Next();
+        //    var arg3 = tokenStream.Next();
+
+        //    if (arg1 != null &&
+        //        arg1.GetType() == typeof(AlphaNumToken) &&
+        //        comma1 != null &&
+        //        comma1.GetType() == typeof(CommaToken) &&
+        //        arg2 != null &&
+        //        arg2.GetType() == typeof(AlphaNumToken) &&
+        //        comma2 != null &&
+        //        comma2.GetType() == typeof(CommaToken) &&
+        //        arg3 != null &&
+        //        arg3.GetType() == typeof(NumberToken))
+        //    {
+        //        int intVal = (arg3 as NumberToken).IntValue();
+        //        if (intVal > 0xfff)
+        //        {
+        //            throw new SyntaxException("On STRDB, op2 cannot be larger than 0xFFF");
+        //        }
+        //        // p 0 = post, 1 = pre
+        //        // u 0 = down, 1 = up,
+        //        // b 0 = word, 1 = byte
+        //        // w 0 = no write back, 1 = write back
+        //        // l 0 = store, 1 = load
+
+        //        // A8.8.204
+        //        // {cond}010{P}{U}0{W}0{Rn}{Rt}{imm12}
+        //        // 1110  0101   0010    rn rt imm12
+        //        // e     5      2     
+
+        //        string rt = RegisterToHex(arg1);
+        //        string rn = RegisterToHex(arg2);
+        //        string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+        //        string opString = $"e52{rn}{rt}{imm12}";
+        //        encodedOperation = Convert.ToUInt32(opString, 16);
+        //        parseResult = true;
+        //    }
+        //    else
+        //    {
+        //        tokenStream.UnGet(arg3);
+        //        tokenStream.UnGet(comma2);
+        //        tokenStream.UnGet(arg2);
+        //        tokenStream.UnGet(comma1);
+        //        tokenStream.UnGet(arg1);
+        //        parseResult = false;
+        //    }
+        //    return parseResult;
+        //}
 
         public bool TryEncodeSTR(ITokenStream tokenStream, out uint encodedOperation)
         {
@@ -518,12 +746,22 @@
                 {
                     throw new SyntaxException("On STR, op2 cannot be larger than 0xFFF");
                 }
+                // p 0 = post, 1 = pre
+                // u 0 = down, 1 = up,
+                // b 0 = word, 1 = byte
+                // w 0 = no write back, 1 = write back
+                // l 0 = store, 1 = load
+
+                // A8.8.204
+                // {cond}010{P}{U}0{W}0{Rn}{Rt}{imm12}
+                // 1110  0101   0000    rn rt imm12
+                // e     5      0     
 
                 string rt = RegisterToHex(arg1);
                 string rn = RegisterToHex(arg2);
                 string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
 
-                string opString = $"e58{rn}{rt}{imm12}";
+                string opString = $"e50{rn}{rt}{imm12}";
                 encodedOperation = Convert.ToUInt32(opString, 16);
                 parseResult = true;
             }
@@ -597,7 +835,9 @@
             var parseResult = true;
 
             if (label != null &&
-                label.GetType() == typeof(AlphaNumToken) &&
+                (
+                label.GetType() == typeof(AlphaNumToken) ||
+                label.GetType() == typeof(AlphaNumUnderscoreToken)) &&
                 colon != null &&
                 colon.GetType() == typeof(ColonToken))
             {

@@ -46,7 +46,7 @@
                         // starting comment
                         else if (current == '/')
                         {
-                            state = ReadState.Comment1;
+                            state = ReadState.ForwardSlash1;
                             tokenString += current;
                             _index++;
                         }
@@ -80,6 +80,33 @@
                             _index++;
                         }
 
+                        // Left Curly
+                        else if (current == '{')
+                        {
+                            state = ReadState.LeftCurly;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+
+                        // Right Curly
+                        else if (current == '}')
+                        {
+                            state = ReadState.RightCurly;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+
+                        // Hypen Curly
+                        else if (current == '-')
+                        {
+                            state = ReadState.Hyphen;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+
                         // specials
                         else if (current == ':')
                         {
@@ -105,6 +132,7 @@
                         break;
 
                     case ReadState.AlphaNum:
+                    case ReadState.AlphaNumUnd:
 
                         if ((current >= 'a' && current <= 'z')
                             || (current >= '0' && current <= '9'))
@@ -112,7 +140,7 @@
                             tokenString += current;
                             _index++;
                         }
-                        else if (current == ':' || current == ',' || current == ' ' || current == '\t')
+                        else if (current == '}' || current == '-' || current == ':' || current == ',' || current == ' ' || current == '\t')
                         {
                             stillReading = false;
                         }
@@ -120,16 +148,9 @@
                         {
                             stillReading = false;
                         }
-                        else
+                        else if (current == '_')
                         {
-                            throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
-                        }
-                        break;
-
-                    case ReadState.Comment1:
-                        if (current == '/')
-                        {
-                            state = ReadState.Comment2;
+                            state = ReadState.AlphaNumUnd;
                             tokenString += current;
                             _index++;
                         }
@@ -139,8 +160,50 @@
                         }
                         break;
 
-                    case ReadState.Comment2:
+                    case ReadState.ForwardSlash1:
+                        if (current == '/')
+                        {
+                            state = ReadState.CommentLine;
+                            tokenString += current;
+                            _index++;
+                        }
+                        else if (current == '*')
+                        {
+                            state = ReadState.CommentMultiLineNotClosed;
+                            tokenString += current;
+                            _index++;
+                        }
+                        else
+                        {
+                            throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
+                        }
+                        break;
+
+                    case ReadState.CommentMultiLineNotClosed:
+                        if (current == '*')
+                        {
+                            state = ReadState.CommentMultiLineClosing;
+                        }
+                        tokenString += current;
+                        _index++;
+                        break;
+
+                    case ReadState.CommentLine:
                         if (current == '\r' || current == '\n')
+                        {
+                            // if we get to the end of a comment, we can reset the state
+                            tokenString = "";
+                            state = ReadState.None;
+                        }
+                        else
+                        {
+                            tokenString += current;
+                            _index++;
+                        }
+                        break;
+
+                    case ReadState.CommentMultiLineClosing:
+                        if (current == '/')
                         {
                             // if we get to the end of a comment, we can reset the state
                             tokenString = "";
@@ -199,6 +262,31 @@
                         }
                         break;
 
+                    case ReadState.LeftCurly:
+
+                        if ((current >= 'a' && current <= 'z')
+                            || (current >= '0' && current <= '9')
+                            || current == ','
+                            || current == '-'
+                            || current == ' '
+                            || current == '\t')
+                        {
+                            tokenString += current;
+                            _index++;
+                        }
+                        else if (current == '}')
+                        {
+                            state = ReadState.CurlyBlockFinished;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+                        else
+                        {
+                            throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
+                        }
+                        break;
+
                     case ReadState.NewLineR:
                         if (current == '\n')
                         {
@@ -219,15 +307,23 @@
             {
                 case ReadState.AlphaNum:
                     return new AlphaNumToken(tokenString);
+                case ReadState.AlphaNumUnd:
+                    return new AlphaNumUnderscoreToken(tokenString);
                 case ReadState.Colon:
                     return new ColonToken(tokenString);
                 case ReadState.Comma:
                     return new CommaToken(tokenString);
+                case ReadState.Hyphen:
+                    return new HyphenToken(tokenString);
+                case ReadState.LeftCurly:
+                    return new LeftCurlyToken(tokenString);
                 case ReadState.HexNumber:
                 case ReadState.DecimalNumber:
                     return new NumberToken(tokenString);
                 case ReadState.NewLine:
                     return new NewLineToken(tokenString);
+                case ReadState.RightCurly:
+                    return new RightCurlyToken(tokenString);
                 case ReadState.Hex0:
                     throw new SyntaxException($"A '{state}' is not a valid state");
                 case ReadState.None:
@@ -247,14 +343,21 @@
     {
         None,
         AlphaNum,
+        AlphaNumUnd,
         Colon,
         Comma,
-        Comment1,
-        Comment2,
+        CommentLine,
+        CommentMultiLineClosing,
+        CommentMultiLineNotClosed,
+        CurlyBlockFinished,
         DecimalNumber,
+        ForwardSlash1,
         Hex0,
         HexNumber,
+        Hyphen,
+        LeftCurly,
         NewLineR,
-        NewLine
+        NewLine,
+        RightCurly
     }
 }
