@@ -432,6 +432,9 @@
                 // 1110  0101   1 0 0 1 
                 // 1110  0101   1001    rn rt imm12
                 // e     5      9     
+                //
+                // e59{rn}{rt}{imm12}  // when imm12 is positive
+                // e51{rn}{rt}{imm12}  // when imm12 is negitive
 
                 string posNeg = ((arg3 as NumberToken).IsNegative()) ? "1" : "9";
                 string rt = RegisterToHex(arg1);

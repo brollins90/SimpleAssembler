@@ -7,6 +7,7 @@
 
     public class ParserTests
     {
+        #region parser
 
         [Fact]
         public void ParserReturnsUIntArray()
@@ -18,12 +19,27 @@
         }
 
         [Fact]
-        public void ParserCanParseLabel()
+        public void ParserCanParseLabelAlphaNum()
         {
             SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
 
             uint labelIndex = uint.MaxValue;
             ITokenStream tokenStream = new TokenStream("loop:");
+
+            var result = parser.TryParseLabel(tokenStream, out labelIndex, true);
+
+            Assert.True(result);
+            Assert.Equal((uint)0, labelIndex);
+            Assert.False(tokenStream.HasNext());
+        }
+
+        [Fact]
+        public void ParserCanParseLabelAlphaNumUnderscore()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            uint labelIndex = uint.MaxValue;
+            ITokenStream tokenStream = new TokenStream("lo_op:");
 
             var result = parser.TryParseLabel(tokenStream, out labelIndex, true);
 
@@ -153,6 +169,196 @@
 
             Assert.Equal(2, lineNumber);
         }
+        #endregion
+
+        #region BAL
+        [Fact]
+        public void ParserParseBALParseNoLabel()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "BAL loop" + Environment.NewLine;
+
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                parser.Parse(myProgram);
+            });
+        }
+
+        [Fact]
+        public void ParserParseBALParseWithLabel()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "loop: MOVW r0, 0x0" + Environment.NewLine +
+                "BAL loop" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3000000, output[0]);
+            Assert.Equal(0xeafffffd, output[1]);
+        }
+
+        [Fact]
+        public void ParserParseBALParseWithLabelAfter()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "BAL loop" + Environment.NewLine +
+                "loop: MOVW r0, 0x0" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0xeaffffff, output[0]);
+            Assert.Equal(0xe3000000, output[1]);
+        }
+        #endregion
+
+        #region BL
+        [Fact]
+        public void ParserParseBLParseNoLabel()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "BL loop" + Environment.NewLine;
+
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                parser.Parse(myProgram);
+            });
+        }
+
+        [Fact]
+        public void ParserParseBLParseWithLabel()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "loop: MOVW r0, 0x0" + Environment.NewLine +
+                "BL loop" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3000000, output[0]);
+            Assert.Equal(0xebfffffd, output[1]);
+        }
+
+        [Fact]
+        public void ParserParseBLParseWithLabelAfter()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "BL loop" + Environment.NewLine +
+                "loop: MOVW r0, 0x0" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xebffffff, output[0]);
+            Assert.Equal(0xe3000000, output[1]);
+        }
+        #endregion
+
+        #region BNE
+        [Fact]
+        public void ParserParseBNEParseNoLabel()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "BNE loop" + Environment.NewLine;
+
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                parser.Parse(myProgram);
+            });
+        }
+
+        [Fact]
+        public void ParserParseBNEParseWithLabel()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "loop: MOVW r0, 0x0" + Environment.NewLine +
+                "BNE loop" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3000000, output[0]);
+            Assert.Equal((uint)0x1afffffd, output[1]);
+        }
+
+        [Fact]
+        public void ParserParseBNEParseWithLabelAfter()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "BNE loop" + Environment.NewLine +
+                "loop: MOVW r0, 0x0" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0x1affffff, output[0]);
+            Assert.Equal(0xe3000000, output[1]);
+        }
+        #endregion
+
+        #region LDR
+
+        [Fact]
+        public void ParserParseLDRPositive()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "LDR v4, sp, 0x8" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+            uint instruction;
+            parser.TryParseInstruction(tokenStream, out instruction, false);
+
+            Assert.Equal(0xe59d7008, instruction);
+        }
+
+        [Fact]
+        public void ParserParseLDRNegitive()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "LDR v4, sp, -0x4" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+            uint instruction;
+            parser.TryParseInstruction(tokenStream, out instruction, false);
+
+            Assert.Equal(0xe51d7ffc, instruction);
+        }
+        #endregion
+
+        #region LDIIA
+
+        //[Fact]
+        //public void ParserParseLDIIAv4v80x0()
+        //{
+        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+        //    var myProgram =
+        //        "LDIIA v4, sp, 0x0" + Environment.NewLine;
+
+        //    ITokenStream tokenStream = new TokenStream(myProgram);
+        //    uint instruction;
+        //    parser.TryParseInstruction(tokenStream, out instruction, false);
+
+        //    Assert.Equal(0xe4bd7000, instruction);
+        //}
+        #endregion
 
         #region MOV
         [Fact]
@@ -299,42 +505,6 @@
                 uint instruction;
                 parser.TryParseInstruction(tokenStream, out instruction, false);
             });
-        }
-        #endregion
-
-        #region LDIIA
-
-        [Fact]
-        public void ParserParseLDIIAv4v80x0()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "LDIIA v4, sp, 0x0" + Environment.NewLine;
-
-            ITokenStream tokenStream = new TokenStream(myProgram);
-            uint instruction;
-            parser.TryParseInstruction(tokenStream, out instruction, false);
-
-            Assert.Equal(0xe4bd7000, instruction);
-        }
-        #endregion
-
-        #region STRDB
-
-        [Fact]
-        public void ParserParseSTRDBv4v80x0()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "STRDB v4, v8, 0x0" + Environment.NewLine;
-
-            ITokenStream tokenStream = new TokenStream(myProgram);
-            uint instruction;
-            parser.TryParseInstruction(tokenStream, out instruction, false);
-
-            Assert.Equal(0xe52b7000, instruction);
         }
         #endregion
 
@@ -529,6 +699,24 @@
         }
         #endregion
 
+        #region STRDB
+
+        //[Fact]
+        //public void ParserParseSTRDBv4v80x0()
+        //{
+        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+        //    var myProgram =
+        //        "STRDB v4, v8, 0x0" + Environment.NewLine;
+
+        //    ITokenStream tokenStream = new TokenStream(myProgram);
+        //    uint instruction;
+        //    parser.TryParseInstruction(tokenStream, out instruction, false);
+
+        //    Assert.Equal(0xe52b7000, instruction);
+        //}
+        #endregion
+
         #region SUBS
 
         [Fact]
@@ -561,141 +749,6 @@
                 uint instruction;
                 parser.TryParseInstruction(tokenStream, out instruction, false);
             });
-        }
-        #endregion
-        #region BAL
-        [Fact]
-        public void ParserParseBALParseNoLabel()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "BAL loop" + Environment.NewLine;
-
-            Assert.Throws(typeof(SyntaxException), () =>
-            {
-                parser.Parse(myProgram);
-            });
-        }
-
-        [Fact]
-        public void ParserParseBALParseWithLabel()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "loop: MOVW r0, 0x0" + Environment.NewLine +
-                "BAL loop" + Environment.NewLine;
-
-            var output = parser.Parse(myProgram);
-
-            Assert.Equal(0xe3000000, output[0]);
-            Assert.Equal(0xeafffffd, output[1]);
-        }
-
-        [Fact]
-        public void ParserParseBALParseWithLabelAfter()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "BAL loop" + Environment.NewLine +
-                "loop: MOVW r0, 0x0" + Environment.NewLine;
-
-            var output = parser.Parse(myProgram);
-
-            Assert.Equal((uint)0xeaffffff, output[0]);
-            Assert.Equal(0xe3000000, output[1]);
-        }
-        #endregion
-        #region BNE
-        [Fact]
-        public void ParserParseBNEParseNoLabel()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "BNE loop" + Environment.NewLine;
-
-            Assert.Throws(typeof(SyntaxException), () =>
-            {
-                parser.Parse(myProgram);
-            });
-        }
-
-        [Fact]
-        public void ParserParseBNEParseWithLabel()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "loop: MOVW r0, 0x0" + Environment.NewLine +
-                "BNE loop" + Environment.NewLine;
-
-            var output = parser.Parse(myProgram);
-
-            Assert.Equal(0xe3000000, output[0]);
-            Assert.Equal((uint)0x1afffffd, output[1]);
-        }
-
-        [Fact]
-        public void ParserParseBNEParseWithLabelAfter()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "BNE loop" + Environment.NewLine +
-                "loop: MOVW r0, 0x0" + Environment.NewLine;
-
-            var output = parser.Parse(myProgram);
-
-            Assert.Equal((uint)0x1affffff, output[0]);
-            Assert.Equal(0xe3000000, output[1]);
-        }
-        #endregion
-        #region BL
-        [Fact]
-        public void ParserParseBLParseNoLabel()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "BL loop" + Environment.NewLine;
-
-            Assert.Throws(typeof(SyntaxException), () =>
-            {
-                parser.Parse(myProgram);
-            });
-        }
-
-        [Fact]
-        public void ParserParseBLParseWithLabel()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "loop: MOVW r0, 0x0" + Environment.NewLine +
-                "BL loop" + Environment.NewLine;
-
-            var output = parser.Parse(myProgram);
-
-            Assert.Equal(0xe3000000, output[0]);
-            Assert.Equal(0xebfffffd, output[1]);
-        }
-
-        [Fact]
-        public void ParserParseBLParseWithLabelAfter()
-        {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            var myProgram =
-                "BL loop" + Environment.NewLine +
-                "loop: MOVW r0, 0x0" + Environment.NewLine;
-
-            var output = parser.Parse(myProgram);
-
-            Assert.Equal(0xebffffff, output[0]);
-            Assert.Equal(0xe3000000, output[1]);
         }
         #endregion
 
