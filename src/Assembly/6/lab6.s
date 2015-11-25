@@ -20,6 +20,7 @@ STR a1, v1, 0x94 // write(GGPUD, 0x0)
 MOVW v4, 0x96
 PUSH v4
 BL delay
+POP v4
 
 // disable pull up/down for pin 14 and 15
 MOVW a1, 0xc000
@@ -28,6 +29,7 @@ STR a1, v1, 0x98 // write(GGPUDCLK0, (1<<14) | (1<< 15))
 MOVW v4, 0x96
 PUSH v4
 BL delay
+POP v4
 
 // write a 0 to GPPUDCLK0 to make it take effect
 MOVW a1, 0x0
@@ -59,31 +61,40 @@ STR a1, v2, 0x30 // write(UART0_CR, (1<<0) | (1<<8) | (1<<9))
 loop: MOVW a1, 0x0048
 STR a1, v2, 0x0 // write 'H'
 MOVW v4, 0x0
-MOVT v4, 0x40
+MOVT v4, 0x10
 PUSH v4
 BL delay
+POP v4
 
 MOVW a1, 0x0069
 STR a1, v2, 0x0 // write 'i'
 MOVW v4, 0x0
-MOVT v4, 0x40
+MOVT v4, 0x10
 PUSH v4
 BL delay
+POP v4
 
 MOVW a1, 0x0020
 STR a1, v2, 0x0 // write ' '
 MOVW v4, 0x0
-MOVT v4, 0x40
+MOVT v4, 0x10
 PUSH v4
 BL delay
+POP v4
 
 BAL loop
 
+
+
+// waits for arg1 number of cycles
 delay:
 PUSH lr
 PUSH a3
 LDR a3, sp, 0x8
 
-wait: SUBS a3, a3, 0x01
-BNE wait
+delay_wait: SUBS a3, a3, 0x01
+BNE delay_wait
+
+POP a3
+POP lr
 MOV pc, lr
