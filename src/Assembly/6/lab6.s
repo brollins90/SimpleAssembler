@@ -5,28 +5,12 @@ MOVT v1, 0x3f20 // GPIO Base
 MOVW v2, 0x1000
 MOVT v2, 0x3f20 // UART Base
 
-BL initializeUART
+//MOVW a1, 0x0
+//MOVT a1, 0x20
 
+//STR a1, v1, 0x10 // enable gpio
 
-loop: MOVW a1, 0x0048 // put 'H' in a1
-STRDB a1, sp, 0x0 // put a1 on the stack
-BL printCharacter
-
-MOVW a1, 0x0069 // put 'i' in a1
-STRDB a1, sp, 0x0 // put a1 on the stack
-BL printCharacter
-
-MOVW a1, 0x0020 // put ' ' in a1
-STRDB a1, sp, 0x0 // put a1 on the stack
-BL printCharacter
-
-BAL loop
-
-
-
-
-
-initializeUART: MOVW a1, 0x0
+MOVW a1, 0x0
 // disable UART0
 STR a1, v2, 0x30 // write(UART_CR, 0x0)
 // disable pull up/down for all GPIO pins
@@ -34,7 +18,7 @@ STR a1, v1, 0x94 // write(GGPUD, 0x0)
 
 // delay for 150 cycles
 MOVW v4, 0x96
-STRDB v4, sp, 0x0
+PUSH v4
 BL delay
 
 // disable pull up/down for pin 14 and 15
@@ -42,7 +26,7 @@ MOVW a1, 0xc000
 STR a1, v1, 0x98 // write(GGPUDCLK0, (1<<14) | (1<< 15))
 // delay for 150 cycles
 MOVW v4, 0x96
-STRDB v4, sp, 0x0
+PUSH v4
 BL delay
 
 // write a 0 to GPPUDCLK0 to make it take effect
@@ -71,23 +55,32 @@ STR a1, v2, 0x38 // write(UART0_IMSC, (1<<1) | (1<<4) | (1<<5) | (1<<6) | (1<<7)
 MOVW a1, 0x301
 STR a1, v2, 0x30 // write(UART0_CR, (1<<0) | (1<<8) | (1<<9))
 
-// go back, done with init
-MOV pc, lr
 
+loop: MOVW a1, 0x0048
+STR a1, v2, 0x0 // write 'H'
+MOVW v4, 0x0
+MOVT v4, 0x40
+PUSH v4
+BL delay
 
-// delay for the number of cycles on the top of the stack
-delay: LDRIA a3, sp, 0x0
+MOVW a1, 0x0069
+STR a1, v2, 0x0 // write 'i'
+MOVW v4, 0x0
+MOVT v4, 0x40
+PUSH v4
+BL delay
+
+MOVW a1, 0x0020
+STR a1, v2, 0x0 // write ' '
+MOVW v4, 0x0
+MOVT v4, 0x40
+PUSH v4
+BL delay
+
+BAL loop
+
+delay: LDIIA a3, sp, 0x0
 
 wait: SUBS a3, a3, 0x01
 BNE wait
 MOV pc, lr
-
-
-printCharacter: MOV a2, lr
-LDRIA a1, sp, 0x0 // pop a1 from stack
-STR a1, v2, 0x0 // write a1 to UART
-MOVW v4, 0x0
-MOVT v4, 0x40
-STRDB v4, sp, 0x0
-BL delay
-MOV pc, a2
