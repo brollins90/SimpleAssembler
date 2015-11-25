@@ -16,21 +16,21 @@ loop:
 MOVW a1, 0x0048 // 'H'
 PUSH a1
 PUSH a2
-BL print_char
+BL write_char
 POP a2
 POP a1
 
 MOVW a1, 0x0069 // 'i'
 PUSH a1
 PUSH a2
-BL print_char
+BL write_char
 POP a2
 POP a1
 
 MOVW a1, 0x0020 // ' '
 PUSH a1
 PUSH a2
-BL print_char
+BL write_char
 POP a2
 POP a1
 
@@ -106,12 +106,18 @@ MOV pc, lr
 
 
 // Writes a character to the UART
-print_char:
+write_char:
 PUSH lr
 PUSH a1
 PUSH a2
-LDR a1, sp, 0x10 // character
-LDR a2, sp, 0xc // UART base
+PUSH a3
+LDR a1, sp, 0x14 // character
+LDR a2, sp, 0x10 // UART base
+
+write_char_check_ready:
+LDR a3, a2, 0x18 // get the UART status ??? which status?
+ANDS a3, a3, 0x20 // check if the UART is ready
+BNE write_char_check_ready
 
 STR a1, a2, 0x0 // write character to UART
 
@@ -121,6 +127,7 @@ PUSH a1
 BL delay
 POP a1
 
+POP a3
 POP a2
 POP a1
 POP lr

@@ -171,6 +171,26 @@
         }
         #endregion
 
+        #region ANDS
+
+        [Fact]
+        public void ParserParseAND()
+        {
+            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+            var myProgram =
+                "ANDS a3, a3, 0x20" + Environment.NewLine;
+
+            ITokenStream tokenStream = new TokenStream(myProgram);
+            uint instruction;
+            parser.TryParseInstruction(tokenStream, out instruction, false);
+
+            // ANDS $"{cond}21{Rn}{Rd}{imm12}"
+
+            Assert.Equal(0xe2122020, instruction);
+        }
+        #endregion
+
         #region BAL
         [Fact]
         public void ParserParseBALParseNoLabel()

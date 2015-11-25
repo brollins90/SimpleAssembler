@@ -204,6 +204,11 @@
             encodedOperation = 0;
 
             if (operation != null &&
+                operation.Value().ToLowerInvariant().Equals("ands"))
+            {
+                parseResult = TryEncodeANDS(tokenStream, out encodedOperation);
+            }
+            else if (operation != null &&
                 operation.Value().ToLowerInvariant().Equals("mov"))
             {
                 parseResult = TryEncodeMOV(tokenStream, out encodedOperation);
@@ -271,6 +276,56 @@
             else
             {
                 tokenStream.UnGet(operation);
+                parseResult = false;
+            }
+
+            return parseResult;
+        }
+
+        public bool TryEncodeANDS(ITokenStream tokenStream, out uint encodedOperation)
+        {
+            var parseResult = true;
+            encodedOperation = 0;
+
+            var arg1 = tokenStream.Next();
+            var comma1 = tokenStream.Next();
+            var arg2 = tokenStream.Next();
+            var comma2 = tokenStream.Next();
+            var arg3 = tokenStream.Next();
+
+            if (arg1 != null &&
+                arg1.GetType() == typeof(AlphaNumToken) &&
+                comma1 != null &&
+                comma1.GetType() == typeof(CommaToken) &&
+                arg2 != null &&
+                arg2.GetType() == typeof(AlphaNumToken) &&
+                comma2 != null &&
+                comma2.GetType() == typeof(CommaToken) &&
+                arg3 != null &&
+                arg3.GetType() == typeof(NumberToken))
+            {
+
+                int intVal = (arg3 as NumberToken).IntValue();
+                if (intVal > 0xffff)
+                {
+                    throw new SyntaxException("On ANDS, op2 cannot be larger than 0xFFF");
+                }
+
+                string rn = RegisterToHex(arg1);
+                string rd = RegisterToHex(arg2);
+                string imm12 = $"{IntToHexString(intVal, 2)}{IntToHexString(intVal, 1)}{IntToHexString(intVal, 0)}";
+
+                string opString = $"e21{rn}{rd}{imm12}";
+                encodedOperation = Convert.ToUInt32(opString, 16);
+                parseResult = true;
+            }
+            else
+            {
+                tokenStream.UnGet(arg3);
+                tokenStream.UnGet(comma2);
+                tokenStream.UnGet(arg2);
+                tokenStream.UnGet(comma1);
+                tokenStream.UnGet(arg1);
                 parseResult = false;
             }
 
