@@ -79,8 +79,10 @@ BL delay
 
 BAL loop
 
-delay: 
-POP a3
+delay:
+PUSH lr
+PUSH a3
+LDR a3, sp, 0x8
 
 wait: SUBS a3, a3, 0x01
 BNE wait
