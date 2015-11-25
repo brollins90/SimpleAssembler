@@ -12,29 +12,27 @@ POP a2
 POP a1
 
 
-loop: MOVW a3, 0x0048
-STR a3, a2, 0x0 // write 'H'
-MOVW a3, 0x0
-MOVT a3, 0x10
-PUSH a3
-BL delay
-POP a3
+loop:
+MOVW a1, 0x0048 // 'H'
+PUSH a1
+PUSH a2
+BL print_char
+POP a2
+POP a1
 
-MOVW a3, 0x0069
-STR a3, a2, 0x0 // write 'i'
-MOVW a3, 0x0
-MOVT a3, 0x10
-PUSH a3
-BL delay
-POP a3
+MOVW a1, 0x0069 // 'i'
+PUSH a1
+PUSH a2
+BL print_char
+POP a2
+POP a1
 
-MOVW a3, 0x0020
-STR a3, a2, 0x0 // write ' '
-MOVW a3, 0x0
-MOVT a3, 0x10
-PUSH a3
-BL delay
-POP a3
+MOVW a1, 0x0020 // ' '
+PUSH a1
+PUSH a2
+BL print_char
+POP a2
+POP a1
 
 BAL loop
 
@@ -48,9 +46,8 @@ PUSH lr
 PUSH a1
 PUSH a2
 PUSH a3
-
-LDR a1, sp, 0x10
-LDR a2, sp, 0xc
+LDR a1, sp, 0x14
+LDR a2, sp, 0x10
 
 MOVW a3, 0x0
 // disable UART0
@@ -106,6 +103,28 @@ POP lr
 MOV pc, lr
 
 
+
+
+// Writes a character to the UART
+print_char:
+PUSH lr
+PUSH a1
+PUSH a2
+LDR a1, sp, 0x10 // character
+LDR a2, sp, 0xc // UART base
+
+STR a1, a2, 0x0 // write character to UART
+
+MOVW a1, 0x0 // delay
+MOVT a1, 0x10
+PUSH a1
+BL delay
+POP a1
+
+POP a2
+POP a1
+POP lr
+MOV pc, lr
 
 
 
