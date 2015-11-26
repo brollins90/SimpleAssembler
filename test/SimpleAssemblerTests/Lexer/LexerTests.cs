@@ -8,7 +8,7 @@
     public class LexerTests
     {
         [Fact]
-        public void LexerLabelDeclaration()
+        public void LabelDeclarationIsAlphaFollowedByColon()
         {
             var lexer = new Lexer("loop:");
             var token1 = lexer.Next();
@@ -18,7 +18,7 @@
         }
 
         [Fact]
-        public void LexerLabelDeclarationUpper()
+        public void LabelDeclarationIsAlphaFollowedByColonUpperCase()
         {
             var lexer = new Lexer("LOOP:");
             var token1 = lexer.Next();
@@ -28,7 +28,7 @@
         }
 
         [Fact]
-        public void LexerLabelDeclarationMixedCase()
+        public void LabelDeclarationIsAlphaFollowedByColonMixedCase()
         {
             var lexer = new Lexer("LooP:");
             var token1 = lexer.Next();
@@ -38,7 +38,7 @@
         }
 
         [Fact]
-        public void LexerLabelDeclarationWithNum()
+        public void LabelDeclarationIsAlphaNumFollowedByColon()
         {
             var lexer = new Lexer("loop1:");
             var token1 = lexer.Next();
@@ -48,7 +48,7 @@
         }
 
         [Fact]
-        public void LexerLabelDeclarationWithUnderscore()
+        public void LabelDeclarationIsAlphaNumWithUnderscoreFollowedByColon()
         {
             var lexer = new Lexer("lo_op:");
             var token1 = lexer.Next();
@@ -58,7 +58,20 @@
         }
 
         [Fact]
-        public void LexerBLWithUnderscore()
+        public void BLToAlpha()
+        {
+            var lexer = new Lexer("BL loop");
+            var token1 = lexer.Next(); // BL
+            var token2 = lexer.Next(); // initialize_uart
+
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.BL, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(LabelReferenceLexToken), token2);
+            Assert.Equal("loop", token2.Value());
+        }
+
+        [Fact]
+        public void BLToAlphaWithUnderscore()
         {
             var lexer = new Lexer("BL initialize_uart");
             var token1 = lexer.Next(); // BL
@@ -71,9 +84,26 @@
         }
 
         [Fact]
-        public void LexerBLWithUnderscoreAndNewLine()
+        public void BLToAlphaWithUnderscoreAndSlashRSlashN()
         {
             var lexer = new Lexer("BL initialize_uart\r\n");
+            var token1 = lexer.Next(); // BL
+            var token2 = lexer.Next(); // initialize_uart
+            var token3 = lexer.Next(); // \r\n
+            var token4 = lexer.Next(); // null
+
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.BL, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(LabelReferenceLexToken), token2);
+            Assert.Equal("initialize_uart", token2.Value());
+            Assert.IsType(typeof(NewLineLexToken), token3);
+            Assert.Null(token4);
+        }
+
+        [Fact]
+        public void BLToAlphaWithUnderscoreAndNewLine()
+        {
+            var lexer = new Lexer($"BL initialize_uart{Environment.NewLine}");
             var token1 = lexer.Next(); // BL
             var token2 = lexer.Next(); // initialize_uart
             var token3 = lexer.Next(); // \r\n
@@ -119,6 +149,58 @@
             Assert.Equal("initialize_uart", token2.Value());
             Assert.IsType(typeof(NewLineLexToken), token3);
             Assert.Null(token4);
+        }
+
+        [Fact]
+        public void LexerMovInvalidArg2()
+        {
+            var lexer = new Lexer("MOV pc, 0x0");
+
+            Assert.Throws<LexSyntaxException>(() =>
+            {
+                var token1 = lexer.Next();
+                var token2 = lexer.Next();
+                var token3 = lexer.Next();
+            });
+        }
+
+        [Fact]
+        public void LexerMovInvalidArg1_1()
+        {
+            var lexer = new Lexer("MOV 0x0");
+
+            Assert.Throws<LexSyntaxException>(() =>
+            {
+                var token1 = lexer.Next();
+                var token2 = lexer.Next();
+                var token3 = lexer.Next();
+            });
+        }
+
+        [Fact]
+        public void LexerMovInvalidArg1_2()
+        {
+            var lexer = new Lexer("MOV 0x0, 0x0");
+
+            Assert.Throws<LexSyntaxException>(() =>
+            {
+                var token1 = lexer.Next();
+                var token2 = lexer.Next();
+                var token3 = lexer.Next();
+            });
+        }
+
+        [Fact]
+        public void LexerMovInvalidArg1_3()
+        {
+            var lexer = new Lexer("MOV 0x0, r2");
+
+            Assert.Throws<LexSyntaxException>(() =>
+            {
+                var token1 = lexer.Next();
+                var token2 = lexer.Next();
+                var token3 = lexer.Next();
+            });
         }
 
         [Fact]

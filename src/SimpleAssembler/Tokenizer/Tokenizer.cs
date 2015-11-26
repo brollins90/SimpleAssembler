@@ -243,6 +243,11 @@
                         {
                             stillReading = false;
                         }
+                        else if (current == ',')
+                        {
+                            // TODO::: there is no valid commands that take a value after a hex number.  Should I throw here?  
+                            stillReading = false;
+                        }
                         else
                         {
                             throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");

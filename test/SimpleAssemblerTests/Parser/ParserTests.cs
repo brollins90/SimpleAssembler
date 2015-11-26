@@ -126,19 +126,19 @@
                 "loop: MOVW r0, 0x0" + Environment.NewLine;
 
             parser.Parse(myProgram);
-            int labelIndex = parser.GetCurrentKernelIndex();
+            uint labelIndex = parser.KernelIndex;
 
             // the loop branch should be at 1 making the current index 2
-            Assert.Equal(2, labelIndex);
+            Assert.Equal((uint)2, labelIndex);
         }
 
         [Fact]
         public void ParserGetsCorrectLineNumberLine0()
         {
             SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-            int lineNumber = parser.GetCurrentLineNumber();
+            uint lineNumber = parser.LineNumber;
 
-            Assert.Equal(0, lineNumber);
+            Assert.Equal((uint)0, lineNumber);
         }
 
         [Fact]
@@ -150,9 +150,9 @@
                 "MOVT r0, 0x3f20" + Environment.NewLine;
 
             parser.Parse(myProgram);
-            int lineNumber = parser.GetCurrentLineNumber();
+            uint lineNumber = parser.LineNumber;
 
-            Assert.Equal(1, lineNumber);
+            Assert.Equal((uint)1, lineNumber);
         }
 
         [Fact]
@@ -165,9 +165,9 @@
                 "loop: MOVW r0, 0x0" + Environment.NewLine;
 
             parser.Parse(myProgram);
-            int lineNumber = parser.GetCurrentLineNumber();
+            uint lineNumber = parser.LineNumber;
 
-            Assert.Equal(2, lineNumber);
+            Assert.Equal((uint)2, lineNumber);
         }
         #endregion
 

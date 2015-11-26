@@ -7,25 +7,15 @@
 
     public class Parser : IParser
     {
-        private uint _kernelIndex;
-        private Dictionary<string, uint> _labelTable;
-        private uint _lineNumber;
+        public uint KernelIndex { get; private set; }
+        public uint LineNumber { get; private set; }
+        public Dictionary<string, uint> LabelTable { get; }
 
         public Parser()
         {
-            _kernelIndex = 0;
-            _labelTable = new Dictionary<string, uint>();
-            _lineNumber = 0;
-        }
-
-        public int GetCurrentKernelIndex()
-        {
-            return (int)_kernelIndex;
-        }
-
-        public int GetCurrentLineNumber()
-        {
-            return (int)_lineNumber;
+            KernelIndex = 0;
+            LineNumber = 0;
+            LabelTable = new Dictionary<string, uint>();
         }
 
         public uint[] Parse(string fileData)
@@ -39,23 +29,23 @@
                 if (TryParseInstruction(tokenStream, out instruction, false))
                 {
                     // dont save anything, just increment the index so we can populate the label table
-                    _kernelIndex++;
+                    KernelIndex++;
                 }
             }
 
             List<uint> imageList = new List<uint>();
             // reset the stuff after the first go round that found the label locations
             tokenStream = new TokenStream(fileData);
-            _kernelIndex = 0;
-            _lineNumber = 0;
+            KernelIndex = 0;
+            LineNumber = 0;
 
             while (tokenStream.HasNext())
             {
                 uint instruction;
                 if (TryParseInstruction(tokenStream, out instruction))
                 {
-                    Console.WriteLine($"{_kernelIndex}: {Convert.ToString(instruction, 16)}");
-                    imageList.Insert((int)_kernelIndex++, instruction);
+                    Console.WriteLine($"{KernelIndex}: {Convert.ToString(instruction, 16)}");
+                    imageList.Insert((int)KernelIndex++, instruction);
                 }
             }
 
@@ -92,7 +82,7 @@
                 if (token != null &&
                     token.GetType() == typeof(NewLineToken))
                 {
-                    _lineNumber++;
+                    LineNumber++;
                     TryParseNewLine(tokenStream);
                 }
                 else
@@ -162,9 +152,9 @@
                 ))
             {
                 uint labelLocation = 0;
-                if (_labelTable.ContainsKey(label.Value()))
+                if (LabelTable.ContainsKey(label.Value()))
                 {
-                    labelLocation = _labelTable[label.Value()];
+                    labelLocation = LabelTable[label.Value()];
                 }
                 else
                 {
@@ -174,7 +164,7 @@
                     }
                 }
 
-                uint offset = labelLocation - _kernelIndex;
+                uint offset = labelLocation - KernelIndex;
                 offset = offset - 2;
 
                 string offsetString = Convert.ToString(offset, 16);
@@ -907,12 +897,12 @@
                 }
                 else
                 {
-                    if (!_labelTable.ContainsKey(label.Value()))
+                    if (!LabelTable.ContainsKey(label.Value()))
                     {
-                        _labelTable.Add(label.Value(), _kernelIndex);
+                        LabelTable.Add(label.Value(), KernelIndex);
                     }
                 }
-                labelIndex = _kernelIndex;
+                labelIndex = KernelIndex;
             }
             else
             {
