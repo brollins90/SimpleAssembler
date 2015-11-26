@@ -19,7 +19,6 @@
         public void R0Lower()
         {
             RegisterToken token = new RegisterToken("r0");
-
             Assert.Equal("0", token.Value());
         }
 
@@ -27,7 +26,6 @@
         public void R0Upper()
         {
             RegisterToken token = new RegisterToken("R0");
-
             Assert.Equal("0", token.Value());
         }
 
@@ -35,7 +33,6 @@
         public void PCUpper()
         {
             RegisterToken token = new RegisterToken("PC");
-
             Assert.Equal("f", token.Value());
         }
 

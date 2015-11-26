@@ -7,6 +7,56 @@
     public class LexerTests
     {
         [Fact]
+        public void LexerLabelDeclaration()
+        {
+            var lexer = new Lexer("loop:");
+            var token1 = lexer.Next();
+
+            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.Equal("loop", token1.Value());
+        }
+
+        [Fact]
+        public void LexerLabelDeclarationUpper()
+        {
+            var lexer = new Lexer("LOOP:");
+            var token1 = lexer.Next();
+
+            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.Equal("loop", token1.Value());
+        }
+
+        [Fact]
+        public void LexerLabelDeclarationMixedCase()
+        {
+            var lexer = new Lexer("LooP:");
+            var token1 = lexer.Next();
+
+            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.Equal("loop", token1.Value());
+        }
+
+        [Fact]
+        public void LexerLabelDeclarationWithNum()
+        {
+            var lexer = new Lexer("loop1:");
+            var token1 = lexer.Next();
+
+            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.Equal("loop1", token1.Value());
+        }
+
+        [Fact]
+        public void LexerLabelDeclarationWithUnderscore()
+        {
+            var lexer = new Lexer("lo_op:");
+            var token1 = lexer.Next();
+
+            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.Equal("lo_op", token1.Value());
+        }
+
+        [Fact]
         public void LexerMovInstruction()
         {
             var lexer = new Lexer("MOV pc, lr");
@@ -16,9 +66,10 @@
 
             Assert.IsType(typeof(OpCodeToken), token1);
             Assert.Equal(OperationType.MOV, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(RegisterToken), token1);
-            Assert.IsType(typeof(RegisterToken), token1);
-            //Assert.Equal("mov", lexToken.Value());
+            Assert.IsType(typeof(RegisterToken), token2);
+            Assert.Equal("f", token2.Value());
+            Assert.IsType(typeof(RegisterToken), token3);
+            Assert.Equal("e", token3.Value());
         }
         //[Fact]
         //public void TokenizerMovUndIsAlphaNumUnd()
