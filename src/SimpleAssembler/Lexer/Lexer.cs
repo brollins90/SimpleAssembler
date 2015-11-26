@@ -73,6 +73,7 @@
                 // AlphaNum can be a label, opcode, or special (address, byte, word)
                 else if (t1 is AlphaNumToken)
                 {
+                    var t1Val = (t1 as AlphaNumToken).Value().ToLowerInvariant();
 
                     // here t1 is an alphanum
                     var t2 = _tokenStream.Next();
@@ -82,7 +83,54 @@
                         // t2 is colon so t1 is a label TODO:::(or special)
                         if (t2 is ColonToken)
                         {
-                            return new LabelDeclarationLexToken(t1.Value()); // throw away the colon
+                            if (t1Val.Equals("address"))
+                            {
+                                var next = _tokenStream.Next();
+                                if (next is NumberToken)
+                                {
+                                    _lexTokenStack.Push(new NumberLexToken(next.Value()));
+                                }
+                                else
+                                {
+                                    throw new LexSyntaxException($"address: needs to be followed by a number");
+                                }
+                                return new AddressDataStatementLexToken(t1Val);
+                            }
+                            else if (t1Val.Equals("word")
+                                || t1Val.Equals("byte"))
+                            {
+                                Stack<NumberToken> numbers = new Stack<NumberToken>();
+                                var next = _tokenStream.Next();
+                                while (next != null 
+                                    && (next.GetType() == typeof(NumberToken) || next.GetType() == typeof(CommaToken)))
+                                {
+                                    if (next is NumberToken)
+                                    {
+                                        numbers.Push(next as NumberToken);
+                                    }
+                                    next = _tokenStream.Next();
+                                }
+
+                                while (numbers.Count > 0)
+                                {
+                                    var current = numbers.Pop();
+                                    _lexTokenStack.Push(new NumberLexToken(current.Value()));
+                                }
+
+                                if (t1Val.Equals("word"))
+                                {
+                                    return new WordDataStatementLexToken(t1Val);
+                                }
+                                else // its a byte
+                                {
+                                    return new ByteDataStatementLexToken(t1Val);
+                                }
+                            }
+                            else // it was a label
+                            {
+
+                                return new LabelDeclarationLexToken(t1.Value()); // throw away the colon
+                            }
                         }
 
                         // if t1 is alphanum and t2 is AlphaNumUnderscore, it has to be a branch to label
@@ -97,7 +145,6 @@
                             // if t1 is opcode
                             if ((t1 as AlphaNumToken).IsOpCode())
                             {
-                                var t1Val = (t1 as AlphaNumToken).Value().ToLowerInvariant();
 
                                 // if instuction is: $"{op} {reg}, {reg}, {imm12}"
                                 if ((t1Val.Equals("ands")
