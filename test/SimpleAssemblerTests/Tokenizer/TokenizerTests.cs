@@ -231,5 +231,47 @@
             Assert.IsType(typeof(RightCurlyToken), token5);
             Assert.Equal("}", token5.Value());
         }
+
+        [Fact]
+        public void TokenizerByteDataStatement()
+        {
+            var tokenizer = new Tokenizer("BYTE: 0x48, 0x69, 0x20, 0x0");
+            var token1 = tokenizer.Next();
+            var token2 = tokenizer.Next();
+            var token3 = tokenizer.Next();
+            var token4 = tokenizer.Next();
+            var token5 = tokenizer.Next();
+            var token6 = tokenizer.Next();
+            var token7 = tokenizer.Next();
+            var token8 = tokenizer.Next();
+            var token9 = tokenizer.Next();
+
+            Assert.IsType(typeof(AlphaNumToken), token1);
+            Assert.Equal("byte", token1.Value());
+
+            Assert.IsType(typeof(ColonToken), token2);
+            Assert.Equal(":", token2.Value());
+
+            Assert.IsType(typeof(NumberToken), token3);
+            Assert.Equal("0x48", token3.Value());
+
+            Assert.IsType(typeof(CommaToken), token4);
+            Assert.Equal(",", token4.Value());
+
+            Assert.IsType(typeof(NumberToken), token5);
+            Assert.Equal("0x69", token5.Value());
+
+            Assert.IsType(typeof(CommaToken), token6);
+            Assert.Equal(",", token6.Value());
+
+            Assert.IsType(typeof(NumberToken), token7);
+            Assert.Equal("0x20", token7.Value());
+
+            Assert.IsType(typeof(CommaToken), token8);
+            Assert.Equal(",", token8.Value());
+
+            Assert.IsType(typeof(NumberToken), token9);
+            Assert.Equal("0x0", token9.Value());
+        }
     }
 }
