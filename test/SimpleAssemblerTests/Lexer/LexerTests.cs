@@ -2,6 +2,7 @@
 {
     using SimpleAssembler.Lexer;
     using SimpleAssembler.Lexer.LexTokens;
+    using System;
     using Xunit;
 
     public class LexerTests
@@ -89,7 +90,24 @@
         [Fact]
         public void LexerBLWithUnderscoreAndCommentAndNewLine()
         {
-            var lexer = new Lexer("BL initialize_uart \\ this is a comment\r\n");
+            var lexer = new Lexer($"BL initialize_uart //this is a comment{Environment.NewLine}");
+            var token1 = lexer.Next(); // BL
+            var token2 = lexer.Next(); // initialize_uart
+            var token3 = lexer.Next(); // \r\n
+            var token4 = lexer.Next(); // null
+
+            Assert.IsType(typeof(OpCodeToken), token1);
+            Assert.Equal(OperationType.BL, (token1 as OpCodeToken).OperationType);
+            Assert.IsType(typeof(LabelReferenceToken), token2);
+            Assert.Equal("initialize_uart", token2.Value());
+            Assert.IsType(typeof(NewLineToken), token3);
+            Assert.Null(token4);
+        }
+
+        [Fact]
+        public void LexerBLWithUnderscoreAndCommentAndSlashRSlashN()
+        {
+            var lexer = new Lexer($"BL initialize_uart //this is a comment\r\n");
             var token1 = lexer.Next(); // BL
             var token2 = lexer.Next(); // initialize_uart
             var token3 = lexer.Next(); // \r\n
@@ -146,7 +164,7 @@
             Assert.IsType(typeof(OpCodeToken), token1);
             Assert.Equal(OperationType.MOVW, (token1 as OpCodeToken).OperationType);
             Assert.IsType(typeof(RegisterToken), token2);
-            Assert.Equal("f", token2.Value());
+            Assert.Equal("d", token2.Value());
             Assert.IsType(typeof(NumberToken), token3);
             Assert.Equal("0x9000", token3.Value());
         }

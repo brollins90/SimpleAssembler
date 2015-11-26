@@ -38,65 +38,185 @@
         {
             var t1 = _tokenStream.Next();
 
-            if (t1 != null
-                && t1 is SimpleAssembler.Tokenizer.Tokens.NewLineToken)
+            if (t1 != null)
             {
-                return new LexTokens.NewLineToken(t1.Value());
-            }
-
-            else if ((t1 is AlphaNumToken)
-                || (t1 is AlphaNumUnderscoreToken))
-            {
-                var t2 = _tokenStream.Next();
-
-                // t2 is colon
-                if (t2 != null
-                    && t2 is ColonToken)
+                // NewLine is still a NewLine
+                if (t1 is SimpleAssembler.Tokenizer.Tokens.NewLineToken)
                 {
-                    // throw away t2
-                    return new LabelDeclarationToken(t1.Value());
+                    return new LexTokens.NewLineToken(t1.Value());
                 }
 
-                // t2 is comma
-                else if (t2 != null
-                  && t2 is CommaToken
-                  && t1 != null
-                  && (t1 as AlphaNumToken).IsRegister()) // todo: i dont think we get here ?? maybe do if i push back on the alpha alpha line
+                // AlphaNumUnderscore can only be a label
+                if (t1 is AlphaNumUnderscoreToken)
                 {
-                    // throw away t2
-                    return new RegisterToken(t1.Value());
+                    var t2 = _tokenStream.Next();
+
+                    if (t2 != null
+                        && t2 is ColonToken)
+                    {
+                        // throw away t2
+                        return new LabelDeclarationToken(t1.Value());
+                    }
+                    else
+                    {
+                        _tokenStream.UnGet(t2);
+                    }
                 }
 
-                // t2 is alphanumund  ( could be a branch )
-                else if (t2 != null
-                  && (t2 is AlphaNumUnderscoreToken || t2 is AlphaNumToken)
-                  && t1 != null
-                  && (t1 as AlphaNumToken).IsBranchOpCode())
+                // AlphaNum can be a label, opcode, or special (address, byte, word)
+                if (t1 is AlphaNumToken)
                 {
-                    _lexTokenStack.Push(new LabelReferenceToken(t2.Value()));
-                    return new OpCodeToken(t1.Value());
+                    var t2 = _tokenStream.Next();
+
+                    if (t2 != null)
+                    {
+                        // t2 is colon so t1 is a label
+                        if (t2 is ColonToken)
+                        {
+                            // throw away t2
+                            return new LabelDeclarationToken(t1.Value());
+                        }
+
+                        if ((t1 as AlphaNumToken).IsOpCode())
+                        {
+                            var t1Val = (t1 as AlphaNumToken).Value().ToLowerInvariant();
+                            if ((t1Val.Equals("ands") // $"{op} {reg}, {reg}, {imm12}"
+                                || t1Val.Equals("ldr")
+                                || t1Val.Equals("str")
+                                || t1Val.Equals("subs"))
+                                && (t2 as AlphaNumToken).IsRegister())
+                            {
+                                var comma = _tokenStream.Next();
+                                var reg2 = _tokenStream.Next();
+                                var comma2 = _tokenStream.Next();
+                                var num = _tokenStream.Next();
+
+                                if (comma != null
+                                    && comma is CommaToken
+                                    && reg2 != null
+                                    && (reg2 as AlphaNumToken).IsRegister()
+                                    && comma2 != null
+                                    && comma2 is CommaToken
+                                    && num != null
+                                    && num is SimpleAssembler.Tokenizer.Tokens.NumberToken)
+                                {
+                                    _lexTokenStack.Push(new LexTokens.NumberToken(num.Value())); // keep num
+                                    _lexTokenStack.Push(new RegisterToken(reg2.Value())); // keep reg2
+                                    _lexTokenStack.Push(new RegisterToken(t2.Value())); // keep t2
+                                    return new OpCodeToken(t1.Value()); // return op
+                                }
+                            }
+                            else if ((t1Val.Equals("mov"))
+                                && (t2 as AlphaNumToken).IsRegister()) // $"{op} {reg}, {reg2}"
+                            {
+                                var comma = _tokenStream.Next();
+                                var reg2 = _tokenStream.Next();
+
+                                if (comma != null
+                                    && comma is CommaToken
+                                    && reg2 != null
+                                    && (reg2 as AlphaNumToken).IsRegister())
+                                {
+                                    _lexTokenStack.Push(new RegisterToken(reg2.Value())); // keep reg2
+                                    _lexTokenStack.Push(new RegisterToken(t2.Value())); // keep t2
+                                    return new OpCodeToken(t1.Value()); // return op
+                                }
+                            }
+                            else if ((t1Val.Equals("movt") // $"{op} {reg}, {imm16}"
+                                || t1Val.Equals("movw"))
+                                && (t2 as AlphaNumToken).IsRegister())
+                            {
+                                var comma = _tokenStream.Next();
+                                var num = _tokenStream.Next();
+
+                                if (comma != null
+                                    && comma is CommaToken
+                                    && num != null
+                                    && num is SimpleAssembler.Tokenizer.Tokens.NumberToken)
+                                {
+                                    _lexTokenStack.Push(new LexTokens.NumberToken(num.Value())); // keep num
+                                    _lexTokenStack.Push(new RegisterToken(t2.Value())); // keep t2
+                                    return new OpCodeToken(t1.Value()); // return op
+                                }
+                            }
+                            else if ((t1Val.Equals("pop") // $"{op} {reg}"
+                                || t1Val.Equals("push"))
+                                && (t2 as AlphaNumToken).IsRegister())
+                            {
+                                _lexTokenStack.Push(new RegisterToken(t2.Value())); // keep t2
+                                return new OpCodeToken(t1.Value()); // return op
+                            }
+                            else if ((t1Val.Equals("bal") // $"{op} {label}"
+                                || t1Val.Equals("bl")
+                                || t1Val.Equals("bne"))
+                                && (t2 is AlphaNumToken || t2 is AlphaNumUnderscoreToken))
+                            {
+                                _lexTokenStack.Push(new LabelReferenceToken(t2.Value())); // keep t2
+                                return new OpCodeToken(t1.Value()); // return op
+                            }
+                        }
+
+                        //// t2 is comma
+                        //if (t2 is CommaToken
+                        //  && (t1 as AlphaNumToken).IsRegister()) ///// // todo: i dont think we get here ?? maybe do if i push back on the alpha alpha line
+                        //{
+                        //    // throw away t2
+                        //    return new RegisterToken(t1.Value());
+                        //}
+
+                        //// t2 is AlphaNum || AlphaNumUnderscore ( could be a branch )
+                        //if ((t2 is AlphaNumToken || t2 is AlphaNumUnderscoreToken)
+                        //  && (t1 as AlphaNumToken).IsBranchOpCode())
+                        //{
+                        //    _lexTokenStack.Push(new LabelReferenceToken(t2.Value())); // keep t2
+                        //    return new OpCodeToken(t1.Value()); // return branch op
+                        //}
+
+                        //// t2 is alphanum
+                        //if (t2 is AlphaNumToken
+                        //  && (t2 as AlphaNumToken).IsRegister() // we might miss a valid branch instruction because of this, but it should have been found earlier
+                        //  && (t1 as AlphaNumToken).IsOpCode())
+                        //{
+                        //    var t3 = _tokenStream.Next();
+                        //    if (t3 != null)
+                        //    {
+                        //        if (t3 is CommaToken)
+                        //        {
+                        //            _tokenStream.UnGet(t3); // put the comma back
+                        //            _tokenStream.UnGet(t2); // put the register
+                        //        }
+                        //        else
+                        //        {
+                        //            _tokenStream.UnGet(t3);
+                        //            _lexTokenStack.Push(new RegisterToken(t2.Value()));
+                        //        }
+                        //    }
+                        //    else
+                        //    {
+                        //        _lexTokenStack.Push(new RegisterToken(t2.Value()));
+                        //    }
+                        //    return new OpCodeToken(t1.Value());
+                        //}
+
+                        // something else
+                        else
+                        {
+                            _tokenStream.UnGet(t2);
+                        }
+                        throw new LexSyntaxException($"t1: {t1.Value()}, t2: {t2.Value()}");
+
+                    } // t2 is null
+                    throw new LexSyntaxException($"t2 was null, but we couldnt figure out what an alone t1 is. t1: {t1.Value()}");
                 }
-
-                //// t2 is alphanum
-                //else if (t2 != null
-                //  && t2 is AlphaNumToken
-                //  && t1 != null
-                //  && (t1 as AlphaNumToken).IsOpCode())
-                //{
-                //    return new OpCodeToken(t1.Value());
-                //}
-
                 else
                 {
-                    _tokenStream.UnGet(t2);
+                    _tokenStream.UnGet(t1);
                 }
-            }
-            else
-            {
-                _tokenStream.UnGet(t1);
-            }
 
-            throw new SyntaxException($"t1: {t1.Value()}");
+                throw new LexSyntaxException($"t1: {t1.Value()}");
+
+            } // t1 is null
+            return null;
         }
 
         //protected LexToken GetNext()
