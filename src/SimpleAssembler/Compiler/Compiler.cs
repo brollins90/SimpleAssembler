@@ -1,17 +1,17 @@
-﻿namespace SimpleAssembler.Parser
+﻿namespace SimpleAssembler.Compiler
 {
     using System;
     using System.Collections.Generic;
     using Tokenizer;
     using Tokenizer.Tokens;
 
-    public class Parser : IParser
+    public class Compiler : ICompiler
     {
         private uint _kernelIndex;
         private Dictionary<string, uint> _labelTable;
         private uint _lineNumber;
 
-        public Parser()
+        public Compiler()
         {
             _kernelIndex = 0;
             _labelTable = new Dictionary<string, uint>();

@@ -171,6 +171,52 @@
         }
         #endregion
 
+        //#region Data Statements
+
+        //[Fact]
+        //public void ParserCanParseDataByteWordSize()
+        //{
+        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+        //    uint data = uint.MaxValue;
+        //    ITokenStream tokenStream = new TokenStream("byte: 0x48, 0x69, 0x20, 0x00");
+
+        //    var result = parser.TryParseData(tokenStream, out data);
+
+        //    Assert.True(result);
+        //    Assert.Equal((uint)0x48692000, data);
+        //    Assert.False(tokenStream.HasNext());
+        //}
+
+        //[Fact]
+        //public void ParserCanParseDataByteLessThanWordSize()
+        //{
+        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+        //    ITokenStream tokenStream = new TokenStream("byte: 0x48, 0x69, 0x20");
+
+        //    Assert.Throws(typeof(SyntaxException), () =>
+        //    {
+        //        uint dataIndex;
+        //        parser.TryParseData(tokenStream, out dataIndex);
+        //    });
+        //}
+
+        //[Fact]
+        //public void ParserCanParseDataByteGreaterThanWordSize()
+        //{
+        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+
+        //    ITokenStream tokenStream = new TokenStream("byte: 0x48, 0x69, 0x20, 0x48, 0x69, 0x20");
+
+        //    Assert.Throws(typeof(SyntaxException), () =>
+        //    {
+        //        uint dataIndex;
+        //        parser.TryParseData(tokenStream, out dataIndex);
+        //    });
+        //}
+        //#endregion
+
         #region ANDS
 
         [Fact]
