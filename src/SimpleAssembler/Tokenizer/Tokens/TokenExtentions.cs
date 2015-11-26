@@ -1,7 +1,5 @@
-﻿namespace SimpleAssembler.Lexer
+﻿namespace SimpleAssembler.Tokenizer.Tokens
 {
-    using Tokenizer.Tokens;
-
     public static class TokenExtentions
     {
         public static bool IsRegister(this AlphaNumToken token)

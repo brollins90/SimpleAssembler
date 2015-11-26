@@ -1,10 +1,10 @@
 ﻿namespace SimpleAssembler.Lexer.LexTokens
 {
-    public class RegisterToken : LexToken
+    public class RegisterLexToken : LexToken
     {
         private string _value;
 
-        public RegisterToken(string value)
+        public RegisterLexToken(string value)
             : base(value)
         {
             _value = ParseRegister(value);

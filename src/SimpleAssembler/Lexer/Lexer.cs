@@ -1,7 +1,7 @@
 ﻿namespace SimpleAssembler.Lexer
 {
-    using System.Collections.Generic;
     using LexTokens;
+    using System.Collections.Generic;
     using Tokenizer;
     using Tokenizer.Tokens;
 
@@ -41,9 +41,9 @@
             if (t1 != null)
             {
                 // NewLine is still a NewLine
-                if (t1 is SimpleAssembler.Tokenizer.Tokens.NewLineToken)
+                if (t1 is NewLineToken)
                 {
-                    return new LexTokens.NewLineToken(t1.Value());
+                    return new NewLineLexToken(t1.Value());
                 }
 
                 // AlphaNumUnderscore can only be a label
@@ -51,15 +51,13 @@
                 {
                     var t2 = _tokenStream.Next();
 
-                    if (t2 != null
-                        && t2 is ColonToken)
+                    if (t2 != null && t2 is ColonToken)
                     {
-                        // throw away t2
-                        return new LabelDeclarationToken(t1.Value());
+                        return new LabelDeclarationLexToken(t1.Value()); // throw away the colon
                     }
                     else
                     {
-                        _tokenStream.UnGet(t2);
+                        _tokenStream.UnGet(t2); // put the 'not'colon back
                     }
                 }
 
@@ -70,17 +68,19 @@
 
                     if (t2 != null)
                     {
-                        // t2 is colon so t1 is a label
+                        // t2 is colon so t1 is a label TODO:::(or special)
                         if (t2 is ColonToken)
                         {
-                            // throw away t2
-                            return new LabelDeclarationToken(t1.Value());
+                            return new LabelDeclarationLexToken(t1.Value()); // throw away the colon
                         }
 
+                        // if t1 is opcode
                         if ((t1 as AlphaNumToken).IsOpCode())
                         {
                             var t1Val = (t1 as AlphaNumToken).Value().ToLowerInvariant();
-                            if ((t1Val.Equals("ands") // $"{op} {reg}, {reg}, {imm12}"
+
+                            // if instuction is: $"{op} {reg}, {reg}, {imm12}"
+                            if ((t1Val.Equals("ands")
                                 || t1Val.Equals("ldr")
                                 || t1Val.Equals("str")
                                 || t1Val.Equals("subs"))
@@ -100,14 +100,16 @@
                                     && num != null
                                     && num is SimpleAssembler.Tokenizer.Tokens.NumberToken)
                                 {
-                                    _lexTokenStack.Push(new LexTokens.NumberToken(num.Value())); // keep num
-                                    _lexTokenStack.Push(new RegisterToken(reg2.Value())); // keep reg2
-                                    _lexTokenStack.Push(new RegisterToken(t2.Value())); // keep t2
-                                    return new OpCodeToken(t1.Value()); // return op
+                                    _lexTokenStack.Push(new LexTokens.NumberLexToken(num.Value())); // keep num
+                                    _lexTokenStack.Push(new RegisterLexToken(reg2.Value())); // keep reg2
+                                    _lexTokenStack.Push(new RegisterLexToken(t2.Value())); // keep t2
+                                    return new OpCodeLexToken(t1.Value()); // return op
                                 }
                             }
+
+                            // if instuction is: $"{op} {reg}, {reg2}"
                             else if ((t1Val.Equals("mov"))
-                                && (t2 as AlphaNumToken).IsRegister()) // $"{op} {reg}, {reg2}"
+                                && (t2 as AlphaNumToken).IsRegister())
                             {
                                 var comma = _tokenStream.Next();
                                 var reg2 = _tokenStream.Next();
@@ -117,12 +119,14 @@
                                     && reg2 != null
                                     && (reg2 as AlphaNumToken).IsRegister())
                                 {
-                                    _lexTokenStack.Push(new RegisterToken(reg2.Value())); // keep reg2
-                                    _lexTokenStack.Push(new RegisterToken(t2.Value())); // keep t2
-                                    return new OpCodeToken(t1.Value()); // return op
+                                    _lexTokenStack.Push(new RegisterLexToken(reg2.Value())); // keep reg2
+                                    _lexTokenStack.Push(new RegisterLexToken(t2.Value())); // keep t2
+                                    return new OpCodeLexToken(t1.Value()); // return op
                                 }
                             }
-                            else if ((t1Val.Equals("movt") // $"{op} {reg}, {imm16}"
+
+                            // if instuction is: $"{op} {reg}, {imm16}"
+                            else if ((t1Val.Equals("movt")
                                 || t1Val.Equals("movw"))
                                 && (t2 as AlphaNumToken).IsRegister())
                             {
@@ -134,25 +138,35 @@
                                     && num != null
                                     && num is SimpleAssembler.Tokenizer.Tokens.NumberToken)
                                 {
-                                    _lexTokenStack.Push(new LexTokens.NumberToken(num.Value())); // keep num
-                                    _lexTokenStack.Push(new RegisterToken(t2.Value())); // keep t2
-                                    return new OpCodeToken(t1.Value()); // return op
+                                    _lexTokenStack.Push(new LexTokens.NumberLexToken(num.Value())); // keep num
+                                    _lexTokenStack.Push(new RegisterLexToken(t2.Value())); // keep t2
+                                    return new OpCodeLexToken(t1.Value()); // return op
                                 }
                             }
-                            else if ((t1Val.Equals("pop") // $"{op} {reg}"
+
+                            // if instuction is: $"{op} {reg}"
+                            else if ((t1Val.Equals("pop")
                                 || t1Val.Equals("push"))
                                 && (t2 as AlphaNumToken).IsRegister())
                             {
-                                _lexTokenStack.Push(new RegisterToken(t2.Value())); // keep t2
-                                return new OpCodeToken(t1.Value()); // return op
+                                _lexTokenStack.Push(new RegisterLexToken(t2.Value())); // keep t2
+                                return new OpCodeLexToken(t1.Value()); // return op
                             }
-                            else if ((t1Val.Equals("bal") // $"{op} {label}"
+
+                            // if instuction is: $"{op} {label}"
+                            else if ((t1Val.Equals("bal")
                                 || t1Val.Equals("bl")
                                 || t1Val.Equals("bne"))
                                 && (t2 is AlphaNumToken || t2 is AlphaNumUnderscoreToken))
                             {
-                                _lexTokenStack.Push(new LabelReferenceToken(t2.Value())); // keep t2
-                                return new OpCodeToken(t1.Value()); // return op
+                                _lexTokenStack.Push(new LabelReferenceLexToken(t2.Value())); // keep t2
+                                return new OpCodeLexToken(t1.Value()); // return op
+                            }
+
+                            // else 
+                            else
+                            {
+                                throw new LexSyntaxException($"Unknown lex instuction t2: {t2.Value()}");
                             }
                         }
 

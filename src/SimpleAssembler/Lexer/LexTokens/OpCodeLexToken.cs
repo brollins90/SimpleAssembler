@@ -2,11 +2,11 @@
 {
     using System;
 
-    public class OpCodeToken : LexToken
+    public class OpCodeLexToken : LexToken
     {
         public OperationType OperationType { get; }
 
-        public OpCodeToken(string value)
+        public OpCodeLexToken(string value)
             : base(value)
         {
             OperationType = ParseOperationType(value);

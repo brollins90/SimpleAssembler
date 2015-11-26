@@ -13,7 +13,7 @@
             var lexer = new Lexer("loop:");
             var token1 = lexer.Next();
 
-            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.IsType(typeof(LabelDeclarationLexToken), token1);
             Assert.Equal("loop", token1.Value());
         }
 
@@ -23,7 +23,7 @@
             var lexer = new Lexer("LOOP:");
             var token1 = lexer.Next();
 
-            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.IsType(typeof(LabelDeclarationLexToken), token1);
             Assert.Equal("loop", token1.Value());
         }
 
@@ -33,7 +33,7 @@
             var lexer = new Lexer("LooP:");
             var token1 = lexer.Next();
 
-            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.IsType(typeof(LabelDeclarationLexToken), token1);
             Assert.Equal("loop", token1.Value());
         }
 
@@ -43,7 +43,7 @@
             var lexer = new Lexer("loop1:");
             var token1 = lexer.Next();
 
-            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.IsType(typeof(LabelDeclarationLexToken), token1);
             Assert.Equal("loop1", token1.Value());
         }
 
@@ -53,7 +53,7 @@
             var lexer = new Lexer("lo_op:");
             var token1 = lexer.Next();
 
-            Assert.IsType(typeof(LabelDeclarationToken), token1);
+            Assert.IsType(typeof(LabelDeclarationLexToken), token1);
             Assert.Equal("lo_op", token1.Value());
         }
 
@@ -64,9 +64,9 @@
             var token1 = lexer.Next(); // BL
             var token2 = lexer.Next(); // initialize_uart
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.BL, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(LabelReferenceToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.BL, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(LabelReferenceLexToken), token2);
             Assert.Equal("initialize_uart", token2.Value());
         }
 
@@ -79,11 +79,11 @@
             var token3 = lexer.Next(); // \r\n
             var token4 = lexer.Next(); // null
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.BL, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(LabelReferenceToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.BL, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(LabelReferenceLexToken), token2);
             Assert.Equal("initialize_uart", token2.Value());
-            Assert.IsType(typeof(NewLineToken), token3);
+            Assert.IsType(typeof(NewLineLexToken), token3);
             Assert.Null(token4);
         }
 
@@ -96,11 +96,11 @@
             var token3 = lexer.Next(); // \r\n
             var token4 = lexer.Next(); // null
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.BL, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(LabelReferenceToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.BL, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(LabelReferenceLexToken), token2);
             Assert.Equal("initialize_uart", token2.Value());
-            Assert.IsType(typeof(NewLineToken), token3);
+            Assert.IsType(typeof(NewLineLexToken), token3);
             Assert.Null(token4);
         }
 
@@ -113,11 +113,11 @@
             var token3 = lexer.Next(); // \r\n
             var token4 = lexer.Next(); // null
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.BL, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(LabelReferenceToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.BL, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(LabelReferenceLexToken), token2);
             Assert.Equal("initialize_uart", token2.Value());
-            Assert.IsType(typeof(NewLineToken), token3);
+            Assert.IsType(typeof(NewLineLexToken), token3);
             Assert.Null(token4);
         }
 
@@ -129,11 +129,11 @@
             var token2 = lexer.Next();
             var token3 = lexer.Next();
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.MOV, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(RegisterToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.MOV, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(RegisterLexToken), token2);
             Assert.Equal("f", token2.Value());
-            Assert.IsType(typeof(RegisterToken), token3);
+            Assert.IsType(typeof(RegisterLexToken), token3);
             Assert.Equal("e", token3.Value());
         }
 
@@ -145,11 +145,11 @@
             var token2 = lexer.Next(); // a1
             var token3 = lexer.Next(); // 0x0
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.MOVW, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(RegisterToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.MOVW, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(RegisterLexToken), token2);
             Assert.Equal("0", token2.Value());
-            Assert.IsType(typeof(NumberToken), token3);
+            Assert.IsType(typeof(NumberLexToken), token3);
             Assert.Equal("0x0", token3.Value());
         }
 
@@ -161,11 +161,11 @@
             var token2 = lexer.Next(); // sp
             var token3 = lexer.Next(); // 0x9000
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.MOVW, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(RegisterToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.MOVW, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(RegisterLexToken), token2);
             Assert.Equal("d", token2.Value());
-            Assert.IsType(typeof(NumberToken), token3);
+            Assert.IsType(typeof(NumberLexToken), token3);
             Assert.Equal("0x9000", token3.Value());
         }
 
@@ -177,11 +177,11 @@
             var token2 = lexer.Next(); // a1
             var token3 = lexer.Next(); // 0x3f20
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.MOVT, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(RegisterToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.MOVT, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(RegisterLexToken), token2);
             Assert.Equal("0", token2.Value());
-            Assert.IsType(typeof(NumberToken), token3);
+            Assert.IsType(typeof(NumberLexToken), token3);
             Assert.Equal("0x3f20", token3.Value());
         }
 
@@ -192,9 +192,9 @@
             var token1 = lexer.Next(); // POP
             var token2 = lexer.Next(); // a2
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.POP, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(RegisterToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.POP, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(RegisterLexToken), token2);
             Assert.Equal("1", token2.Value());
         }
 
@@ -205,9 +205,9 @@
             var token1 = lexer.Next();
             var token2 = lexer.Next();
 
-            Assert.IsType(typeof(OpCodeToken), token1);
-            Assert.Equal(OperationType.PUSH, (token1 as OpCodeToken).OperationType);
-            Assert.IsType(typeof(RegisterToken), token2);
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.PUSH, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(RegisterLexToken), token2);
             Assert.Equal("2", token2.Value());
         }
         //[Fact]

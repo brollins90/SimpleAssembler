@@ -1,8 +1,8 @@
 ﻿namespace SimpleAssembler.Lexer.LexTokens
 {
-    public class NewLineToken : LexToken
+    public class NewLineLexToken : LexToken
     {
-        public NewLineToken(string value)
+        public NewLineLexToken(string value)
             : base(value)
         { }
     }

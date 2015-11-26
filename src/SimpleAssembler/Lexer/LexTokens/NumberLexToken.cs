@@ -1,8 +1,8 @@
 ﻿namespace SimpleAssembler.Lexer.LexTokens
 {
-    public class LabelReferenceToken : LexToken
+    public class NumberLexToken : LexToken
     {
-        public LabelReferenceToken(string value)
+        public NumberLexToken(string value)
             : base(value)
         { }
     }
