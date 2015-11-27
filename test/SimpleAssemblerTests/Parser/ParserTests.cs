@@ -151,6 +151,33 @@
         #region Data Statements
 
         [Fact]
+        public void ParserCanParseDataAddress()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "address: 0x48" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0x48, parser.KernelIndex);
+        }
+
+        [Fact]
+        public void ParserWillThrowIfAddressIsNotFollowedByANumber()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "address:" + Environment.NewLine;
+
+            Assert.Throws<SyntaxException>(() =>
+            {
+                var output = parser.Parse(myProgram);
+            });
+        }
+
+        [Fact]
         public void ParserCanParseDataByteWordSize()
         {
             IParser parser = new Parser();
@@ -188,20 +215,6 @@
 
             Assert.Equal((uint)0x48692048, output[0]);
             Assert.Equal((uint)0x69200000, output[1]);
-        }
-
-        [Fact]
-        public void ParserWillThrowIfByteIsNotFollowedByAByte()
-        {
-            IParser parser = new Parser();
-
-            var myProgram =
-                "word:" + Environment.NewLine;
-
-            Assert.Throws<SyntaxException>(() =>
-            {
-                var output = parser.Parse(myProgram);
-            });
         }
 
         [Fact]
@@ -243,20 +256,6 @@
 
             Assert.Equal((uint)0x48692048, output[0]);
             Assert.Equal((uint)0x69200000, output[1]);
-        }
-
-        [Fact]
-        public void ParserWillThrowIfWordIsNotFollowedByAWord()
-        {
-            IParser parser = new Parser();
-
-            var myProgram =
-                "word:" + Environment.NewLine;
-
-            Assert.Throws<SyntaxException>(() =>
-            {
-                var output = parser.Parse(myProgram);
-            });
         }
         #endregion
 
