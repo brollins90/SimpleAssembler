@@ -189,6 +189,75 @@
             Assert.Equal((uint)0x48692048, output[0]);
             Assert.Equal((uint)0x69200000, output[1]);
         }
+
+        [Fact]
+        public void ParserWillThrowIfByteIsNotFollowedByAByte()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "word:" + Environment.NewLine;
+
+            Assert.Throws<SyntaxException>(() =>
+            {
+                var output = parser.Parse(myProgram);
+            });
+        }
+
+        [Fact]
+        public void ParserWillThrowIfByteValueIsTooBig()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "byte: 0x100, 0x50, 0x40, 0x0" + Environment.NewLine;
+
+            Assert.Throws<SyntaxException>(() =>
+            {
+                var output = parser.Parse(myProgram);
+            });
+        }
+
+        [Fact]
+        public void ParserCanParseWord()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "word: 0x48692000" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0x48692000, output[0]);
+        }
+
+        [Fact]
+        public void ParserCanParseWord2()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "word: 0x48692048, 0x69200000" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0x48692048, output[0]);
+            Assert.Equal((uint)0x69200000, output[1]);
+        }
+
+        [Fact]
+        public void ParserWillThrowIfWordIsNotFollowedByAWord()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "word:" + Environment.NewLine;
+
+            Assert.Throws<SyntaxException>(() =>
+            {
+                var output = parser.Parse(myProgram);
+            });
+        }
         #endregion
 
         #region ANDS

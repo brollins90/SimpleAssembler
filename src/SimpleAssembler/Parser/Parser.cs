@@ -109,12 +109,37 @@
                     var a3 = lexer.Next() ?? new NumberLexToken("0x0");
                     var a4 = lexer.Next() ?? new NumberLexToken("0x0");
 
+                    if ((a1 as NumberLexToken).IntValue() > 0xff
+                        || (a1 as NumberLexToken).IntValue() < 0x00)
+                    {
+                        throw new SyntaxException($"{a1.Value()} is not the correct size of a byte");
+                    }
+
+                    if ((a2 as NumberLexToken).IntValue() > 0xff
+                        || (a2 as NumberLexToken).IntValue() < 0x00)
+                    {
+                        throw new SyntaxException($"{a2.Value()} is not the correct size of a byte");
+                    }
+
+                    if ((a3 as NumberLexToken).IntValue() > 0xff
+                        || (a3 as NumberLexToken).IntValue() < 0x00)
+                    {
+                        throw new SyntaxException($"{a3.Value()} is not the correct size of a byte");
+                    }
+
+                    if ((a4 as NumberLexToken).IntValue() > 0xff
+                        || (a4 as NumberLexToken).IntValue() < 0x00)
+                    {
+                        throw new SyntaxException($"{a4.Value()} is not the correct size of a byte");
+                    }
+
                     var data = $"{a1.Value().Substring(2).PadLeft(2, '0')}{a2.Value().Substring(2).PadLeft(2, '0')}{a3.Value().Substring(2).PadLeft(2, '0')}{a4.Value().Substring(2).PadLeft(2, '0')}";
                     var encoded = Convert.ToUInt32(data, 16);
                     WriteInstructionToKernel(encoded);
 
                     a1 = lexer.Next();
                 }
+                lexer.UnGet(a1);
             }
         }
 
@@ -246,6 +271,17 @@
             if (token != null
                 && token is WordDataStatementLexToken)
             {
+                var a1 = lexer.Next();
+                while (a1 != null
+                    && a1 is NumberLexToken
+                    && (a1 as NumberLexToken).IntValue() != 0)
+                {
+                    var encoded = Convert.ToUInt32(a1.Value(), 16);
+                    WriteInstructionToKernel(encoded);
+
+                    a1 = lexer.Next();
+                }
+                lexer.UnGet(a1);
             }
         }
 
