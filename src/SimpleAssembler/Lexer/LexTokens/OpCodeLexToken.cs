@@ -39,7 +39,7 @@
             else if (value.Equals("subs", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.SUBS;
 
-            throw new LexSyntaxException($"{value} is not a valid operation type");
+            throw new SyntaxException($"{value} is not a valid operation type");
         }
     }
 

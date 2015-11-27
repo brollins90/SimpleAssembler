@@ -1,6 +1,6 @@
-﻿namespace SimpleAssemblerTests.Tokenizer
+﻿namespace SimpleAssemblerTests.Lexer
 {
-    using SimpleAssembler.Lexer;
+    using SimpleAssembler;
     using SimpleAssembler.Lexer.LexTokens;
     using Xunit;
 
@@ -9,7 +9,7 @@
         [Fact]
         public void OperationTypeNONE()
         {
-            Assert.Throws<LexSyntaxException>(() =>
+            Assert.Throws<SyntaxException>(() =>
             {
                 OpCodeLexToken token = new OpCodeLexToken("NONE");
             });

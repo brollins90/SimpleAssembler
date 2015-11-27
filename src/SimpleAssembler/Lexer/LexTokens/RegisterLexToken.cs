@@ -89,7 +89,7 @@
                 return "e";
             if (value.Equals("pc"))
                 return "f";
-            throw new LexSyntaxException($"{value} is not a valid register");
+            throw new SyntaxException($"{value} is not a valid register");
         }
     }
 }

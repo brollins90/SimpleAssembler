@@ -1,8 +1,7 @@
 ﻿namespace SimpleAssemblerTests.Parser
 {
-    using SimpleAssembler.Lexer;
-    using SimpleAssembler.Tokenizer;
-    using SimpleAssembler.Tokenizer.Tokens;
+    using SimpleAssembler;
+    using SimpleAssembler.Parser;
     using System;
     using Xunit;
 
@@ -13,7 +12,7 @@
         [Fact]
         public void ParserReturnsUIntArray()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
             var result = parser.Parse("");
 
             Assert.IsType(typeof(uint[]), result);
@@ -22,7 +21,7 @@
         [Fact]
         public void ParserCanParseLabelAlphaNum()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram = "loop:";
 
@@ -30,25 +29,12 @@
 
             Assert.Contains("loop", parser.LabelTable.Keys);
             Assert.Equal((uint)0, parser.LabelTable["loop"]);
-
-            ////Assert.Equal(0xe3000000, output[0]);
-
-            //SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-            //uint labelIndex = uint.MaxValue;
-            //ITokenStream tokenStream = new TokenStream("loop:");
-
-            //var result = parser.TryParseLabel(tokenStream, out labelIndex, true);
-
-            //Assert.True(result);
-            //Assert.Equal((uint)0, labelIndex);
-            //Assert.False(tokenStream.HasNext());
         }
 
         [Fact]
         public void ParserCanParseLabelAlphaNumUnderscore()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram = "lo_op:";
 
@@ -56,32 +42,12 @@
 
             Assert.Contains("lo_op", parser.LabelTable.Keys);
             Assert.Equal((uint)0, parser.LabelTable["lo_op"]);
-
-            ////Assert.Equal(0xe3000000, output[0]);
         }
-
-        //[Fact]
-        //public void ParserTryParseLabelReturnsTokensToStream()
-        //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
-
-        //    uint labelIndex = uint.MaxValue;
-        //    ITokenStream tokenStream = new TokenStream("MOVT r0, 0x3f000000");
-
-        //    var result = parser.TryParseLabel(tokenStream, out labelIndex, true);
-
-        //    Assert.False(result);
-        //    Assert.Equal(uint.MaxValue, labelIndex);
-        //    Assert.True(tokenStream.HasNext());
-
-        //    var token1 = tokenStream.Next();
-        //    Assert.IsType(typeof(AlphaNumToken), token1);
-        //}
 
         [Fact]
         public void ParserParseLab4()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVW r0, 0x0" + Environment.NewLine +
@@ -131,7 +97,7 @@
         [Fact]
         public void ParserParseLabelReturnsCorrectIndex()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVT r0, 0x3f20" + Environment.NewLine +
@@ -146,7 +112,7 @@
         [Fact]
         public void ParserStartsOnLine1()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
             uint lineNumber = parser.LineNumber;
 
             Assert.Equal((uint)1, lineNumber);
@@ -155,7 +121,7 @@
         [Fact]
         public void ParserGetsCorrectLineNumber2()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVT r0, 0x3f20" + Environment.NewLine;
@@ -169,7 +135,7 @@
         [Fact]
         public void ParserGetsCorrectLineNumber3()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVT r0, 0x3f20" + Environment.NewLine +
@@ -187,7 +153,7 @@
         //[Fact]
         //public void ParserCanParseDataByteWordSize()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    uint data = uint.MaxValue;
         //    ITokenStream tokenStream = new TokenStream("byte: 0x48, 0x69, 0x20, 0x00");
@@ -202,7 +168,7 @@
         //[Fact]
         //public void ParserCanParseDataByteLessThanWordSize()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    ITokenStream tokenStream = new TokenStream("byte: 0x48, 0x69, 0x20");
 
@@ -216,7 +182,7 @@
         //[Fact]
         //public void ParserCanParseDataByteGreaterThanWordSize()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    ITokenStream tokenStream = new TokenStream("byte: 0x48, 0x69, 0x20, 0x48, 0x69, 0x20");
 
@@ -233,7 +199,7 @@
         [Fact]
         public void ParserParseAND()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "ANDS a3, a3, 0x20" + Environment.NewLine;
@@ -248,7 +214,7 @@
         [Fact]
         public void ParserParseBALParseNoLabel()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "BAL loop" + Environment.NewLine;
@@ -262,7 +228,7 @@
         [Fact]
         public void ParserParseBALParseWithLabel()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "loop: MOVW r0, 0x0" + Environment.NewLine +
@@ -277,7 +243,7 @@
         [Fact]
         public void ParserParseBALParseWithLabelAfter()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "BAL loop" + Environment.NewLine +
@@ -294,7 +260,7 @@
         [Fact]
         public void ParserParseBLParseNoLabel()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "BL loop" + Environment.NewLine;
@@ -308,7 +274,7 @@
         [Fact]
         public void ParserParseBLParseWithLabel()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "loop: MOVW r0, 0x0" + Environment.NewLine +
@@ -323,7 +289,7 @@
         [Fact]
         public void ParserParseBLParseWithLabelAfter()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "BL loop" + Environment.NewLine +
@@ -340,7 +306,7 @@
         [Fact]
         public void ParserParseBNEParseNoLabel()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "BNE loop" + Environment.NewLine;
@@ -354,7 +320,7 @@
         [Fact]
         public void ParserParseBNEParseWithLabel()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "loop: MOVW r0, 0x0" + Environment.NewLine +
@@ -369,7 +335,7 @@
         [Fact]
         public void ParserParseBNEParseWithLabelAfter()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "BNE loop" + Environment.NewLine +
@@ -387,7 +353,7 @@
         [Fact]
         public void ParserParseLDRPositive()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "LDR v4, sp, 0x8" + Environment.NewLine;
@@ -401,7 +367,7 @@
         //[Fact]
         //public void ParserParseLDRNegitive()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "LDR v4, sp, -0x4" + Environment.NewLine;
@@ -419,7 +385,7 @@
         //[Fact]
         //public void ParserParseLDIIAv4v80x0()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "LDIIA v4, sp, 0x0" + Environment.NewLine;
@@ -436,7 +402,7 @@
         [Fact]
         public void ParserParseMOVParser0r0()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOV r0, r0" + Environment.NewLine;
@@ -449,7 +415,7 @@
         [Fact]
         public void ParserParseMOVParser0r1()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOV r0, r1" + Environment.NewLine;
@@ -462,12 +428,12 @@
         [Fact]
         public void ParserParseMOVNotRegr18()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOV r0, r18" + Environment.NewLine;
 
-            Assert.Throws(typeof(LexSyntaxException), () =>
+            Assert.Throws(typeof(SyntaxException), () =>
             {
                 var output = parser.Parse(myProgram);
             });
@@ -478,7 +444,7 @@
         [Fact]
         public void ParserParseMOVTParse0()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVT r0, 0x0" + Environment.NewLine;
@@ -491,7 +457,7 @@
         [Fact]
         public void ParserParseMOVTParse1()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVT r1, 0x01" + Environment.NewLine;
@@ -504,7 +470,7 @@
         [Fact]
         public void ParserParseMOVTTooLarge()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVT r0, 0x10000" + Environment.NewLine;
@@ -521,7 +487,7 @@
         [Fact]
         public void ParserParseMOVWParse0()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVW r0, 0x0" + Environment.NewLine;
@@ -534,7 +500,7 @@
         [Fact]
         public void ParserParseMOVWParse1()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVW r1, 0x01" + Environment.NewLine;
@@ -547,7 +513,7 @@
         [Fact]
         public void ParserParseMOVWTooLarge()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "MOVW r0, 0x10000" + Environment.NewLine;
@@ -564,7 +530,7 @@
         [Fact]
         public void ParserParsePOPR1()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "POP r1" + Environment.NewLine;
@@ -577,7 +543,7 @@
         //[Fact]
         //public void ParserParsePOPR1InList()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "POP {r1}" + Environment.NewLine;
@@ -590,7 +556,7 @@
         //[Fact]
         //public void ParserParsePOPR1HyphenR2()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "POP {r1-r2}" + Environment.NewLine;
@@ -604,7 +570,7 @@
         //[Fact]
         //public void ParserParsePOPR1HyphenR10()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "POP {r1-r10}" + Environment.NewLine;
@@ -617,7 +583,7 @@
         //[Fact]
         //public void ParserParsePOPR1CommaR2()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "POP {r1,r2}" + Environment.NewLine;
@@ -630,7 +596,7 @@
         //[Fact]
         //public void ParserParsePOPR1CommaR10()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "POP {r1,r10}" + Environment.NewLine;
@@ -646,7 +612,7 @@
         [Fact]
         public void ParserParsePUSHR1()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "PUSH r1" + Environment.NewLine;
@@ -659,7 +625,7 @@
         //[Fact]
         //public void ParserParsePUSHR1InList()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "PUSH {r1}" + Environment.NewLine;
@@ -672,7 +638,7 @@
         //[Fact]
         //public void ParserParsePUSHR1HyphenR2()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "PUSH {r1-r2}" + Environment.NewLine;
@@ -686,7 +652,7 @@
         //[Fact]
         //public void ParserParsePUSHR1HyphenR10()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "PUSH {r1-r10}" + Environment.NewLine;
@@ -699,7 +665,7 @@
         //[Fact]
         //public void ParserParsePUSHR1CommaR2()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "PUSH {r1,r2}" + Environment.NewLine;
@@ -712,7 +678,7 @@
         //[Fact]
         //public void ParserParsePUSHR1CommaR10()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "PUSH {r1,r10}" + Environment.NewLine;
@@ -728,7 +694,7 @@
         [Fact]
         public void ParserParseSTRParse10()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "STR r1, r0, 0x10" + Environment.NewLine;
@@ -741,7 +707,7 @@
         [Fact]
         public void ParserParseSTRTooLarge()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "STR r1, r2, 0x1000" + Environment.NewLine;
@@ -758,7 +724,7 @@
         //[Fact]
         //public void ParserParseSTRDBv4v80x0()
         //{
-        //    SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+        //    IParser parser = new Parser();
 
         //    var myProgram =
         //        "STRDB v4, v8, 0x0" + Environment.NewLine;
@@ -774,7 +740,7 @@
         [Fact]
         public void ParserParseSUBSParse01()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "SUBS r3, r3, 0x01" + Environment.NewLine;
@@ -787,7 +753,7 @@
         [Fact]
         public void ParserParseSUBSTooLarge()
         {
-            SimpleAssembler.Parser.Parser parser = new SimpleAssembler.Parser.Parser();
+            IParser parser = new Parser();
 
             var myProgram =
                 "SUBS r3, r3, 0x10000" + Environment.NewLine;

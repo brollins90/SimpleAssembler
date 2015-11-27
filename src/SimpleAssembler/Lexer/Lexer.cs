@@ -60,12 +60,12 @@
                         else
                         {
                             //_tokenStream.UnGet(t2); // put the 'not'colon back
-                            throw new LexSyntaxException($"The only valid token after an AlphaNumUnderscoreToken is a colon.  current is {t2.GetType()}");
+                            throw new SyntaxException($"The only valid token after an AlphaNumUnderscoreToken is a colon.  current is {t2.GetType()}");
                         }
                     }
                     else // t2 IS null
                     {
-                        throw new LexSyntaxException("The token after an AlphaNumUnderscoreToken cannot be null");
+                        throw new SyntaxException("The token after an AlphaNumUnderscoreToken cannot be null");
                     }
 
                 }
@@ -92,7 +92,7 @@
                                 }
                                 else
                                 {
-                                    throw new LexSyntaxException($"address: needs to be followed by a number");
+                                    throw new SyntaxException($"address: needs to be followed by a number");
                                 }
                                 return new AddressDataStatementLexToken(t1Val);
                             }
@@ -175,7 +175,7 @@
                                     }
                                     else
                                     {
-                                        throw new LexSyntaxException($"{t1Val} should be followed by a register, a comma, a register, a comma, and a number");
+                                        throw new SyntaxException($"{t1Val} should be followed by a register, a comma, a register, a comma, and a number");
                                     }
                                 }
 
@@ -198,7 +198,7 @@
                                     }
                                     else
                                     {
-                                        throw new LexSyntaxException($"{t1Val} should be followed by a register, a comma, and a register");
+                                        throw new SyntaxException($"{t1Val} should be followed by a register, a comma, and a register");
                                     }
                                 }
 
@@ -221,7 +221,7 @@
                                     }
                                     else
                                     {
-                                        throw new LexSyntaxException($"{t1Val} should be followed by a register, a comma, and a number.");
+                                        throw new SyntaxException($"{t1Val} should be followed by a register, a comma, and a number.");
                                     }
                                 }
 
@@ -247,7 +247,7 @@
                                 // else 
                                 else
                                 {
-                                    throw new LexSyntaxException($"Unknown lex instuction t2: {t2.Value()}");
+                                    throw new SyntaxException($"Unknown lex instuction t2: {t2.Value()}");
                                 }
                             }
 
@@ -298,19 +298,19 @@
                             {
                                 _tokenStream.UnGet(t2);
                             }
-                        throw new LexSyntaxException($"t1: {t1.Value()}, t2: {t2.Value()}");
+                        throw new SyntaxException($"t1: {t1.Value()}, t2: {t2.Value()}");
 
                     } // t2 is null
-                    throw new LexSyntaxException($"t1 is an AlphaNum ({t1.Value()}) but t2 is null");
+                    throw new SyntaxException($"t1 is an AlphaNum ({t1.Value()}) but t2 is null");
                 }
 
                 else // t1 is not a valid type (not a NewLine, AlphaNumUnderscore, AlphaNum)
                 {
                     _tokenStream.UnGet(t1);
-                    throw new LexSyntaxException($"t1 is not a valid type (not a NewLine, AlphaNumUnderscore, AlphaNum). (t1={t1.Value()}");
+                    throw new SyntaxException($"t1 is not a valid type (not a NewLine, AlphaNumUnderscore, AlphaNum). (t1={t1.Value()}");
                 }
 
-                throw new LexSyntaxException($"t1: {t1.Value()}");
+                throw new SyntaxException($"t1: {t1.Value()}");
 
             } // t1 is null
             return null;

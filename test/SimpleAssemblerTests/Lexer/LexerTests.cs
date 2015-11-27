@@ -1,5 +1,6 @@
-﻿namespace SimpleAssemblerTests.Tokenizer
+﻿namespace SimpleAssemblerTests.Lexer
 {
+    using SimpleAssembler;
     using SimpleAssembler.Lexer;
     using SimpleAssembler.Lexer.LexTokens;
     using System;
@@ -10,7 +11,7 @@
         [Fact]
         public void LabelDeclarationIsAlphaFollowedByColon()
         {
-            var lexer = new Lexer("loop:");
+            ILexer lexer = new Lexer("loop:");
             var token1 = lexer.Next();
 
             Assert.IsType(typeof(LabelDeclarationLexToken), token1);
@@ -20,7 +21,7 @@
         [Fact]
         public void LabelDeclarationIsAlphaFollowedByColonUpperCase()
         {
-            var lexer = new Lexer("LOOP:");
+            ILexer lexer = new Lexer("LOOP:");
             var token1 = lexer.Next();
 
             Assert.IsType(typeof(LabelDeclarationLexToken), token1);
@@ -30,7 +31,7 @@
         [Fact]
         public void LabelDeclarationIsAlphaFollowedByColonMixedCase()
         {
-            var lexer = new Lexer("LooP:");
+            ILexer lexer = new Lexer("LooP:");
             var token1 = lexer.Next();
 
             Assert.IsType(typeof(LabelDeclarationLexToken), token1);
@@ -40,7 +41,7 @@
         [Fact]
         public void LabelDeclarationIsAlphaNumFollowedByColon()
         {
-            var lexer = new Lexer("loop1:");
+            ILexer lexer = new Lexer("loop1:");
             var token1 = lexer.Next();
 
             Assert.IsType(typeof(LabelDeclarationLexToken), token1);
@@ -50,7 +51,7 @@
         [Fact]
         public void LabelDeclarationIsAlphaNumWithUnderscoreFollowedByColon()
         {
-            var lexer = new Lexer("lo_op:");
+            ILexer lexer = new Lexer("lo_op:");
             var token1 = lexer.Next();
 
             Assert.IsType(typeof(LabelDeclarationLexToken), token1);
@@ -60,9 +61,9 @@
         [Fact]
         public void BLToAlpha()
         {
-            var lexer = new Lexer("BL loop");
+            ILexer lexer = new Lexer("BL loop");
             var token1 = lexer.Next(); // BL
-            var token2 = lexer.Next(); // initialize_uart
+            var token2 = lexer.Next(); // loop
 
             Assert.IsType(typeof(OpCodeLexToken), token1);
             Assert.Equal(OperationType.BL, (token1 as OpCodeLexToken).OperationType);
@@ -73,7 +74,7 @@
         [Fact]
         public void BLToAlphaWithUnderscore()
         {
-            var lexer = new Lexer("BL initialize_uart");
+            ILexer lexer = new Lexer("BL initialize_uart");
             var token1 = lexer.Next(); // BL
             var token2 = lexer.Next(); // initialize_uart
 
@@ -86,7 +87,7 @@
         [Fact]
         public void BLToAlphaWithUnderscoreAndSlashRSlashN()
         {
-            var lexer = new Lexer("BL initialize_uart\r\n");
+            ILexer lexer = new Lexer("BL initialize_uart\r\n");
             var token1 = lexer.Next(); // BL
             var token2 = lexer.Next(); // initialize_uart
             var token3 = lexer.Next(); // \r\n
@@ -103,7 +104,7 @@
         [Fact]
         public void BLToAlphaWithUnderscoreAndNewLine()
         {
-            var lexer = new Lexer($"BL initialize_uart{Environment.NewLine}");
+            ILexer lexer = new Lexer($"BL initialize_uart{Environment.NewLine}");
             var token1 = lexer.Next(); // BL
             var token2 = lexer.Next(); // initialize_uart
             var token3 = lexer.Next(); // \r\n
@@ -120,7 +121,7 @@
         [Fact]
         public void LexerBLWithUnderscoreAndCommentAndNewLine()
         {
-            var lexer = new Lexer($"BL initialize_uart //this is a comment{Environment.NewLine}");
+            ILexer lexer = new Lexer($"BL initialize_uart //this is a comment{Environment.NewLine}");
             var token1 = lexer.Next(); // BL
             var token2 = lexer.Next(); // initialize_uart
             var token3 = lexer.Next(); // \r\n
@@ -137,7 +138,7 @@
         [Fact]
         public void LexerBLWithUnderscoreAndCommentAndSlashRSlashN()
         {
-            var lexer = new Lexer($"BL initialize_uart //this is a comment\r\n");
+            ILexer lexer = new Lexer($"BL initialize_uart //this is a comment\r\n");
             var token1 = lexer.Next(); // BL
             var token2 = lexer.Next(); // initialize_uart
             var token3 = lexer.Next(); // \r\n
@@ -154,9 +155,9 @@
         [Fact]
         public void LexerMovInvalidArg2()
         {
-            var lexer = new Lexer("MOV pc, 0x0");
+            ILexer lexer = new Lexer("MOV pc, 0x0");
 
-            Assert.Throws<LexSyntaxException>(() =>
+            Assert.Throws<SyntaxException>(() =>
             {
                 var token1 = lexer.Next();
                 var token2 = lexer.Next();
@@ -167,9 +168,9 @@
         [Fact]
         public void LexerMovInvalidArg1_1()
         {
-            var lexer = new Lexer("MOV 0x0");
+            ILexer lexer = new Lexer("MOV 0x0");
 
-            Assert.Throws<LexSyntaxException>(() =>
+            Assert.Throws<SyntaxException>(() =>
             {
                 var token1 = lexer.Next();
                 var token2 = lexer.Next();
@@ -180,9 +181,9 @@
         [Fact]
         public void LexerMovInvalidArg1_2()
         {
-            var lexer = new Lexer("MOV 0x0, 0x0");
+            ILexer lexer = new Lexer("MOV 0x0, 0x0");
 
-            Assert.Throws<LexSyntaxException>(() =>
+            Assert.Throws<SyntaxException>(() =>
             {
                 var token1 = lexer.Next();
                 var token2 = lexer.Next();
@@ -193,9 +194,9 @@
         [Fact]
         public void LexerMovInvalidArg1_3()
         {
-            var lexer = new Lexer("MOV 0x0, r2");
+            ILexer lexer = new Lexer("MOV 0x0, r2");
 
-            Assert.Throws<LexSyntaxException>(() =>
+            Assert.Throws<SyntaxException>(() =>
             {
                 var token1 = lexer.Next();
                 var token2 = lexer.Next();
@@ -206,7 +207,7 @@
         [Fact]
         public void LexerMovInstruction()
         {
-            var lexer = new Lexer("MOV pc, lr");
+            ILexer lexer = new Lexer("MOV pc, lr");
             var token1 = lexer.Next();
             var token2 = lexer.Next();
             var token3 = lexer.Next();
@@ -222,7 +223,7 @@
         [Fact]
         public void LexerMOVWInstruction0x0()
         {
-            var lexer = new Lexer("MOVW a1, 0x0");
+            ILexer lexer = new Lexer("MOVW a1, 0x0");
             var token1 = lexer.Next(); // MOVW
             var token2 = lexer.Next(); // a1
             var token3 = lexer.Next(); // 0x0
@@ -238,7 +239,7 @@
         [Fact]
         public void LexerMOVWInstruction0x9000()
         {
-            var lexer = new Lexer("MOVW sp, 0x9000");
+            ILexer lexer = new Lexer("MOVW sp, 0x9000");
             var token1 = lexer.Next(); // MOVW
             var token2 = lexer.Next(); // sp
             var token3 = lexer.Next(); // 0x9000
@@ -254,7 +255,7 @@
         [Fact]
         public void LexerMOVTInstruction0x3f20()
         {
-            var lexer = new Lexer("MOVT a1, 0x3f20");
+            ILexer lexer = new Lexer("MOVT a1, 0x3f20");
             var token1 = lexer.Next(); // MOVT
             var token2 = lexer.Next(); // a1
             var token3 = lexer.Next(); // 0x3f20
@@ -270,7 +271,7 @@
         [Fact]
         public void LexerPOPInstruction1Register()
         {
-            var lexer = new Lexer("POP a2");
+            ILexer lexer = new Lexer("POP a2");
             var token1 = lexer.Next(); // POP
             var token2 = lexer.Next(); // a2
 
@@ -283,7 +284,7 @@
         [Fact]
         public void LexerPUSHInstruction1Register()
         {
-            var lexer = new Lexer("PUSH a3");
+            ILexer lexer = new Lexer("PUSH a3");
             var token1 = lexer.Next();
             var token2 = lexer.Next();
 
@@ -296,7 +297,7 @@
         [Fact]
         public void LexerAddressDataStatement()
         {
-            var lexer = new Lexer("ADDRESS: 0x9000");
+            ILexer lexer = new Lexer("ADDRESS: 0x9000");
             var token1 = lexer.Next();
             var token2 = lexer.Next();
 
@@ -308,7 +309,7 @@
         [Fact]
         public void LexerByteDataStatement()
         {
-            var lexer = new Lexer("BYTE: 0x48, 0x69, 0x20, 0x0");
+            ILexer lexer = new Lexer("BYTE: 0x48, 0x69, 0x20, 0x0");
             var token1 = lexer.Next();
             var token2 = lexer.Next();
             var token3 = lexer.Next();
@@ -329,7 +330,7 @@
         [Fact]
         public void LexerWordDataStatement()
         {
-            var lexer = new Lexer("WORD: 0x48692000");
+            ILexer lexer = new Lexer("WORD: 0x48692000");
             var token1 = lexer.Next();
             var token2 = lexer.Next();
 

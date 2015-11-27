@@ -1,6 +1,6 @@
-﻿namespace SimpleAssemblerTests.Tokenizer
+﻿namespace SimpleAssemblerTests.Lexer
 {
-    using SimpleAssembler.Lexer;
+    using SimpleAssembler;
     using SimpleAssembler.Lexer.LexTokens;
     using Xunit;
 
@@ -9,7 +9,7 @@
         [Fact]
         public void NonExistantRegister()
         {
-            Assert.Throws<LexSyntaxException>(() =>
+            Assert.Throws<SyntaxException>(() =>
             {
                 RegisterLexToken token = new RegisterLexToken("p3");
             });

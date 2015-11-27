@@ -1,4 +1,4 @@
-﻿namespace SimpleAssembler.Tokenizer
+﻿namespace SimpleAssembler
 {
     using System;
     using System.Runtime.Serialization;
