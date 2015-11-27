@@ -137,7 +137,8 @@ LDR a1, sp, 0x8
 
 delay_wait:
 SUBS a1, a1, 0x01
-BNE delay_wait
+IF a1 != 0x01 THEN delay_wait ELSE delay_continue
+delay_continue:
 
 POP a1
 POP lr
@@ -160,9 +161,8 @@ MOVW a4, 0x8
 hex_loop:
 ROR a3, a3, #28
 ANDS a1, a3, 0xf
-CMPI a1, #10
-
-BGE hex_digit
+if a1 >= 0xa THEN hex_digit ELSE num_digit
+num_digit:
 ADDI a1, a1, 0x30
 BAL print_digit
 hex_digit:
@@ -176,7 +176,8 @@ POP a2
 POP a1
 
 SUBS a4, a4, 0x01
-BNE hex_loop
+IF a4 != 0x0 THEN hex_loop ELSE done_hex
+done_hex:
 
 POP a4
 POP a3
