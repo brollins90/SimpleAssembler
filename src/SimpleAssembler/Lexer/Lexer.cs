@@ -100,10 +100,10 @@
                             && thenLabel != null
                             && thenLabel is AlphaNumToken
                             && elseStatement != null
-                            && elseStatement is AlphaNumToken
+                            && (elseStatement is AlphaNumToken || elseStatement is AlphaNumUnderscoreToken)
                             && elseStatement.Value().Equals("else")
                             && elseLabel != null
-                            && elseLabel is AlphaNumToken)
+                            && (elseLabel is AlphaNumToken || elseLabel is AlphaNumUnderscoreToken))
                         {
                             _lexTokenStack.Push(new LabelReferenceLexToken(elseLabel.Value()));
                             _lexTokenStack.Push(new ElseStatementLexToken(elseStatement.Value()));
