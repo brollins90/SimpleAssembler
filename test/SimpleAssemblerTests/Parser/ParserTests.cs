@@ -171,10 +171,9 @@
             var myProgram =
                 "byte: 0x48, 0x69, 0x20" + Environment.NewLine;
 
-            Assert.Throws(typeof(SyntaxException), () =>
-            {
-                var output = parser.Parse(myProgram);
-            });
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0x48692000, output[0]);
         }
 
         [Fact]
@@ -185,10 +184,10 @@
             var myProgram =
                 "byte: 0x48, 0x69, 0x20, 0x48, 0x69, 0x20" + Environment.NewLine;
 
-            Assert.Throws(typeof(SyntaxException), () =>
-            {
-                var output = parser.Parse(myProgram);
-            });
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0x48692048, output[0]);
+            Assert.Equal((uint)0x69200000, output[1]);
         }
         #endregion
 

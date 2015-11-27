@@ -100,6 +100,21 @@
             if (token != null
                 && token is ByteDataStatementLexToken)
             {
+                var a1 = lexer.Next();
+                while (a1 != null
+                    && a1 is NumberLexToken
+                    && (a1 as NumberLexToken).IntValue() != 0)
+                {
+                    var a2 = lexer.Next() ?? new NumberLexToken("0x0");
+                    var a3 = lexer.Next() ?? new NumberLexToken("0x0");
+                    var a4 = lexer.Next() ?? new NumberLexToken("0x0");
+
+                    var data = $"{a1.Value().Substring(2).PadLeft(2, '0')}{a2.Value().Substring(2).PadLeft(2, '0')}{a3.Value().Substring(2).PadLeft(2, '0')}{a4.Value().Substring(2).PadLeft(2, '0')}";
+                    var encoded = Convert.ToUInt32(data, 16);
+                    WriteInstructionToKernel(encoded);
+
+                    a1 = lexer.Next();
+                }
             }
         }
 
