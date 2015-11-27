@@ -40,6 +40,8 @@
                 return OperationType.POP;
             else if (value.Equals("push", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.PUSH;
+            else if (value.Equals("ror", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.ROR;
             else if (value.Equals("str", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.STR;
             else if (value.Equals("subs", StringComparison.InvariantCultureIgnoreCase))
@@ -64,6 +66,7 @@
         MOVW,
         POP,
         PUSH,
+        ROR,
         STR,
         SUBS
     }

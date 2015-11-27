@@ -77,6 +77,7 @@
                 || lower.Equals("movw")
                 || lower.Equals("pop")
                 || lower.Equals("push")
+                || lower.Equals("ror")
                 || lower.Equals("str")
                 || lower.Equals("subs"))
             {

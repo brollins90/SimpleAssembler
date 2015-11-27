@@ -882,6 +882,21 @@
         //}
         #endregion
 
+        #region ROR
+            
+        [Fact]
+        public void ParserParseROR()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ROR r1, r2, #28" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe1a01e62, output[0]);
+        }
+        #endregion
         #region STR
 
         [Fact]

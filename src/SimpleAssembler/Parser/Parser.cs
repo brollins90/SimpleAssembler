@@ -6,16 +6,17 @@
 
     public class Parser : IParser
     {
-        public List<uint> Kernel { get; }
+        int KERNEL_SIZE = 0x3000;
+
+        public List<uint> Kernel { get; private set; }
         public uint KernelIndex { get; private set; }
         public uint LineNumber { get; private set; }
         public Dictionary<string, uint> LabelTable { get; }
 
         public Parser()
         {
-            int KERNEL_SIZE = 0x3000;
-            Kernel = new List<uint>(KERNEL_SIZE);
-            for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
+            //Kernel = new List<uint>(KERNEL_SIZE);
+            //for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
             KernelIndex = 0;
             LineNumber = 1;
             LabelTable = new Dictionary<string, uint>();
@@ -23,6 +24,9 @@
 
         public uint[] Parse(string fileData)
         {
+            Kernel = new List<uint>(KERNEL_SIZE);
+            for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
+
             // First round to construct the label table
             Lexer.Lexer lexer = new Lexer.Lexer(fileData);
 
@@ -32,6 +36,8 @@
             }
 
             // reset the stuff after the first go round that found the label locations
+            Kernel = new List<uint>(KERNEL_SIZE);
+            for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
             lexer = new Lexer.Lexer(fileData);
             KernelIndex = 0;
             LineNumber = 1;
@@ -270,6 +276,13 @@
                             lexer.Next().Value());                           // sourceRegister
                         break;
 
+                    case OperationType.ROR:
+                        encodedInstruction = EncodeRORInstruction(
+                            lexer.Next().Value(),                           // sourceRegister
+                            lexer.Next().Value(),                           // baseRegister
+                            (lexer.Next() as NumberLexToken).IntValue());   // shift 
+                        break;
+
                     case OperationType.STR:
                         encodedInstruction = EncodeSTRInstruction(
                             lexer.Next().Value(),                           // sourceRegister
@@ -463,6 +476,22 @@
         {
 
             string instruction = $"e52d{sourceRegister}004";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeRORInstruction(string destinationRegister, string sourceRegister, int imm5)
+        {
+            if (imm5 > 0x1f)
+            {
+                throw new SyntaxException("On ROR, op2 cannot be larger than 0x1F");
+            }
+
+            string imm5bin = Convert.ToString(imm5, 2) + "110";
+            int imm5int = Convert.ToInt32(imm5bin, 2);
+            string imm5String = $"{IntToHexString(imm5int, 1)}{IntToHexString(imm5int, 0)}";
+
+            string instruction = $"e1a0{destinationRegister}{imm5String}{sourceRegister}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
