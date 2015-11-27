@@ -1,16 +1,12 @@
 
-
 address: 0x2000
 hello_string:
 //byte: 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x00
 byte: 0x00, 0x00, 0x00, 0x6c, 0x00, 0x00, 0x00, 0x6f, 0x00
 
-//ADDRESS: 0x3000
-//stack:
-//BLOCK: #1024
 
 address: 0x0
-MOVW sp, 0x9000 // todo: make this use the label
+MOVW sp, 0x9000 // start stack at 0x9000
 
 MOVW a1, 0x0
 MOVT a1, 0x3f20 // GPIO Base
@@ -27,33 +23,33 @@ POP a1
 loop:
 MOVW v1, 0x0 // data is going to be at 0x8000 + 0x2000
 MOVT v1, 0x1
-inner_loop:
 LDR a1, v1, 0x0
-CMPI a1, 0x0
-BEQ loop_delay
 
+//MOVW a1, 0x0048 // 'H'
 PUSH a1
 PUSH a2
-BL write_char
+BL print_char
 POP a2
 POP a1
 
-ADDI v1, v1, 0x4
-BAL inner_loop
-
-
-
-loop_delay:
-PUSH lr
+MOVW a1, 0x0069 // 'i'
 PUSH a1
-MOVW a1, 0x0 // delay
-MOVT a1, 0x10
+PUSH a2
+BL print_char
+POP a2
+POP a1
+
+MOVW a1, 0x0020 // ' '
 PUSH a1
-BL delay
+PUSH a2
+BL print_char
+POP a2
 POP a1
-POP a1
-POP lr
+
 BAL loop
+
+
+
 
 
 
@@ -122,18 +118,12 @@ MOV pc, lr
 
 
 // Writes a character to the UART
-write_char:
+print_char:
 PUSH lr
 PUSH a1
 PUSH a2
-PUSH a3
-LDR a1, sp, 0x14 // character
-LDR a2, sp, 0x10 // UART base
-
-write_char_check_ready:
-LDR a3, a2, 0x18 // get the UART status ??? which status?
-ANDS a3, a3, 0x20 // check if the UART is ready
-BNE write_char_check_ready
+LDR a1, sp, 0x10 // character
+LDR a2, sp, 0xc // UART base
 
 STR a1, a2, 0x0 // write character to UART
 
@@ -143,7 +133,6 @@ PUSH a1
 BL delay
 POP a1
 
-POP a3
 POP a2
 POP a1
 POP lr
