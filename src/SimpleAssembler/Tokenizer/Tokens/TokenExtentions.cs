@@ -73,6 +73,7 @@
                 || lower.Equals("bne")
                 || lower.Equals("cmpi")
                 || lower.Equals("ldr")
+                || lower.Equals("ldrb")
                 || lower.Equals("mov")
                 || lower.Equals("movt")
                 || lower.Equals("movw")

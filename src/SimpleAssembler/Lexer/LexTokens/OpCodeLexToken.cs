@@ -32,6 +32,8 @@
                 return OperationType.CMPI;
             else if (value.Equals("ldr", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.LDR;
+            else if (value.Equals("ldrb", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.LDRB;
             else if (value.Equals("mov", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.MOV;
             else if (value.Equals("movt", StringComparison.InvariantCultureIgnoreCase))
@@ -64,6 +66,7 @@
         BNE,
         CMPI,
         LDR,
+        LDRB,
         MOV,
         MOVT,
         MOVW,

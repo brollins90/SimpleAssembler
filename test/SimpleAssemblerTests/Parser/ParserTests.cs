@@ -210,7 +210,7 @@
 
             var output = parser.Parse(myProgram);
 
-            Assert.Equal((uint)0x48, parser.KernelIndex);
+            Assert.Equal((uint)0x12, parser.KernelIndex);
         }
 
         [Fact]
@@ -237,7 +237,7 @@
 
             var output = parser.Parse(myProgram);
 
-            Assert.Equal((uint)0x48692000, output[0]);
+            Assert.Equal((uint)0x00206948, output[0]);
         }
 
         [Fact]
@@ -250,7 +250,7 @@
 
             var output = parser.Parse(myProgram);
 
-            Assert.Equal((uint)0x48692000, output[0]);
+            Assert.Equal((uint)0x00206948, output[0]);
         }
 
         [Fact]
@@ -263,8 +263,8 @@
 
             var output = parser.Parse(myProgram);
 
-            Assert.Equal((uint)0x48692048, output[0]);
-            Assert.Equal((uint)0x69200000, output[1]);
+            Assert.Equal((uint)0x48206948, output[0]);
+            Assert.Equal((uint)0x00002069, output[1]);
         }
 
         [Fact]
@@ -571,6 +571,22 @@
 
         //    Assert.Equal(0xe51d7ffc, instruction);
         //}
+        #endregion
+
+        #region LDRB
+            
+        [Fact]
+        public void ParserParseLDRBPositive()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "LDRB a1, v1, 0x0" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe5d40000, output[0]);
+        }
         #endregion
 
         #region LDIIA

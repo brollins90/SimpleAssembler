@@ -150,6 +150,7 @@
                                 if ((t1Val.Equals("addi")
                                     || t1Val.Equals("ands")
                                     || t1Val.Equals("ldr")
+                                    || t1Val.Equals("ldrb")
                                     || t1Val.Equals("ror")
                                     || t1Val.Equals("str")
                                     || t1Val.Equals("subs"))

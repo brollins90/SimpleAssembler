@@ -97,7 +97,7 @@
                 if (address != null
                     && address is NumberLexToken)
                 {
-                    KernelIndex = (uint)(address as NumberLexToken).IntValue(); // TODO make a uintvalue method
+                    KernelIndex = (uint)(address as NumberLexToken).IntValue() / 4; // TODO make a uintvalue method
                 }
             }
         }
@@ -143,7 +143,7 @@
                     var a3 = GetNextByte(lexer);
                     var a4 = GetNextByte(lexer);
 
-                    var data = $"{a1.Value().Substring(2).PadLeft(2, '0')}{a2.Value().Substring(2).PadLeft(2, '0')}{a3.Value().Substring(2).PadLeft(2, '0')}{a4.Value().Substring(2).PadLeft(2, '0')}";
+                    var data = $"{a4.Value().Substring(2).PadLeft(2, '0')}{a3.Value().Substring(2).PadLeft(2, '0')}{a2.Value().Substring(2).PadLeft(2, '0')}{a1.Value().Substring(2).PadLeft(2, '0')}";
                     var encoded = Convert.ToUInt32(data, 16);
                     WriteInstructionToKernel(encoded);
 
@@ -251,6 +251,13 @@
 
                     case OperationType.LDR:
                         encodedInstruction = EncodeLDRInstruction(
+                            lexer.Next().Value(),                           // sourceRegister
+                            lexer.Next().Value(),                           // baseRegister
+                            (lexer.Next() as NumberLexToken).IntValue());   // offset 
+                        break;
+
+                    case OperationType.LDRB:
+                        encodedInstruction = EncodeLDRBInstruction(
                             lexer.Next().Value(),                           // sourceRegister
                             lexer.Next().Value(),                           // baseRegister
                             (lexer.Next() as NumberLexToken).IntValue());   // offset 
@@ -406,7 +413,7 @@
 
         public uint EncodeLDRInstruction(string sourceRegister, string baseRegister, int imm12)
         {
-            if (imm12 > 0xffff)
+            if (imm12 > 0xfff)
             {
                 throw new SyntaxException("On LDR, op2 cannot be larger than 0xFFF");
             }
@@ -427,6 +434,22 @@
             // e51{rn}{rt}{imm12}  // when imm12 is negitive
 
             string posNeg = (imm12 < 0) ? "1" : "9";
+
+            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
+
+            string instruction = $"e5{posNeg}{baseRegister}{sourceRegister}{imm12String}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeLDRBInstruction(string sourceRegister, string baseRegister, int imm12)
+        {
+            if (imm12 > 0xfff)
+            {
+                throw new SyntaxException("On LDRB, op2 cannot be larger than 0xFFF");
+            }
+
+            string posNeg = (imm12 < 0) ? "5" : "d";
 
             string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
 
@@ -552,7 +575,7 @@
         private void WriteInstructionToKernel(uint instruction)
         {
             Console.WriteLine($"{KernelIndex}: {Convert.ToString(instruction, 16)}");
-            Kernel.Insert((int)KernelIndex++, instruction);
+            Kernel[(int)KernelIndex++] = instruction;
         }
     }
 }
