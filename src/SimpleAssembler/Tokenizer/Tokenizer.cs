@@ -122,6 +122,12 @@
                             _index++;
                             stillReading = false;
                         }
+                        else if (current == '=' || current == '<' || current == '>' || current == '!')
+                        {
+                            state = ReadState.Operation;
+                            tokenString += current;
+                            _index++;
+                        }
 
                         // else
                         else
@@ -305,6 +311,18 @@
                             throw new SyntaxException($"Cannot add a '{current}' to a '{state}' token");
                         }
                         break;
+
+                    case ReadState.Operation:
+                        if (current == '=' || current == '<' || current == '>')
+                        {
+                            tokenString += current;
+                            _index++;
+                        }
+                        else
+                        {
+                            stillReading = false;
+                        }
+                        break;
                 }
             }
 
@@ -331,6 +349,8 @@
                     return new RightCurlyToken(tokenString);
                 case ReadState.Hex0:
                     throw new SyntaxException($"A '{state}' is not a valid state");
+                case ReadState.Operation:
+                    return new SpecialToken(tokenString);
                 case ReadState.None:
                     return null;
             }
@@ -363,6 +383,7 @@
         LeftCurly,
         NewLineR,
         NewLine,
+        Operation,
         RightCurly
     }
 }

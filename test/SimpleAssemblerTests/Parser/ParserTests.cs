@@ -913,6 +913,7 @@
             Assert.Equal(0xe1a01e62, output[0]);
         }
         #endregion
+
         #region STR
 
         [Fact]

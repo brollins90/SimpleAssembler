@@ -87,5 +87,21 @@
             }
             return false;
         }
+
+        public static bool IsOperation(this SpecialToken token)
+        {
+            var lower = token.Value().ToLowerInvariant();
+
+            if (lower.Equals("<")
+                || lower.Equals(">")
+                || lower.Equals("==")
+                || lower.Equals("<=")
+                || lower.Equals(">=")
+                || lower.Equals("!="))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }

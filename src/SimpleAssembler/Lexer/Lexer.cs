@@ -75,6 +75,58 @@
                 {
                     var t1Val = (t1 as AlphaNumToken).Value().ToLowerInvariant();
 
+                    if (t1Val.Equals("if"))
+                    {
+                        var operand1 = _tokenStream.Next();
+                        var operation = _tokenStream.Next();
+                        var operand2 = _tokenStream.Next();
+                        var thenStatement = _tokenStream.Next();
+                        var thenLabel = _tokenStream.Next();
+                        var elseStatement = _tokenStream.Next();
+                        var elseLabel = _tokenStream.Next();
+
+                        if (operand1 != null
+                            && operand1 is AlphaNumToken
+                            && (operand1 as AlphaNumToken).IsRegister()
+                            && operation != null
+                            && operation is SpecialToken
+                            && (operation as SpecialToken).IsOperation()
+                            && operand2 != null
+                            && ((operand2 is AlphaNumToken && (operand2 as AlphaNumToken).IsRegister())
+                              || operand2 is NumberToken)
+                            && thenStatement != null
+                            && thenStatement is AlphaNumToken
+                            && thenStatement.Value().Equals("then")
+                            && thenLabel != null
+                            && thenLabel is AlphaNumToken
+                            && elseStatement != null
+                            && elseStatement is AlphaNumToken
+                            && elseStatement.Value().Equals("else")
+                            && elseLabel != null
+                            && elseLabel is AlphaNumToken)
+                        {
+                            _lexTokenStack.Push(new LabelReferenceLexToken(elseLabel.Value()));
+                            _lexTokenStack.Push(new ElseStatementLexToken(elseStatement.Value()));
+                            _lexTokenStack.Push(new LabelReferenceLexToken(thenLabel.Value()));
+                            _lexTokenStack.Push(new ThenStatementLexToken(thenStatement.Value()));
+                            if (operand2 is NumberToken)
+                            {
+                                _lexTokenStack.Push(new NumberLexToken(operand2.Value()));
+                            }
+                            else
+                            {
+                                _lexTokenStack.Push(new RegisterLexToken(operand2.Value()));
+                            }
+                            _lexTokenStack.Push(new OperatorLexToken(operation.Value()));
+                            _lexTokenStack.Push(new RegisterLexToken(operand1.Value()));
+                            return new IfStatementLexToken(t1.Value()); // return op
+                        }
+                        else
+                        {
+                            throw new SyntaxException($"Something is wrong with the if statement");
+                        }
+                    }
+
                     // here t1 is an alphanum
                     var t2 = _tokenStream.Next();
 

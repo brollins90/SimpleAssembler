@@ -338,5 +338,199 @@
             Assert.IsType(typeof(NumberLexToken), token2);
             Assert.Equal("0x48692000", token2.Value());
         }
+
+        [Fact]
+        public void LexerIfGreater()
+        {
+            // IF {register} {condition} {register} THEN {label} ELSE {label}
+
+            ILexer lexer = new Lexer("IF a1 > a2 THEN label1 ELSE label2");
+            var token1 = lexer.Next();
+            var token2 = lexer.Next();
+            var token3 = lexer.Next();
+            var token4 = lexer.Next();
+            var token5 = lexer.Next();
+            var token6 = lexer.Next();
+            var token7 = lexer.Next();
+            var token8 = lexer.Next();
+
+            Assert.IsType(typeof(IfStatementLexToken), token1);
+            Assert.Equal("if", token1.Value());
+            Assert.IsType(typeof(RegisterLexToken), token2);
+            Assert.Equal("0", token2.Value());
+            Assert.IsType(typeof(OperatorLexToken), token3);
+            Assert.Equal(">", token3.Value());
+            Assert.IsType(typeof(RegisterLexToken), token4);
+            Assert.Equal("1", token4.Value());
+            Assert.IsType(typeof(ThenStatementLexToken), token5);
+            Assert.Equal("then", token5.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token6);
+            Assert.Equal("label1", token6.Value());
+            Assert.IsType(typeof(ElseStatementLexToken), token7);
+            Assert.Equal("else", token7.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token8);
+            Assert.Equal("label2", token8.Value());
+        }
+        [Fact]
+        public void LexerIfLess()
+        {
+            // IF {register} {condition} {register} THEN {label} ELSE {label}
+
+            ILexer lexer = new Lexer("IF a1 < a2 THEN label1 ELSE label2");
+            var token1 = lexer.Next();
+            var token2 = lexer.Next();
+            var token3 = lexer.Next();
+            var token4 = lexer.Next();
+            var token5 = lexer.Next();
+            var token6 = lexer.Next();
+            var token7 = lexer.Next();
+            var token8 = lexer.Next();
+
+            Assert.IsType(typeof(IfStatementLexToken), token1);
+            Assert.Equal("if", token1.Value());
+            Assert.IsType(typeof(RegisterLexToken), token2);
+            Assert.Equal("0", token2.Value());
+            Assert.IsType(typeof(OperatorLexToken), token3);
+            Assert.Equal("<", token3.Value());
+            Assert.IsType(typeof(RegisterLexToken), token4);
+            Assert.Equal("1", token4.Value());
+            Assert.IsType(typeof(ThenStatementLexToken), token5);
+            Assert.Equal("then", token5.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token6);
+            Assert.Equal("label1", token6.Value());
+            Assert.IsType(typeof(ElseStatementLexToken), token7);
+            Assert.Equal("else", token7.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token8);
+            Assert.Equal("label2", token8.Value());
+        }
+        [Fact]
+        public void LexerIfEqual()
+        {
+            // IF {register} {condition} {register} THEN {label} ELSE {label}
+
+            ILexer lexer = new Lexer("IF a1 == a2 THEN label1 ELSE label2");
+            var token1 = lexer.Next();
+            var token2 = lexer.Next();
+            var token3 = lexer.Next();
+            var token4 = lexer.Next();
+            var token5 = lexer.Next();
+            var token6 = lexer.Next();
+            var token7 = lexer.Next();
+            var token8 = lexer.Next();
+
+            Assert.IsType(typeof(IfStatementLexToken), token1);
+            Assert.Equal("if", token1.Value());
+            Assert.IsType(typeof(RegisterLexToken), token2);
+            Assert.Equal("0", token2.Value());
+            Assert.IsType(typeof(OperatorLexToken), token3);
+            Assert.Equal("==", token3.Value());
+            Assert.IsType(typeof(RegisterLexToken), token4);
+            Assert.Equal("1", token4.Value());
+            Assert.IsType(typeof(ThenStatementLexToken), token5);
+            Assert.Equal("then", token5.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token6);
+            Assert.Equal("label1", token6.Value());
+            Assert.IsType(typeof(ElseStatementLexToken), token7);
+            Assert.Equal("else", token7.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token8);
+            Assert.Equal("label2", token8.Value());
+        }
+        [Fact]
+        public void LexerIfGreaterEqual()
+        {
+            // IF {register} {condition} {register} THEN {label} ELSE {label}
+
+            ILexer lexer = new Lexer("IF a1 >= a2 THEN label1 ELSE label2");
+            var token1 = lexer.Next();
+            var token2 = lexer.Next();
+            var token3 = lexer.Next();
+            var token4 = lexer.Next();
+            var token5 = lexer.Next();
+            var token6 = lexer.Next();
+            var token7 = lexer.Next();
+            var token8 = lexer.Next();
+
+            Assert.IsType(typeof(IfStatementLexToken), token1);
+            Assert.Equal("if", token1.Value());
+            Assert.IsType(typeof(RegisterLexToken), token2);
+            Assert.Equal("0", token2.Value());
+            Assert.IsType(typeof(OperatorLexToken), token3);
+            Assert.Equal(">=", token3.Value());
+            Assert.IsType(typeof(RegisterLexToken), token4);
+            Assert.Equal("1", token4.Value());
+            Assert.IsType(typeof(ThenStatementLexToken), token5);
+            Assert.Equal("then", token5.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token6);
+            Assert.Equal("label1", token6.Value());
+            Assert.IsType(typeof(ElseStatementLexToken), token7);
+            Assert.Equal("else", token7.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token8);
+            Assert.Equal("label2", token8.Value());
+        }
+        [Fact]
+        public void LexerIfLessEqual()
+        {
+            // IF {register} {condition} {register} THEN {label} ELSE {label}
+
+            ILexer lexer = new Lexer("IF a1 <= a2 THEN label1 ELSE label2");
+            var token1 = lexer.Next();
+            var token2 = lexer.Next();
+            var token3 = lexer.Next();
+            var token4 = lexer.Next();
+            var token5 = lexer.Next();
+            var token6 = lexer.Next();
+            var token7 = lexer.Next();
+            var token8 = lexer.Next();
+
+            Assert.IsType(typeof(IfStatementLexToken), token1);
+            Assert.Equal("if", token1.Value());
+            Assert.IsType(typeof(RegisterLexToken), token2);
+            Assert.Equal("0", token2.Value());
+            Assert.IsType(typeof(OperatorLexToken), token3);
+            Assert.Equal("<=", token3.Value());
+            Assert.IsType(typeof(RegisterLexToken), token4);
+            Assert.Equal("1", token4.Value());
+            Assert.IsType(typeof(ThenStatementLexToken), token5);
+            Assert.Equal("then", token5.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token6);
+            Assert.Equal("label1", token6.Value());
+            Assert.IsType(typeof(ElseStatementLexToken), token7);
+            Assert.Equal("else", token7.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token8);
+            Assert.Equal("label2", token8.Value());
+        }
+
+        [Fact]
+        public void LexerIfNotEqual()
+        {
+            // IF {register} {condition} {register} THEN {label} ELSE {label}
+
+            ILexer lexer = new Lexer("IF a1 != a2 THEN label1 ELSE label2");
+            var token1 = lexer.Next();
+            var token2 = lexer.Next();
+            var token3 = lexer.Next();
+            var token4 = lexer.Next();
+            var token5 = lexer.Next();
+            var token6 = lexer.Next();
+            var token7 = lexer.Next();
+            var token8 = lexer.Next();
+
+            Assert.IsType(typeof(IfStatementLexToken), token1);
+            Assert.Equal("if", token1.Value());
+            Assert.IsType(typeof(RegisterLexToken), token2);
+            Assert.Equal("0", token2.Value());
+            Assert.IsType(typeof(OperatorLexToken), token3);
+            Assert.Equal("!=", token3.Value());
+            Assert.IsType(typeof(RegisterLexToken), token4);
+            Assert.Equal("1", token4.Value());
+            Assert.IsType(typeof(ThenStatementLexToken), token5);
+            Assert.Equal("then", token5.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token6);
+            Assert.Equal("label1", token6.Value());
+            Assert.IsType(typeof(ElseStatementLexToken), token7);
+            Assert.Equal("else", token7.Value());
+            Assert.IsType(typeof(LabelReferenceLexToken), token8);
+            Assert.Equal("label2", token8.Value());
+        }
     }
 }
