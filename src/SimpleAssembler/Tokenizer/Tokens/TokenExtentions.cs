@@ -64,7 +64,7 @@
         {
             var lower = token.Value().ToLowerInvariant();
 
-            if (lower.Equals("adds")
+            if (lower.Equals("ands")
                 || lower.Equals("bal")
                 || lower.Equals("bl")
                 || lower.Equals("bne")

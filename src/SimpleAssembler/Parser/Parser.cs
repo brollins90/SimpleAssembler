@@ -17,7 +17,7 @@
         {
             Kernel = new List<uint>(64000000);
             KernelIndex = 0;
-            LineNumber = 0;
+            LineNumber = 1;
             LabelTable = new Dictionary<string, uint>();
         }
 
@@ -34,7 +34,7 @@
             // reset the stuff after the first go round that found the label locations
             lexer = new Lexer.Lexer(fileData);
             KernelIndex = 0;
-            LineNumber = 0;
+            LineNumber = 1;
 
             while (lexer.HasNext())
             {
@@ -378,7 +378,7 @@
 
         public uint EncodeSTRInstruction(string sourceRegister, string baseRegister, int imm12)
         {
-            if (imm12 > 0xffff)
+            if (imm12 > 0xfff)
             {
                 throw new SyntaxException("On STR, op2 cannot be larger than 0xFFF");
             }
@@ -403,7 +403,7 @@
 
         public uint EncodeSUBSInstruction(string destinationRegister, string sourceRegister, int imm12)
         {
-            if (imm12 > 0xffff)
+            if (imm12 > 0xfff)
             {
                 throw new SyntaxException("On SUBS, op2 cannot be larger than 0xFFF");
             }
