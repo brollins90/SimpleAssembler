@@ -63,6 +63,10 @@
             {
                 ParseByteDataStatement(lexer);
             }
+            else if (operation is IfStatementLexToken)
+            {
+                ParseIfStatement(lexer, buildingLabelTable);
+            }
             else if (operation is LabelDeclarationLexToken)
             {
                 ParseLabelDeclaration(lexer, buildingLabelTable);
@@ -150,6 +154,32 @@
                     a1 = lexer.Next();
                 }
                 lexer.UnGet(a1);
+            }
+        }
+
+        public void ParseIfStatement(Lexer.Lexer lexer, bool buildingLabelTable)
+        {
+            var token = lexer.Next();
+            if (token != null
+                && token is IfStatementLexToken)
+            {
+                var operand1 = (lexer.Next() as RegisterLexToken);
+                var op = (lexer.Next() as OperatorLexToken);
+                var operand2 = lexer.Next();
+                var thenStatement = lexer.Next();
+                var thenLabel = (lexer.Next() as LabelReferenceLexToken);
+                var elseStatement = lexer.Next();
+                var elseLabel = (lexer.Next() as LabelReferenceLexToken);
+
+                bool op2IsNumber = (operand2 is NumberLexToken);
+
+                //if (op2IsNumber)
+                WriteInstructionToKernel(EncodeCMPIInstruction(operand1.Value(), (operand2 as NumberLexToken).IntValue()));
+                //else
+                //    EncodeCMPInstruction(operand1.Value(), operand2.Value());
+
+                WriteInstructionToKernel(EncodeBranchInstruction(op.Condition, "a", thenLabel.Value(), buildingLabelTable));
+                WriteInstructionToKernel(EncodeBranchInstruction("e", "a", elseLabel.Value(), buildingLabelTable));
             }
         }
 

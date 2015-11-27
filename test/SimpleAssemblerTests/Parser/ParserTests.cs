@@ -990,6 +990,28 @@
         }
         #endregion
 
+
+        [Fact]
+        public void ParserIf()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "IF r1 == 0x4 THEN yes ELSE no" + Environment.NewLine +
+                "yes:" + Environment.NewLine +
+                "MOVW r0, 0x0" + Environment.NewLine +
+                "no:" + Environment.NewLine +
+                "MOVW r0, 0x0" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3510004, output[0]);
+            Assert.Equal((uint)0x0a000000, output[1]);
+            Assert.Equal(0xea000000, output[2]);
+            Assert.Equal(0xe3000000, output[3]);
+            Assert.Equal(0xe3000000, output[4]);
+        }
+
         // Data-processing (immediate)
         // $"{cond[4]}001{op[5]}{Rn[4]}{imm16}
         //
