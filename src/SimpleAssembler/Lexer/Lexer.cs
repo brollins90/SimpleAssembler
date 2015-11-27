@@ -101,7 +101,7 @@
                             {
                                 Stack<NumberToken> numbers = new Stack<NumberToken>();
                                 var next = _tokenStream.Next();
-                                while (next != null 
+                                while (next != null
                                     && (next.GetType() == typeof(NumberToken) || next.GetType() == typeof(CommaToken)))
                                 {
                                     if (next is NumberToken)
@@ -147,7 +147,8 @@
                             {
 
                                 // if instuction is: $"{op} {reg}, {reg}, {imm12}"
-                                if ((t1Val.Equals("ands")
+                                if ((t1Val.Equals("addi")
+                                    || t1Val.Equals("ands")
                                     || t1Val.Equals("ldr")
                                     || t1Val.Equals("str")
                                     || t1Val.Equals("subs"))
@@ -203,7 +204,8 @@
                                 }
 
                                 // if instuction is: $"{op} {reg}, {imm16}"
-                                else if ((t1Val.Equals("movt")
+                                else if ((t1Val.Equals("cmpi")
+                                    || t1Val.Equals("movt")
                                     || t1Val.Equals("movw"))
                                     && (t2 as AlphaNumToken).IsRegister())
                                 {
@@ -236,6 +238,7 @@
 
                                 // if instuction is: $"{op} {label}"
                                 else if ((t1Val.Equals("bal")
+                                    || t1Val.Equals("beq")
                                     || t1Val.Equals("bl")
                                     || t1Val.Equals("bne"))
                                     && (t2 is AlphaNumToken || t2 is AlphaNumUnderscoreToken))
@@ -250,48 +253,6 @@
                                     throw new SyntaxException($"Unknown lex instuction t2: {t2.Value()}");
                                 }
                             }
-
-                            //// t2 is comma
-                            //if (t2 is CommaToken
-                            //  && (t1 as AlphaNumToken).IsRegister()) ///// // todo: i dont think we get here ?? maybe do if i push back on the alpha alpha line
-                            //{
-                            //    // throw away t2
-                            //    return new RegisterToken(t1.Value());
-                            //}
-
-                            //// t2 is AlphaNum || AlphaNumUnderscore ( could be a branch )
-                            //if ((t2 is AlphaNumToken || t2 is AlphaNumUnderscoreToken)
-                            //  && (t1 as AlphaNumToken).IsBranchOpCode())
-                            //{
-                            //    _lexTokenStack.Push(new LabelReferenceToken(t2.Value())); // keep t2
-                            //    return new OpCodeToken(t1.Value()); // return branch op
-                            //}
-
-                            //// t2 is alphanum
-                            //if (t2 is AlphaNumToken
-                            //  && (t2 as AlphaNumToken).IsRegister() // we might miss a valid branch instruction because of this, but it should have been found earlier
-                            //  && (t1 as AlphaNumToken).IsOpCode())
-                            //{
-                            //    var t3 = _tokenStream.Next();
-                            //    if (t3 != null)
-                            //    {
-                            //        if (t3 is CommaToken)
-                            //        {
-                            //            _tokenStream.UnGet(t3); // put the comma back
-                            //            _tokenStream.UnGet(t2); // put the register
-                            //        }
-                            //        else
-                            //        {
-                            //            _tokenStream.UnGet(t3);
-                            //            _lexTokenStack.Push(new RegisterToken(t2.Value()));
-                            //        }
-                            //    }
-                            //    else
-                            //    {
-                            //        _lexTokenStack.Push(new RegisterToken(t2.Value()));
-                            //    }
-                            //    return new OpCodeToken(t1.Value());
-                            //}
 
                             // something else
                             else
@@ -315,78 +276,6 @@
             } // t1 is null
             return null;
         }
-
-        //protected LexToken GetNext()
-        //{
-        //    List<Token> tokens = new List<Token>();
-        //    Stack<LexToken> lexTokens = new Stack<LexToken>();
-        //    bool stillReading = true;
-        //    LexerState state = LexerState.None;
-
-        //    while (_tokenStream.HasNext() && stillReading)
-        //    {
-        //        var current = _tokenStream.Next();
-        //        tokens.Add(current);
-
-        //        switch (state)
-        //        {
-        //            case LexerState.None:
-
-        //                // alphanum
-        //                if (current.GetType() == typeof(AlphaNumToken)
-        //                    || current.GetType() == typeof(AlphaNumUnderscoreToken))
-        //                {
-        //                    state = LexerState.AlphaNum;
-        //                }
-        //                break;
-
-        //            case LexerState.AlphaNum:
-
-        //                if (current.GetType() == typeof(AlphaNumToken))
-        //                {
-        //                    // probably an op
-        //                    var previous = tokens[tokens.Count - 2];
-
-        //                    if ((current as AlphaNumToken).IsRegister())
-        //                    {
-        //                        // registers have to be followed by an opcode
-        //                        if ((previous as AlphaNumToken).IsOpCode())
-        //                        {
-        //                            lexTokens.Push(new OpCodeToken(previous.Value()));
-        //                        }
-        //                    }
-
-        //                    if ((current as AlphaNumToken).IsOpCode())
-        //                    {
-        //                        // registers have to be followed by an opcode
-        //                        if ((previous as AlphaNumToken).IsOpCode())
-        //                        {
-        //                            lexTokens.Push(new OpCodeToken(previous.Value()));
-        //                        }
-        //                    }
-        //                }
-        //                else if (current.GetType() == typeof(AlphaNumUnderscoreToken))
-        //                {
-        //                    // alpha followed by alphaUnd branch to label
-
-        //                }
-        //                else if (current.GetType() == typeof(ColonToken))
-        //                {
-        //                    // AlphaNum -> Colon = LabelDeclaration
-        //                    // TODO: or address...
-        //                    current = tokens.Pop(); // current is current
-        //                    current = tokens.Pop(); // current is previous
-        //                    // if current is address...
-        //                    return new LabelDeclarationToken(current.Value());
-        //                }
-        //                break;
-        //        }
-
-
-        //    }
-        //    //_tokenStream.Next()
-        //    return null;
-        //}
     }
 
     public enum LexerState

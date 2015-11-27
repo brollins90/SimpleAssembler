@@ -14,14 +14,20 @@
 
         private OperationType ParseOperationType(string value)
         {
-            if (value.Equals("ands", StringComparison.InvariantCultureIgnoreCase))
+            if (value.Equals("addi", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.ADDI;
+            else if (value.Equals("ands", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.ANDS;
             else if (value.Equals("bal", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.BAL;
+            else if (value.Equals("beq", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.BEQ;
             else if (value.Equals("bl", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.BL;
             else if (value.Equals("bne", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.BNE;
+            else if (value.Equals("cmpi", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.CMPI;
             else if (value.Equals("ldr", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.LDR;
             else if (value.Equals("mov", StringComparison.InvariantCultureIgnoreCase))
@@ -45,10 +51,13 @@
 
     public enum OperationType
     {
+        ADDI,
         ANDS,
         BAL,
+        BEQ,
         BL,
         BNE,
+        CMPI,
         LDR,
         MOV,
         MOVT,

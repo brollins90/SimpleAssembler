@@ -25,12 +25,30 @@
         }
 
         [Fact]
+        public void OperationTypeADDI()
+        {
+            OpCodeLexToken token = new OpCodeLexToken("ADDI");
+
+            Assert.Equal("addi", token.Value());
+            Assert.Equal(OperationType.ADDI, token.OperationType);
+        }
+
+        [Fact]
         public void OperationTypeBAL()
         {
             OpCodeLexToken token = new OpCodeLexToken("BAL");
 
             Assert.Equal("bal", token.Value());
             Assert.Equal(OperationType.BAL, token.OperationType);
+        }
+
+        [Fact]
+        public void OperationTypeBEQ()
+        {
+            OpCodeLexToken token = new OpCodeLexToken("BEQ");
+
+            Assert.Equal("beq", token.Value());
+            Assert.Equal(OperationType.BEQ, token.OperationType);
         }
 
         [Fact]
@@ -49,6 +67,15 @@
 
             Assert.Equal("bne", token.Value());
             Assert.Equal(OperationType.BNE, token.OperationType);
+        }
+
+        [Fact]
+        public void OperationTypeCMPI()
+        {
+            OpCodeLexToken token = new OpCodeLexToken("CMPI");
+
+            Assert.Equal("cmpi", token.Value());
+            Assert.Equal(OperationType.CMPI, token.OperationType);
         }
 
         [Fact]

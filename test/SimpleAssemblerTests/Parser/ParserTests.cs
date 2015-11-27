@@ -95,6 +95,56 @@
         }
 
         [Fact]
+        public void ParserParseLab7()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "MOVW r0, 0x0" + Environment.NewLine +
+                "MOVT r0, 0x3f20" + Environment.NewLine +
+                "MOVW r1, 0x0" + Environment.NewLine +
+                "MOVT r1, 0x20" + Environment.NewLine +
+                "" + Environment.NewLine +
+                "STR r1, r0, 0x10" + Environment.NewLine +
+                "MOVW r2, 0x8000" + Environment.NewLine +
+                "" + Environment.NewLine +
+                "loop: STR r2, r0, 0x20" + Environment.NewLine +
+                "MOVW r3, 0x0" + Environment.NewLine +
+                "MOVT r3, 0x10" + Environment.NewLine +
+                "wait1: SUBS r3, r3, 0x01" + Environment.NewLine +
+                "  BNE wait1" + Environment.NewLine +
+                "" + Environment.NewLine +
+                "STR r2, r0, 0x2c" + Environment.NewLine +
+                "" + Environment.NewLine +
+                "MOVW r3, 0x0" + Environment.NewLine +
+                "MOVT r3, 0x10" + Environment.NewLine +
+                "wait2: SUBS r3, r3, 0x01" + Environment.NewLine +
+                "  BNE wait2" + Environment.NewLine +
+                "" + Environment.NewLine +
+                "BAL loop" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3000000, output[0]);
+            Assert.Equal(0xe3430f20, output[1]);
+            Assert.Equal(0xe3001000, output[2]);
+            Assert.Equal(0xe3401020, output[3]);
+            Assert.Equal(0xe5001010, output[4]);
+            Assert.Equal(0xe3082000, output[5]);
+            Assert.Equal(0xe5002020, output[6]);
+            Assert.Equal(0xe3003000, output[7]);
+            Assert.Equal(0xe3403010, output[8]);
+            Assert.Equal(0xe2533001, output[9]);
+            Assert.Equal((uint)0x1afffffd, output[10]);
+            Assert.Equal(0xe500202c, output[11]);
+            Assert.Equal(0xe3003000, output[12]);
+            Assert.Equal(0xe3403010, output[13]);
+            Assert.Equal(0xe2533001, output[14]);
+            Assert.Equal((uint)0x1afffffd, output[15]);
+            Assert.Equal(0xeafffff4, output[16]);
+        }
+
+        [Fact]
         public void ParserParseLabelReturnsCorrectIndex()
         {
             IParser parser = new Parser();
@@ -259,6 +309,22 @@
         }
         #endregion
 
+        #region ADDI
+
+        [Fact]
+        public void ParserParseADDI()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ADDI a3, a3, 0x4" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0xe2822004, output[0]);
+        }
+        #endregion
+
         #region ANDS
 
         [Fact]
@@ -317,6 +383,52 @@
             var output = parser.Parse(myProgram);
 
             Assert.Equal((uint)0xeaffffff, output[0]);
+            Assert.Equal(0xe3000000, output[1]);
+        }
+        #endregion
+
+        #region BEQ
+        [Fact]
+        public void ParserParseBEQParseNoLabel()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "BEQ loop" + Environment.NewLine;
+
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                parser.Parse(myProgram);
+            });
+        }
+
+        [Fact]
+        public void ParserParseBEQParseWithLabel()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "loop: MOVW r0, 0x0" + Environment.NewLine +
+                "BEQ loop" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3000000, output[0]);
+            Assert.Equal((uint)0x0afffffd, output[1]);
+        }
+
+        [Fact]
+        public void ParserParseBEQParseWithLabelAfter()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "BEQ loop" + Environment.NewLine +
+                "loop: MOVW r0, 0x0" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0x0affffff, output[0]);
             Assert.Equal(0xe3000000, output[1]);
         }
         #endregion
@@ -410,6 +522,22 @@
 
             Assert.Equal((uint)0x1affffff, output[0]);
             Assert.Equal(0xe3000000, output[1]);
+        }
+        #endregion
+
+        #region CMPI
+
+        [Fact]
+        public void ParserParseCMPI()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "CMPI a1, 0x4" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3500004, output[0]);
         }
         #endregion
 

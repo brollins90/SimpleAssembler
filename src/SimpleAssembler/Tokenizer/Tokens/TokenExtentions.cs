@@ -64,10 +64,13 @@
         {
             var lower = token.Value().ToLowerInvariant();
 
-            if (lower.Equals("ands")
+            if (lower.Equals("addi")
+                || lower.Equals("ands")
                 || lower.Equals("bal")
+                || lower.Equals("beq")
                 || lower.Equals("bl")
                 || lower.Equals("bne")
+                || lower.Equals("cmpi")
                 || lower.Equals("ldr")
                 || lower.Equals("mov")
                 || lower.Equals("movt")

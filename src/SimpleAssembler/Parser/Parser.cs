@@ -13,7 +13,9 @@
 
         public Parser()
         {
-            Kernel = new List<uint>(64000000);
+            int KERNEL_SIZE = 0x3000;
+            Kernel = new List<uint>(KERNEL_SIZE);
+            for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
             KernelIndex = 0;
             LineNumber = 1;
             LabelTable = new Dictionary<string, uint>();
@@ -73,7 +75,7 @@
             }
             else
             {
-                throw new SyntaxException($"Unknown instruction: {operation.Value()}");
+                throw new SyntaxException($"Unknown instruction: {operation.Value()} on line {LineNumber}");
             }
         }
 
@@ -94,6 +96,26 @@
             }
         }
 
+        private NumberLexToken GetNextByte(Lexer.Lexer lexer)
+        {
+            var token = lexer.Next();
+            if (token != null
+                && token is NumberLexToken)
+            {
+                if ((token as NumberLexToken).IntValue() > 0xff
+                    || (token as NumberLexToken).IntValue() < 0x0)
+                {
+                    throw new SyntaxException($"{token.Value()} is not the correct size of a byte");
+                }
+            }
+            else
+            {
+                lexer.UnGet(token);
+                token = new NumberLexToken("0x0");
+            }
+            return (NumberLexToken)token;
+        }
+
         public void ParseByteDataStatement(Lexer.Lexer lexer)
         {
             var token = lexer.Next();
@@ -103,35 +125,17 @@
                 var a1 = lexer.Next();
                 while (a1 != null
                     && a1 is NumberLexToken
-                    && (a1 as NumberLexToken).IntValue() != 0)
+                    //&& (a1 as NumberLexToken).IntValue() != 0
+                    )
                 {
-                    var a2 = lexer.Next() ?? new NumberLexToken("0x0");
-                    var a3 = lexer.Next() ?? new NumberLexToken("0x0");
-                    var a4 = lexer.Next() ?? new NumberLexToken("0x0");
-
                     if ((a1 as NumberLexToken).IntValue() > 0xff
-                        || (a1 as NumberLexToken).IntValue() < 0x00)
+                        || (a1 as NumberLexToken).IntValue() < 0x0)
                     {
                         throw new SyntaxException($"{a1.Value()} is not the correct size of a byte");
                     }
-
-                    if ((a2 as NumberLexToken).IntValue() > 0xff
-                        || (a2 as NumberLexToken).IntValue() < 0x00)
-                    {
-                        throw new SyntaxException($"{a2.Value()} is not the correct size of a byte");
-                    }
-
-                    if ((a3 as NumberLexToken).IntValue() > 0xff
-                        || (a3 as NumberLexToken).IntValue() < 0x00)
-                    {
-                        throw new SyntaxException($"{a3.Value()} is not the correct size of a byte");
-                    }
-
-                    if ((a4 as NumberLexToken).IntValue() > 0xff
-                        || (a4 as NumberLexToken).IntValue() < 0x00)
-                    {
-                        throw new SyntaxException($"{a4.Value()} is not the correct size of a byte");
-                    }
+                    var a2 = GetNextByte(lexer);
+                    var a3 = GetNextByte(lexer);
+                    var a4 = GetNextByte(lexer);
 
                     var data = $"{a1.Value().Substring(2).PadLeft(2, '0')}{a2.Value().Substring(2).PadLeft(2, '0')}{a3.Value().Substring(2).PadLeft(2, '0')}{a4.Value().Substring(2).PadLeft(2, '0')}";
                     var encoded = Convert.ToUInt32(data, 16);
@@ -179,6 +183,13 @@
 
                 switch (operation.OperationType)
                 {
+                    case OperationType.ADDI:
+                        encodedInstruction = EncodeADDIInstruction(
+                            lexer.Next().Value(),                           // destinationRegister
+                            lexer.Next().Value(),                           // sourceRegister
+                            (lexer.Next() as NumberLexToken).IntValue());   // imm12 
+                        break;
+
                     case OperationType.ANDS:
                         encodedInstruction = EncodeANDSInstruction(
                             lexer.Next().Value(),                           // destinationRegister
@@ -189,6 +200,14 @@
                     case OperationType.BAL:
                         encodedInstruction = EncodeBranchInstruction(
                             "e",                                            // Always
+                            "a",                                            // No Link
+                            lexer.Next().Value(),                           // Label
+                            buildLabelTable);
+                        break;
+
+                    case OperationType.BEQ:
+                        encodedInstruction = EncodeBranchInstruction(
+                            "0",                                            // Equal
                             "a",                                            // No Link
                             lexer.Next().Value(),                           // Label
                             buildLabelTable);
@@ -208,6 +227,12 @@
                             "a",                                            // No Link
                             lexer.Next().Value(),                           // Label
                             buildLabelTable);
+                        break;
+
+                    case OperationType.CMPI:
+                        encodedInstruction = EncodeCMPIInstruction(
+                            lexer.Next().Value(),                           // destinationRegister
+                            (lexer.Next() as NumberLexToken).IntValue());   // imm16 
                         break;
 
                     case OperationType.LDR:
@@ -286,9 +311,23 @@
         }
 
 
+        public uint EncodeADDIInstruction(string destinationRegister, string sourceRegister, int imm12)
+        {
+            if (imm12 > 0xfff)
+            {
+                throw new SyntaxException("On ADDI, op2 cannot be larger than 0xFFF");
+            }
+
+            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
+
+            string instruction = $"e28{destinationRegister}{sourceRegister}{imm12String}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
         public uint EncodeANDSInstruction(string destinationRegister, string sourceRegister, int imm12)
         {
-            if (imm12 > 0xffff)
+            if (imm12 > 0xfff)
             {
                 throw new SyntaxException("On ANDS, op2 cannot be larger than 0xFFF");
             }
@@ -326,6 +365,20 @@
             //offsetString = offsetString.Substring(2);
 
             string instruction = $"{condition}{withLink}{offsetString}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeCMPIInstruction(string destinationRegister, int imm16)
+        {
+            if (imm16 > 0xfff)
+            {
+                throw new SyntaxException("On CMPI, op2 cannot be larger than 0xFFF");
+            }
+            
+            string imm12 = $"{IntToHexString(imm16, 2)}{IntToHexString(imm16, 1)}{IntToHexString(imm16, 0)}";
+
+            string instruction = $"e35{destinationRegister}0{imm12}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
