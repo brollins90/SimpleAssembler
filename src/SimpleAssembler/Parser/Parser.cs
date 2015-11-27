@@ -219,6 +219,14 @@
                             buildLabelTable);
                         break;
 
+                    case OperationType.BGE:
+                        encodedInstruction = EncodeBranchInstruction(
+                            "a",                                            // Greater than or equal
+                            "a",                                            // No Link
+                            lexer.Next().Value(),                           // Label
+                            buildLabelTable);
+                        break;
+
                     case OperationType.BL:
                         encodedInstruction = EncodeBranchInstruction(
                             "e",                                            // Always

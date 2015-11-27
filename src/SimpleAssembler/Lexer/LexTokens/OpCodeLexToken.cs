@@ -22,6 +22,8 @@
                 return OperationType.BAL;
             else if (value.Equals("beq", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.BEQ;
+            else if (value.Equals("bge", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.BGE;
             else if (value.Equals("bl", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.BL;
             else if (value.Equals("bne", StringComparison.InvariantCultureIgnoreCase))
@@ -57,6 +59,7 @@
         ANDS,
         BAL,
         BEQ,
+        BGE,
         BL,
         BNE,
         CMPI,

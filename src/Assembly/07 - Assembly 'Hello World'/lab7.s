@@ -42,6 +42,12 @@ BL print_char
 POP a2
 POP a1
 
+PUSH a2
+PUSH a2
+BL print_hex
+POP a2
+POP a1
+
 BAL loop
 
 
@@ -144,9 +150,52 @@ PUSH lr
 PUSH a1
 LDR a1, sp, 0x8
 
-delay_wait: SUBS a1, a1, 0x01
+delay_wait:
+SUBS a1, a1, 0x01
 BNE delay_wait
 
+POP a1
+POP lr
+MOV pc, lr
+
+
+
+
+print_hex:
+PUSH lr
+PUSH a1
+PUSH a2
+PUSH a3
+PUSH a4
+LDR a1, sp, 0x18 // character
+LDR a2, sp, 0x14 // UART base
+MOV a3, a1
+MOVW a4, 0x8
+
+hex_loop:
+ROR a3, a3, #28
+ANDS a1, a3, 0xf
+CMPI a1, #10
+
+BGE hex_digit
+ADDI a1, a1, 0x30
+BAL print_digit
+hex_digit:
+ADDI a1, a1, 0x37
+
+print_digit:
+PUSH a1
+PUSH a2
+BL print_char
+POP a2
+POP a1
+
+SUBS a4, a4, 0x01
+BNE hex_loop
+
+POP a4
+POP a3
+POP a2
 POP a1
 POP lr
 MOV pc, lr

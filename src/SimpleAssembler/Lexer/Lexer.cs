@@ -240,6 +240,7 @@
                                 // if instuction is: $"{op} {label}"
                                 else if ((t1Val.Equals("bal")
                                     || t1Val.Equals("beq")
+                                    || t1Val.Equals("bge")
                                     || t1Val.Equals("bl")
                                     || t1Val.Equals("bne"))
                                     && (t2 is AlphaNumToken || t2 is AlphaNumUnderscoreToken))

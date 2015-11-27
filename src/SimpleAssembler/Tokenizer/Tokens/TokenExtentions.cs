@@ -68,6 +68,7 @@
                 || lower.Equals("ands")
                 || lower.Equals("bal")
                 || lower.Equals("beq")
+                || lower.Equals("bge")
                 || lower.Equals("bl")
                 || lower.Equals("bne")
                 || lower.Equals("cmpi")
