@@ -148,51 +148,49 @@
         }
         #endregion
 
-        //#region Data Statements
+        #region Data Statements
 
-        //[Fact]
-        //public void ParserCanParseDataByteWordSize()
-        //{
-        //    IParser parser = new Parser();
+        [Fact]
+        public void ParserCanParseDataByteWordSize()
+        {
+            IParser parser = new Parser();
 
-        //    uint data = uint.MaxValue;
-        //    ITokenStream tokenStream = new TokenStream("byte: 0x48, 0x69, 0x20, 0x00");
+            var myProgram =
+                "byte: 0x48, 0x69, 0x20, 0x00" + Environment.NewLine;
 
-        //    var result = parser.TryParseData(tokenStream, out data);
+            var output = parser.Parse(myProgram);
 
-        //    Assert.True(result);
-        //    Assert.Equal((uint)0x48692000, data);
-        //    Assert.False(tokenStream.HasNext());
-        //}
+            Assert.Equal((uint)0x48692000, output[0]);
+        }
 
-        //[Fact]
-        //public void ParserCanParseDataByteLessThanWordSize()
-        //{
-        //    IParser parser = new Parser();
+        [Fact]
+        public void ParserCanParseDataByteLessThanWordSize()
+        {
+            IParser parser = new Parser();
 
-        //    ITokenStream tokenStream = new TokenStream("byte: 0x48, 0x69, 0x20");
+            var myProgram =
+                "byte: 0x48, 0x69, 0x20" + Environment.NewLine;
 
-        //    Assert.Throws(typeof(SyntaxException), () =>
-        //    {
-        //        uint dataIndex;
-        //        parser.TryParseData(tokenStream, out dataIndex);
-        //    });
-        //}
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                var output = parser.Parse(myProgram);
+            });
+        }
 
-        //[Fact]
-        //public void ParserCanParseDataByteGreaterThanWordSize()
-        //{
-        //    IParser parser = new Parser();
+        [Fact]
+        public void ParserCanParseDataByteGreaterThanWordSize()
+        {
+            IParser parser = new Parser();
 
-        //    ITokenStream tokenStream = new TokenStream("byte: 0x48, 0x69, 0x20, 0x48, 0x69, 0x20");
+            var myProgram =
+                "byte: 0x48, 0x69, 0x20, 0x48, 0x69, 0x20" + Environment.NewLine;
 
-        //    Assert.Throws(typeof(SyntaxException), () =>
-        //    {
-        //        uint dataIndex;
-        //        parser.TryParseData(tokenStream, out dataIndex);
-        //    });
-        //}
-        //#endregion
+            Assert.Throws(typeof(SyntaxException), () =>
+            {
+                var output = parser.Parse(myProgram);
+            });
+        }
+        #endregion
 
         #region ANDS
 
