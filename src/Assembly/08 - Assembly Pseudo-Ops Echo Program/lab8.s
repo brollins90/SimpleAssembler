@@ -18,22 +18,22 @@ POP a2
 POP a1
 
 
-loop:
+main_loop:
 
 MOVW v1, 0x9004
-inner_loop:
+main_loop_inner:
 LDRB a1, v1, 0x0
-IF a1 == 0x0 THEN loop ELSE loop_continue
-loop_continue:
+IF a1 == 0x0 THEN main_loop ELSE main_loop_continue
+main_loop_continue:
 
 PUSH a1
 PUSH a2
-BL print_char
+BL write_char
 POP a2
 POP a1
 
 ADDI v1, v1, 0x1
-BAL inner_loop
+BAL main_loop_inner
 
 
 
@@ -83,8 +83,9 @@ STR a3, a2, 0x24 // write(UART0_IBRD, #1)
 MOVW a3, #40
 STR a3, a2, 0x28 // write(UART0_FBRD, #40)
 
-// enable fifo & 8 bit data transmission (1 stop bit, no parity)
-MOVW a3, #70
+
+//MOVW a3, #70 // enable fifo & 8 bit data transmission (1 stop bit, no parity)
+MOVW a3, 0x60 // only enables 8-bit xfer, not FIFOs
 STR a3, a2, 0x2c // write(UART0_LCHR, (1<<4) | (1<<5) | (1<<6))
 
 // mask all interrupts
@@ -104,8 +105,29 @@ MOV pc, lr
 
 
 
+read_char:
+PUSH lr
+PUSH a2
+LDR a2, sp, 0x8 // UART base
+
+read_char_loop:
+LDR a1, a2, 0x18
+ANDS a1, a1, 0x10
+IF a1 != 0x0 THEN read_char_continue ELSE read_char_loop
+read_char_continue:
+LDR a1, a2, 0x0
+ANDS a1, a1, 0xff
+
+POP a2
+POP lr
+MOV pc, lr
+
+
+
+
+
 // Writes a character to the UART
-print_char:
+write_char:
 PUSH lr
 PUSH a1
 PUSH a2
@@ -135,9 +157,9 @@ PUSH lr
 PUSH a1
 LDR a1, sp, 0x8
 
-delay_wait:
+delay_loop:
 SUBS a1, a1, 0x01
-IF a1 != 0x01 THEN delay_wait ELSE delay_continue
+IF a1 != 0x01 THEN delay_loop ELSE delay_continue
 delay_continue:
 
 POP a1
@@ -147,7 +169,7 @@ MOV pc, lr
 
 
 
-print_hex:
+write_hex:
 PUSH lr
 PUSH a1
 PUSH a2
@@ -158,26 +180,26 @@ LDR a2, sp, 0x14 // UART base
 MOV a3, a1
 MOVW a4, 0x8
 
-hex_loop:
+write_hex_loop:
 ROR a3, a3, #28
 ANDS a1, a3, 0xf
-if a1 >= 0xa THEN hex_digit ELSE num_digit
-num_digit:
+if a1 >= 0xa THEN write_hex_loop_hex_digit ELSE write_hex_loop_num_digit
+write_hex_loop_num_digit:
 ADDI a1, a1, 0x30
-BAL print_digit
-hex_digit:
+BAL write_hex_write_char
+write_hex_loop_hex_digit:
 ADDI a1, a1, 0x37
 
-print_digit:
+write_hex_write_char:
 PUSH a1
 PUSH a2
-BL print_char
+BL write_char
 POP a2
 POP a1
 
 SUBS a4, a4, 0x01
-IF a4 != 0x0 THEN hex_loop ELSE done_hex
-done_hex:
+IF a4 != 0x0 THEN write_hex_loop ELSE write_hex_continue
+write_hex_continue:
 
 POP a4
 POP a3
