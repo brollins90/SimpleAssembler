@@ -17,14 +17,18 @@ BL initialize_uart
 POP a2
 POP a1
 
+MOVW a1, 0x48
+PUSH a1
+PUSH a2
+BL write_char
+POP a2
+POP a1
 
 main_loop:
 
-MOVW v1, 0x9004
-main_loop_inner:
-LDRB a1, v1, 0x0
-IF a1 == 0x0 THEN main_loop ELSE main_loop_continue
-main_loop_continue:
+PUSH a2
+BL read_char
+POP a2
 
 PUSH a1
 PUSH a2
@@ -32,9 +36,7 @@ BL write_char
 POP a2
 POP a1
 
-ADDI v1, v1, 0x1
-BAL main_loop_inner
-
+BAL main_loop
 
 
 
@@ -113,8 +115,10 @@ LDR a2, sp, 0x8 // UART base
 read_char_loop:
 LDR a1, a2, 0x18
 ANDS a1, a1, 0x10
-IF a1 != 0x0 THEN read_char_continue ELSE read_char_loop
-read_char_continue:
+CMPI a1, 0x0
+BNE read_char_loop
+//IF a1 != 0x0 THEN read_char_continue ELSE read_char_loop
+//read_char_continue:
 LDR a1, a2, 0x0
 ANDS a1, a1, 0xff
 
