@@ -1,5 +1,7 @@
 ﻿namespace SimpleAssembler.Lexer.LexTokens
 {
+    using Simple;
+
     public class RegisterLexToken : LexToken
     {
         private string _value;

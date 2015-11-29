@@ -1,10 +1,14 @@
-{
+﻿{
   "version": "1.0.0-*",
-  "description": "SimpleAssembler Console Application",
+  "description": "SimpleCompiler Console Application",
   "authors": [ "brollins" ],
   "tags": [ "" ],
   "projectUrl": "",
   "licenseUrl": "",
+
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
 
   "dependencies": {
     "CommandLineParser": "1.9.71",
@@ -12,7 +16,7 @@
   },
 
   "commands": {
-    "SimpleAssembler": "SimpleAssembler"
+    "SimpleCompiler": "SimpleCompiler"
   },
 
   "frameworks": {

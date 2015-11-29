@@ -1,0 +1,12 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "Simple Class Library",
+  "authors": [ "brollins" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "frameworks": {
+    "net46": { }
+  }
+}

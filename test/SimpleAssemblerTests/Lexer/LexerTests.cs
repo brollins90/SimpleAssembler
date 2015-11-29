@@ -1,5 +1,6 @@
 ﻿namespace SimpleAssemblerTests.Lexer
 {
+    using Simple;
     using SimpleAssembler;
     using SimpleAssembler.Lexer;
     using SimpleAssembler.Lexer.LexTokens;

@@ -1,4 +1,4 @@
-﻿namespace SimpleAssembler.Tokenizer.Tokens
+﻿namespace Simple.Tokenizer.Tokens
 {
     public class CommaToken : SpecialToken
     {

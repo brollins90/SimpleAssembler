@@ -1,4 +1,4 @@
-﻿namespace SimpleAssembler
+﻿namespace Simple
 {
     using System;
     using System.Runtime.Serialization;

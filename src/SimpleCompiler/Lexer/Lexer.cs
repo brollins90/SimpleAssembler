@@ -1,4 +1,4 @@
-﻿namespace SimpleAssembler.Lexer
+﻿namespace SimpleCompiler.Lexer
 {
     using LexTokens;
     using Simple;
