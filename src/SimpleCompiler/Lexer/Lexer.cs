@@ -55,7 +55,7 @@
                 {
                     var special = t1 as SpecialToken;
                     if (special.Value().Equals("+", System.StringComparison.InvariantCultureIgnoreCase))
-                        return new BinaryOperationLexToken(special.Value());
+                        return new BinaryOperatorLexToken(special.Value());
                 }
 
 

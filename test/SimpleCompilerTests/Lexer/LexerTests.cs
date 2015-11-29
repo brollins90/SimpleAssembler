@@ -26,7 +26,7 @@
 
             Assert.IsType(typeof(NumberLexToken), token1);
             Assert.Equal("0x1", token1.Value());
-            Assert.IsType(typeof(BinaryOperationLexToken), token2);
+            Assert.IsType(typeof(BinaryOperatorLexToken), token2);
             Assert.Equal("+", token2.Value());
             Assert.IsType(typeof(NumberLexToken), token3);
             Assert.Equal("0x2", token3.Value());

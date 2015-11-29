@@ -2,9 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
-	
+
     public class IntegerExpression : Expression
     {
-        public int Value { get; set; }
+        public int Value { get; }
+
+        public IntegerExpression(int value)
+        {
+            Value = value;
+        }
     }
 }

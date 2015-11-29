@@ -2,11 +2,18 @@
 {
     using System;
     using System.Collections.Generic;
-	
+
     public class BinaryOperatorExpression : Expression
     {
-        public string Operation { get; set; }
-        public Expression LHS { get; set; }
-        public Expression RHS { get; set; }
+        public BinaryOperatorExpression(string op, Expression lHS, Expression rHS)
+        {
+            Operation = op;
+            LHS = lHS;
+            RHS = rHS;
+        }
+
+        public string Operation { get; }
+        public Expression LHS { get; }
+        public Expression RHS { get; }
     }
 }
