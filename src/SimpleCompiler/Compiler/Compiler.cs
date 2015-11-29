@@ -5,9 +5,9 @@
 
     public class Compiler : ICompiler
     {
-        public uint[] Compile(string program)
+        public string Compile(string program)
         {
-            throw new NotImplementedException();
+            return "";
         }
     }
 }

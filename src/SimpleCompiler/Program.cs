@@ -21,19 +21,19 @@
 
         private void Go(string inputFile, string outputFile)
         {
-            var parser = new Parser.Parser();
+            //var parser = new Parser.Parser();
 
-            string fileText = File.ReadAllText(inputFile);
+            //string fileText = File.ReadAllText(inputFile);
 
-            var outputArray = parser.Parse(fileText);
+            //var outputArray = parser.Parse(fileText);
 
-            using (BinaryWriter binaryWriter = new BinaryWriter(File.Open(outputFile, FileMode.Create)))
-            {
-                foreach (int i in outputArray)
-                {
-                    binaryWriter.Write(i);
-                }
-            }
+            //using (BinaryWriter binaryWriter = new BinaryWriter(File.Open(outputFile, FileMode.Create)))
+            //{
+            //    foreach (int i in outputArray)
+            //    {
+            //        binaryWriter.Write(i);
+            //    }
+            //}
         }
     }
 }

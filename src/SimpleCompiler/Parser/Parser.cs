@@ -23,32 +23,33 @@
             LabelTable = new Dictionary<string, uint>();
         }
 
-        public uint[] Parse(string fileData)
+        public Expression Parse(string fileData)
         {
-            Kernel = new List<uint>(KERNEL_SIZE);
-            for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
+            return null;
+            //Kernel = new List<uint>(KERNEL_SIZE);
+            //for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
 
-            // First round to construct the label table
-            Lexer.Lexer lexer = new Lexer.Lexer(fileData);
+            //// First round to construct the label table
+            //Lexer.Lexer lexer = new Lexer.Lexer(fileData);
 
-            while (lexer.HasNext())
-            {
-                //ParseInstruction(lexer, true);
-            }
+            //while (lexer.HasNext())
+            //{
+            //    //ParseInstruction(lexer, true);
+            //}
 
-            // reset the stuff after the first go round that found the label locations
-            Kernel = new List<uint>(KERNEL_SIZE);
-            for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
-            lexer = new Lexer.Lexer(fileData);
-            KernelIndex = 0;
-            LineNumber = 1;
+            //// reset the stuff after the first go round that found the label locations
+            //Kernel = new List<uint>(KERNEL_SIZE);
+            //for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
+            //lexer = new Lexer.Lexer(fileData);
+            //KernelIndex = 0;
+            //LineNumber = 1;
 
-            while (lexer.HasNext())
-            {
-                //ParseInstruction(lexer, false);
-            }
+            //while (lexer.HasNext())
+            //{
+            //    //ParseInstruction(lexer, false);
+            //}
 
-            return Kernel.ToArray();
+            //return Kernel.ToArray();
         }
 
         public Expression ParsePrimary(Lexer.Lexer lexer)
@@ -439,7 +440,7 @@
         //    {
         //        throw new SyntaxException("On CMPI, op2 cannot be larger than 0xFFF");
         //    }
-            
+
         //    string imm12 = $"{IntToHexString(imm16, 2)}{IntToHexString(imm16, 1)}{IntToHexString(imm16, 0)}";
 
         //    string instruction = $"e35{destinationRegister}0{imm12}";

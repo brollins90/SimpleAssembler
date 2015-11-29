@@ -2,6 +2,7 @@
 {
     using SimpleCompiler;
     using SimpleCompiler.Parser;
+    using SimpleCompiler.Parser.Expressions;
     using System;
     using Xunit;
 
@@ -13,13 +14,16 @@
         public void ReturnsParseTree()
         {
             IParser parser = new Parser();
-            var result = parser.Parse("");
 
-            Assert.IsType(typeof(uint[]), result);
+            var myProgram = "2";
+
+            var output = parser.Parse(myProgram);
+            
+            Assert.IsType(typeof(IntegerExpression), output);
         }
 
         [Fact]
-        public void CanParseSingelInt()
+        public void SingleInt()
         {
             IParser parser = new Parser();
 
@@ -27,12 +31,11 @@
 
             var output = parser.Parse(myProgram);
 
-            Assert.Contains("loop", parser.LabelTable.Keys);
-            Assert.Equal((uint)0, parser.LabelTable["loop"]);
+            Assert.IsType(typeof(IntegerExpression), output);
         }
 
         [Fact]
-        public void CanParseAddition()
+        public void BasicMath()
         {
             IParser parser = new Parser();
 
@@ -40,8 +43,8 @@
 
             var output = parser.Parse(myProgram);
 
-            Assert.Contains("loop", parser.LabelTable.Keys);
-            Assert.Equal((uint)0, parser.LabelTable["loop"]);
+            Assert.IsType(typeof(BinaryOperatorExpression), output);
+            Assert.Equal("+", (output as BinaryOperatorExpression).Operation);
         }
 
         //[Fact]

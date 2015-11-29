@@ -1,5 +1,6 @@
 ﻿namespace SimpleCompiler.Parser
 {
+    using Expressions;
     using System.Collections.Generic;
 
     public interface IParser
@@ -9,6 +10,6 @@
         Dictionary<string, uint> LabelTable { get; }
         uint LineNumber { get; }
 
-        uint[] Parse(string fileData);
+        Expression Parse(string fileData);
     }
 }
