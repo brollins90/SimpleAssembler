@@ -1,6 +1,5 @@
 ﻿namespace SimpleAssemblerTests.Parser
 {
-    using Simple;
     using SimpleAssembler;
     using SimpleAssembler.Parser;
     using System;

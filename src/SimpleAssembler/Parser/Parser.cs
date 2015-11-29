@@ -1,7 +1,5 @@
 ﻿namespace SimpleAssembler.Parser
 {
-    using Simple;
-    using Lexer;
     using Lexer.LexTokens;
     using System;
     using System.Collections.Generic;
@@ -30,7 +28,7 @@
             for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
 
             // First round to construct the label table
-            Lexer lexer = new Lexer(fileData);
+            Lexer.Lexer lexer = new Lexer.Lexer(fileData);
 
             while (lexer.HasNext())
             {
@@ -40,7 +38,7 @@
             // reset the stuff after the first go round that found the label locations
             Kernel = new List<uint>(KERNEL_SIZE);
             for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
-            lexer = new Lexer(fileData);
+            lexer = new Lexer.Lexer(fileData);
             KernelIndex = 0;
             LineNumber = 1;
 
@@ -52,7 +50,7 @@
             return Kernel.ToArray();
         }
 
-        public void ParseInstruction(Lexer lexer, bool buildingLabelTable = false)
+        public void ParseInstruction(Lexer.Lexer lexer, bool buildingLabelTable = false)
         {
             var operation = lexer.Next();
             lexer.UnGet(operation);
@@ -92,7 +90,7 @@
         }
 
 
-        public void ParseAddressDataStatement(Lexer lexer)
+        public void ParseAddressDataStatement(Lexer.Lexer lexer)
         {
             var token = lexer.Next();
             if (token != null
@@ -108,7 +106,7 @@
             }
         }
 
-        private NumberLexToken GetNextByte(Lexer lexer)
+        private NumberLexToken GetNextByte(Lexer.Lexer lexer)
         {
             var token = lexer.Next();
             if (token != null
@@ -128,7 +126,7 @@
             return (NumberLexToken)token;
         }
 
-        public void ParseByteDataStatement(Lexer lexer)
+        public void ParseByteDataStatement(Lexer.Lexer lexer)
         {
             var token = lexer.Next();
             if (token != null
@@ -159,7 +157,7 @@
             }
         }
 
-        public void ParseIfStatement(Lexer lexer, bool buildingLabelTable)
+        public void ParseIfStatement(Lexer.Lexer lexer, bool buildingLabelTable)
         {
             var token = lexer.Next();
             if (token != null
@@ -185,7 +183,7 @@
             }
         }
 
-        public void ParseLabelDeclaration(Lexer lexer, bool buildingLabelTable)
+        public void ParseLabelDeclaration(Lexer.Lexer lexer, bool buildingLabelTable)
         {
             var token = lexer.Next();
             if (token != null
@@ -199,7 +197,7 @@
             }
         }
 
-        public void ParseNewLine(Lexer lexer)
+        public void ParseNewLine(Lexer.Lexer lexer)
         {
             var token = lexer.Next();
             if (token != null
@@ -209,7 +207,7 @@
             }
         }
 
-        public uint ParseOperation(Lexer lexer, bool buildLabelTable)
+        public uint ParseOperation(Lexer.Lexer lexer, bool buildLabelTable)
         {
             uint encodedInstruction = 0;
 
@@ -350,7 +348,7 @@
             return encodedInstruction;
         }
 
-        public void ParseWordDataStatement(Lexer lexer)
+        public void ParseWordDataStatement(Lexer.Lexer lexer)
         {
             var token = lexer.Next();
             if (token != null

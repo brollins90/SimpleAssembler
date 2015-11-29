@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "description": "SimpleCompiler Console Application",
   "authors": [ "brollins" ],
@@ -6,13 +6,8 @@
   "projectUrl": "",
   "licenseUrl": "",
 
-  "compilationOptions": {
-    "emitEntryPoint": true
-  },
-
   "dependencies": {
-    "CommandLineParser": "1.9.71",
-    "Simple": ""
+    "CommandLineParser": "1.9.71"
   },
 
   "commands": {

@@ -1,6 +1,5 @@
 ﻿namespace SimpleAssembler.Lexer.LexTokens
 {
-    using Simple;
     using System;
 
     public class OpCodeLexToken : LexToken
