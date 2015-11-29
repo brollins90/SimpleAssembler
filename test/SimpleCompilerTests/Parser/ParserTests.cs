@@ -63,6 +63,7 @@
             Assert.Equal("+", (output as BinaryOperatorExpression).Operation);
 
             Assert.IsType(typeof(BinaryOperatorExpression), (output as BinaryOperatorExpression).LHS);
+            Assert.Equal("+", ((output as BinaryOperatorExpression).LHS as BinaryOperatorExpression).Operation);
 
             Assert.IsType(typeof(IntegerExpression), ((output as BinaryOperatorExpression).LHS as BinaryOperatorExpression).LHS);
             Assert.Equal(1, (((output as BinaryOperatorExpression).LHS as BinaryOperatorExpression).LHS as IntegerExpression).Value);
@@ -75,6 +76,31 @@
 
             Assert.IsType(typeof(IntegerExpression), (output as BinaryOperatorExpression).RHS);
             Assert.Equal(3, ((output as BinaryOperatorExpression).RHS as IntegerExpression).Value);
+        }
+
+        [Fact]
+        public void MathWithPrecedence()
+        {
+            IParser parser = new Parser();
+
+            var myProgram = "1 + 2 * 3";
+
+            var output = parser.Parse(myProgram);
+
+            Assert.IsType(typeof(BinaryOperatorExpression), output);
+            Assert.Equal("+", (output as BinaryOperatorExpression).Operation);
+
+            Assert.IsType(typeof(IntegerExpression), (output as BinaryOperatorExpression).LHS);
+            Assert.Equal(1, ((output as BinaryOperatorExpression).LHS as IntegerExpression).Value);
+
+            Assert.IsType(typeof(BinaryOperatorExpression), (output as BinaryOperatorExpression).RHS);
+            Assert.Equal("*", ((output as BinaryOperatorExpression).RHS as BinaryOperatorExpression).Operation);
+
+            Assert.IsType(typeof(IntegerExpression), ((output as BinaryOperatorExpression).RHS as BinaryOperatorExpression).LHS);
+            Assert.Equal(2, (((output as BinaryOperatorExpression).RHS as BinaryOperatorExpression).LHS as IntegerExpression).Value);
+
+            Assert.IsType(typeof(IntegerExpression), ((output as BinaryOperatorExpression).RHS as BinaryOperatorExpression).RHS);
+            Assert.Equal(3, (((output as BinaryOperatorExpression).RHS as BinaryOperatorExpression).RHS as IntegerExpression).Value);
         }
     }
 }
