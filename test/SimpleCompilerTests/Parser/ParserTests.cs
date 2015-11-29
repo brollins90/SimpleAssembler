@@ -9,27 +9,40 @@
     {
         //#region parser
 
-        //[Fact]
-        //public void ParserReturnsUIntArray()
-        //{
-        //    IParser parser = new Parser();
-        //    var result = parser.Parse("");
+        [Fact]
+        public void ReturnsParseTree()
+        {
+            IParser parser = new Parser();
+            var result = parser.Parse("");
 
-        //    Assert.IsType(typeof(uint[]), result);
-        //}
+            Assert.IsType(typeof(uint[]), result);
+        }
 
-        //[Fact]
-        //public void ParserCanParseLabelAlphaNum()
-        //{
-        //    IParser parser = new Parser();
+        [Fact]
+        public void CanParseSingelInt()
+        {
+            IParser parser = new Parser();
 
-        //    var myProgram = "loop:";
+            var myProgram = "1";
 
-        //    var output = parser.Parse(myProgram);
+            var output = parser.Parse(myProgram);
 
-        //    Assert.Contains("loop", parser.LabelTable.Keys);
-        //    Assert.Equal((uint)0, parser.LabelTable["loop"]);
-        //}
+            Assert.Contains("loop", parser.LabelTable.Keys);
+            Assert.Equal((uint)0, parser.LabelTable["loop"]);
+        }
+
+        [Fact]
+        public void CanParseAddition()
+        {
+            IParser parser = new Parser();
+
+            var myProgram = "1 + 2";
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Contains("loop", parser.LabelTable.Keys);
+            Assert.Equal((uint)0, parser.LabelTable["loop"]);
+        }
 
         //[Fact]
         //public void ParserCanParseLabelAlphaNumUnderscore()
@@ -574,7 +587,7 @@
         //#endregion
 
         //#region LDRB
-            
+
         //[Fact]
         //public void ParserParseLDRBPositive()
         //{
@@ -899,7 +912,7 @@
         //#endregion
 
         //#region ROR
-            
+
         //[Fact]
         //public void ParserParseROR()
         //{
