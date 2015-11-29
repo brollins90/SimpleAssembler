@@ -19,6 +19,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleAssemblerTests", "tes
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleCompiler", "src\SimpleCompiler\SimpleCompiler.xproj", "{3B2DE972-6CF1-479D-885C-231DA4EC3C9E}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleCompilerTests", "test\SimpleCompilerTests\SimpleCompilerTests.xproj", "{5743D288-21D4-467B-9CB4-F8FF5FB69D8D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{3B2DE972-6CF1-479D-885C-231DA4EC3C9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B2DE972-6CF1-479D-885C-231DA4EC3C9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B2DE972-6CF1-479D-885C-231DA4EC3C9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5743D288-21D4-467B-9CB4-F8FF5FB69D8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5743D288-21D4-467B-9CB4-F8FF5FB69D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5743D288-21D4-467B-9CB4-F8FF5FB69D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5743D288-21D4-467B-9CB4-F8FF5FB69D8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
