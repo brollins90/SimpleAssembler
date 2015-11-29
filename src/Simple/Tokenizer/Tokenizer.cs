@@ -80,6 +80,14 @@
                             _index++;
                         }
 
+                        // todo: is this bad??
+                        else if (current >= '0' && current <= '9')
+                        {
+                            state = ReadState.DecimalNumber;
+                            tokenString += current;
+                            _index++;
+                        }
+
                         // Left Curly
                         else if (current == '{')
                         {
@@ -127,6 +135,13 @@
                             state = ReadState.Operation;
                             tokenString += current;
                             _index++;
+                        }
+                        else if (current == '+' || current == '-' || current == '*' || current == '%')
+                        {
+                            state = ReadState.Operation;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
                         }
 
                         // else

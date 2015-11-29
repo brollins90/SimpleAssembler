@@ -46,6 +46,20 @@
                     return new NewLineLexToken(t1.Value());
                 }
 
+                else if (t1 is NumberToken)
+                {
+                    return new NumberLexToken(t1.Value());
+                }
+
+                else if (t1 is SpecialToken)
+                {
+                    var special = t1 as SpecialToken;
+                    if (special.Value().Equals("+", System.StringComparison.InvariantCultureIgnoreCase))
+                        return new BinaryOperationLexToken(special.Value());
+                }
+
+
+
                 //    // AlphaNumUnderscore can only be a label (and only if t2 is a colon)
                 //    else if (t1 is AlphaNumUnderscoreToken)
                 //    {
