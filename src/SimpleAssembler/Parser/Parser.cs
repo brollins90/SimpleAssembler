@@ -1,6 +1,7 @@
 ﻿namespace SimpleAssembler.Parser
 {
     using Lexer.LexTokens;
+    using Simple;
     using System;
     using System.Collections.Generic;
 

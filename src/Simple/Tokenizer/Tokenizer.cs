@@ -1,4 +1,4 @@
-﻿namespace SimpleCompiler.Tokenizer
+﻿namespace Simple.Tokenizer
 {
     using Tokens;
 

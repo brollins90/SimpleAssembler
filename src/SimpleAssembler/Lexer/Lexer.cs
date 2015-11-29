@@ -1,9 +1,10 @@
 ﻿namespace SimpleAssembler.Lexer
 {
     using LexTokens;
+    using Simple;
+    using Simple.Tokenizer;
+    using Simple.Tokenizer.Tokens;
     using System.Collections.Generic;
-    using Tokenizer;
-    using Tokenizer.Tokens;
 
     public class Lexer : ILexer
     {

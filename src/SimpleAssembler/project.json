@@ -7,7 +7,8 @@
   "licenseUrl": "",
 
   "dependencies": {
-    "CommandLineParser": "1.9.71"
+    "CommandLineParser": "1.9.71",
+    "Simple": ""
   },
 
   "commands": {

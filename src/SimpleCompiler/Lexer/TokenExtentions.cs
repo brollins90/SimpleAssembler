@@ -1,4 +1,4 @@
-﻿namespace SimpleCompiler.Tokenizer.Tokens
+﻿namespace Simple.Tokenizer.Tokens
 {
     public static class TokenExtentions
     {
