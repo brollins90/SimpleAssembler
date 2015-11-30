@@ -193,6 +193,7 @@
 
                         // if t1 is alphanum and t2 is alpha num, it could be a branch to label
                         if (t2 is AlphaNumToken)
+                        {
                             // if t1 is opcode
                             if ((t1 as AlphaNumToken).IsOpCode())
                             {
@@ -313,6 +314,20 @@
                             {
                                 _tokenStream.UnGet(t2);
                             }
+                        }
+                        else if (t2 is NumberToken)
+                        {
+                            // if instuction is: $"{op} {number}"
+                            if ((t1Val.Equals("cps")
+                                || t1Val.Equals("cpsid")
+                                || t1Val.Equals("cpsie"))
+                                && (t2 is NumberToken))
+                            {
+                                _lexTokenStack.Push(new NumberLexToken(t2.Value())); // keep t2
+                                return new OpCodeLexToken(t1.Value()); // return op
+                            }
+
+                        }
                         throw new SyntaxException($"t1: {t1.Value()}, t2: {t2.Value()}");
 
                     } // t2 is null

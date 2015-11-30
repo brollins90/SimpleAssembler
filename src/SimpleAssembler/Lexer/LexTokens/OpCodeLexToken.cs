@@ -31,6 +31,12 @@
                 return OperationType.BNE;
             else if (value.Equals("cmpi", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.CMPI;
+            else if (value.Equals("cps", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.CPS;
+            else if (value.Equals("cpsid", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.CPSID;
+            else if (value.Equals("cpsie", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.CPSIE;
             else if (value.Equals("ldr", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.LDR;
             else if (value.Equals("ldrb", StringComparison.InvariantCultureIgnoreCase))
@@ -66,6 +72,9 @@
         BL,
         BNE,
         CMPI,
+        CPS,
+        CPSID,
+        CPSIE,
         LDR,
         LDRB,
         MOV,

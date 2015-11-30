@@ -47,19 +47,6 @@
             return false;
         }
 
-        public static bool IsBranchOpCode(this AlphaNumToken token)
-        {
-            var lower = token.Value().ToLowerInvariant();
-
-            if (lower.Equals("bal")
-                || lower.Equals("bl")
-                || lower.Equals("bne"))
-            {
-                return true;
-            }
-            return false;
-        }
-
         public static bool IsOpCode(this AlphaNumToken token)
         {
             var lower = token.Value().ToLowerInvariant();
@@ -72,6 +59,9 @@
                 || lower.Equals("bl")
                 || lower.Equals("bne")
                 || lower.Equals("cmpi")
+                || lower.Equals("cps")
+                || lower.Equals("cpsid")
+                || lower.Equals("cpsie")
                 || lower.Equals("ldr")
                 || lower.Equals("ldrb")
                 || lower.Equals("mov")

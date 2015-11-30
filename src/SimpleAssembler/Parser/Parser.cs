@@ -280,6 +280,21 @@
                             (lexer.Next() as NumberLexToken).IntValue());   // imm16 
                         break;
 
+                    case OperationType.CPS:
+                        encodedInstruction = EncodeCPSInstruction(
+                            (lexer.Next() as NumberLexToken).IntValue());   // mode 
+                        break;
+
+                    case OperationType.CPSID:
+                        encodedInstruction = EncodeCPSIDInstruction(
+                            (lexer.Next() as NumberLexToken).IntValue());   // flags 
+                        break;
+
+                    case OperationType.CPSIE:
+                        encodedInstruction = EncodeCPSIEInstruction(
+                            (lexer.Next() as NumberLexToken).IntValue());   // flags 
+                        break;
+
                     case OperationType.LDR:
                         encodedInstruction = EncodeLDRInstruction(
                             lexer.Next().Value(),                           // sourceRegister
@@ -434,10 +449,66 @@
             {
                 throw new SyntaxException("On CMPI, op2 cannot be larger than 0xFFF");
             }
-            
+
             string imm12 = $"{IntToHexString(imm16, 2)}{IntToHexString(imm16, 1)}{IntToHexString(imm16, 0)}";
 
             string instruction = $"e35{destinationRegister}0{imm12}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeCPSInstruction(int mode)
+        {
+            // 0x12 is IRQ, 0x13 is Super
+            if (mode != 0x12 && mode != 0x13)
+            {
+                throw new SyntaxException("On CPS, mode can only be 0x12 and 0x13");
+            }
+
+            string modeString = $"{IntToHexString(mode, 1)}{IntToHexString(mode, 0)}";
+            modeString = modeString.PadLeft(2, '0');
+
+            string instruction = $"f10200{modeString}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeCPSIDInstruction(int flags)
+        {
+            if (flags > 0x111)
+            {
+                throw new SyntaxException("On CPSID, mode can only have 3 digits");
+            }
+
+            string A = ((flags & 0x100) == 0x100) ? "1" : "0";
+            string I = ((flags & 0x010) == 0x010) ? "1" : "0";
+            string F = ((flags & 0x001) == 0x001) ? "1" : "0";
+
+            string flagString = $"0000000{A}{I}{F}00";
+            int t = Convert.ToInt32(flagString, 2);
+            flagString = $"{IntToHexString(t, 1)}{IntToHexString(t, 0)}";
+
+            string instruction = $"f10c0{flagString}0";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeCPSIEInstruction(int flags)
+        {
+            if (flags > 0x111)
+            {
+                throw new SyntaxException("On CPSIE, mode can only have 3 digits");
+            }
+
+            string A = ((flags & 0x100) == 0x100) ? "1" : "0";
+            string I = ((flags & 0x010) == 0x010) ? "1" : "0";
+            string F = ((flags & 0x001) == 0x001) ? "1" : "0";
+
+            string flagString = $"0000000{A}{I}{F}00";
+            int t = Convert.ToInt32(flagString, 2);
+            flagString = $"{IntToHexString(t, 1)}{IntToHexString(t, 0)}";
+
+            string instruction = $"f1080{flagString}0";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
