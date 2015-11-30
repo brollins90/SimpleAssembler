@@ -47,6 +47,8 @@
                 return OperationType.MOVT;
             else if (value.Equals("movw", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.MOVW;
+            else if (value.Equals("orrs", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.ORRS;
             else if (value.Equals("pop", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.POP;
             else if (value.Equals("push", StringComparison.InvariantCultureIgnoreCase))
@@ -80,6 +82,7 @@
         MOV,
         MOVT,
         MOVW,
+        ORRS,
         POP,
         PUSH,
         ROR,

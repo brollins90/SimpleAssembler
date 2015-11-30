@@ -324,6 +324,33 @@
 
             Assert.Equal((uint)0xe2822004, output[0]);
         }
+
+        [Fact]
+        public void ParserParseADDI2()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ADDI a1, a4, 0xfff" + Environment.NewLine;
+
+            Assert.Throws<SyntaxException>(() =>
+            {
+                var output = parser.Parse(myProgram);
+            });
+        }
+
+        [Fact]
+        public void ParserParseADDI3()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ADDI a1, a4, 0x3f000000" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0xe283043f, output[0]);
+        }
         #endregion
 
         #region ANDS
@@ -534,11 +561,11 @@
             IParser parser = new Parser();
 
             var myProgram =
-                "CMPI a1, 0x4" + Environment.NewLine;
+                "CMPI a4, 0x4" + Environment.NewLine;
 
             var output = parser.Parse(myProgram);
 
-            Assert.Equal(0xe3500004, output[0]);
+            Assert.Equal(0xe3530004, output[0]);
         }
         #endregion
 
@@ -929,20 +956,6 @@
 
             Assert.Equal(0xe5001010, output[0]);
         }
-
-        [Fact]
-        public void ParserParseSTRTooLarge()
-        {
-            IParser parser = new Parser();
-
-            var myProgram =
-                "STR r1, r2, 0x1000" + Environment.NewLine;
-
-            Assert.Throws(typeof(SyntaxException), () =>
-            {
-                var output = parser.Parse(myProgram);
-            });
-        }
         #endregion
 
         #region STRDB
@@ -975,20 +988,7 @@
 
             Assert.Equal(0xe2533001, output[0]);
         }
-
-        [Fact]
-        public void ParserParseSUBSTooLarge()
-        {
-            IParser parser = new Parser();
-
-            var myProgram =
-                "SUBS r3, r3, 0x10000" + Environment.NewLine;
-
-            Assert.Throws(typeof(SyntaxException), () =>
-            {
-                var output = parser.Parse(myProgram);
-            });
-        }
+        
         #endregion
 
 

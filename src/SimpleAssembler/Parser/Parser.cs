@@ -16,8 +16,6 @@
 
         public Parser()
         {
-            //Kernel = new List<uint>(KERNEL_SIZE);
-            //for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
             KernelIndex = 0;
             LineNumber = 1;
             LabelTable = new Dictionary<string, uint>();
@@ -327,6 +325,13 @@
                             (lexer.Next() as NumberLexToken).IntValue());   // imm16 
                         break;
 
+                    case OperationType.ORRS:
+                        encodedInstruction = EncodeORRSInstruction(
+                            lexer.Next().Value(),                           // destinationRegister
+                            lexer.Next().Value(),                           // sourceRegister
+                            (lexer.Next() as NumberLexToken).IntValue());   // imm12 
+                        break;
+
                     case OperationType.POP:
                         encodedInstruction = EncodePOPInstruction(
                             lexer.Next().Value());                           // destinationRegister
@@ -387,28 +392,18 @@
 
         public uint EncodeADDIInstruction(string destinationRegister, string sourceRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On ADDI, op2 cannot be larger than 0xFFF");
-            }
+            string imm12String = Imm12Rotate(imm12);
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
-
-            string instruction = $"e28{destinationRegister}{sourceRegister}{imm12String}";
+            string instruction = $"e28{sourceRegister}{destinationRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
 
         public uint EncodeANDSInstruction(string destinationRegister, string sourceRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On ANDS, op2 cannot be larger than 0xFFF");
-            }
+            string imm12String = Imm12Rotate(imm12);
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
-
-            string instruction = $"e21{destinationRegister}{sourceRegister}{imm12String}";
+            string instruction = $"e21{sourceRegister}{destinationRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
@@ -443,16 +438,11 @@
             return encodedOperation;
         }
 
-        public uint EncodeCMPIInstruction(string destinationRegister, int imm16)
+        public uint EncodeCMPIInstruction(string sourceRegister, int imm12)
         {
-            if (imm16 > 0xfff)
-            {
-                throw new SyntaxException("On CMPI, op2 cannot be larger than 0xFFF");
-            }
+            string imm12String = Imm12Rotate(imm12);
 
-            string imm12 = $"{IntToHexString(imm16, 2)}{IntToHexString(imm16, 1)}{IntToHexString(imm16, 0)}";
-
-            string instruction = $"e35{destinationRegister}0{imm12}";
+            string instruction = $"e35{sourceRegister}0{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
@@ -515,11 +505,6 @@
 
         public uint EncodeLDRInstruction(string sourceRegister, string baseRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On LDR, op2 cannot be larger than 0xFFF");
-            }
-
             // p 0 = post, 1 = pre (when using immediate, p=1
             // u 0 = down, 1 = up, (is imm12 positive or negative)
             // b 0 = word, 1 = byte
@@ -537,7 +522,7 @@
 
             string posNeg = (imm12 < 0) ? "1" : "9";
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
+            string imm12String = Imm12Rotate(imm12);
 
             string instruction = $"e5{posNeg}{baseRegister}{sourceRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
@@ -546,14 +531,9 @@
 
         public uint EncodeLDRBInstruction(string sourceRegister, string baseRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On LDRB, op2 cannot be larger than 0xFFF");
-            }
-
             string posNeg = (imm12 < 0) ? "5" : "d";
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
+            string imm12String = Imm12Rotate(imm12);
 
             string instruction = $"e5{posNeg}{baseRegister}{sourceRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
@@ -597,9 +577,17 @@
             return encodedOperation;
         }
 
+        public uint EncodeORRSInstruction(string destinationRegister, string sourceRegister, int imm12)
+        {
+            string imm12String = Imm12Rotate(imm12);
+
+            string instruction = $"e39{sourceRegister}{destinationRegister}{imm12String}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
         public uint EncodePOPInstruction(string destinationRegister)
         {
-
             string instruction = $"e49d{destinationRegister}004";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
@@ -631,11 +619,6 @@
 
         public uint EncodeSTRInstruction(string sourceRegister, string baseRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On STR, op2 cannot be larger than 0xFFF");
-            }
-
             // p 0 = post, 1 = pre
             // u 0 = down, 1 = up,
             // b 0 = word, 1 = byte
@@ -647,7 +630,7 @@
             // 1110  0101   0000    rn rt imm12
             // e     5      0     
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
+            string imm12String = Imm12Rotate(imm12);
 
             string instruction = $"e50{baseRegister}{sourceRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
@@ -656,21 +639,40 @@
 
         public uint EncodeSUBSInstruction(string destinationRegister, string sourceRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On SUBS, op2 cannot be larger than 0xFFF");
-            }
+            string imm12String = Imm12Rotate(imm12);
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
-
-            string instruction = $"e25{destinationRegister}{sourceRegister}{imm12String}";
+            string instruction = $"e25{sourceRegister}{destinationRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
+        }
+
+        // http://stackoverflow.com/a/17763652/148256
+        public string Imm12Rotate(int imm12)
+        {
+            uint encode = Convert.ToUInt32(imm12);
+            uint rotate;
+            for (rotate = 0; rotate < 32; rotate += 2)
+            {
+                var res = (encode & ~0xff);
+                if (res >= 0 && res <= 0xff)
+                {
+                    return $"{IntToHexString(rotate / 2, 0)}{IntToHexString(encode, 1)}{IntToHexString(encode, 0)}";
+                }
+                encode = (encode << 2) | (encode >> 30);
+            }
+            throw new SyntaxException($"The number {imm12} is not the correct size to fit in 12 bits");
+            //return $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}".PadLeft(3, '0');
         }
 
         private string IntToHexString(int i, int nibble)
         {
             int ret = (i >> (4 * nibble)) & 0xF;
+            return Convert.ToString(ret, 16);
+        }
+
+        private string IntToHexString(uint i, int nibble)
+        {
+            uint ret = (i >> (4 * nibble)) & 0xF;
             return Convert.ToString(ret, 16);
         }
 
