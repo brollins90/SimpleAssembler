@@ -203,6 +203,7 @@
                                     || t1Val.Equals("ands")
                                     || t1Val.Equals("ldr")
                                     || t1Val.Equals("ldrb")
+                                    || t1Val.Equals("orrs")
                                     || t1Val.Equals("ror")
                                     || t1Val.Equals("str")
                                     || t1Val.Equals("subs"))
@@ -231,6 +232,38 @@
                                     else
                                     {
                                         throw new SyntaxException($"{t1Val} should be followed by a register, a comma, a register, a comma, and a number");
+                                    }
+                                }
+
+                                // if instuction is: $"{op} {reg}, {reg2}, {reg3}"
+                                else if ((t1Val.Equals("andrs")
+                                    || t1Val.Equals("orrrs"))
+                                    && (t2 as AlphaNumToken).IsRegister())
+                                {
+                                    var comma = _tokenStream.Next();
+                                    var reg2 = _tokenStream.Next();
+                                    var comma2 = _tokenStream.Next();
+                                    var reg3 = _tokenStream.Next();
+
+                                    if (comma != null
+                                        && comma is CommaToken
+                                        && reg2 != null
+                                        && reg2 is AlphaNumToken
+                                        && (reg2 as AlphaNumToken).IsRegister()
+                                        && comma2 != null
+                                        && comma2 is CommaToken
+                                        && reg3 != null
+                                        && reg3 is AlphaNumToken
+                                        && (reg3 as AlphaNumToken).IsRegister())
+                                    {
+                                        _lexTokenStack.Push(new RegisterLexToken(reg3.Value())); // keep reg3
+                                        _lexTokenStack.Push(new RegisterLexToken(reg2.Value())); // keep reg2
+                                        _lexTokenStack.Push(new RegisterLexToken(t2.Value())); // keep t2
+                                        return new OpCodeLexToken(t1.Value()); // return op
+                                    }
+                                    else
+                                    {
+                                        throw new SyntaxException($"{t1Val} should be followed by a register, a comma, and a register");
                                     }
                                 }
 

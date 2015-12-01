@@ -369,6 +369,19 @@
         }
         #endregion
 
+
+        [Fact]
+        public void ParserParseANDRSRegister()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ANDRS r1, r4, r3" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe0141003, output[0]);
+        }
         #region BAL
         [Fact]
         public void ParserParseBALParseNoLabel()
@@ -761,6 +774,33 @@
             });
         }
         #endregion
+
+
+        [Fact]
+        public void ParserParseORRSImmediate()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ORRS r1, r4, 0x01" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3941001, output[0]);
+        }
+
+        [Fact]
+        public void ParserParseORRRSRegister()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ORRRS r1, r4, r3" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe1941003, output[0]);
+        }
 
         #region POP
 

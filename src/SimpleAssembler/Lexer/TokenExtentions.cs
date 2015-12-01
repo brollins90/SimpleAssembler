@@ -53,6 +53,7 @@
 
             if (lower.Equals("addi")
                 || lower.Equals("ands")
+                || lower.Equals("andrs")
                 || lower.Equals("bal")
                 || lower.Equals("beq")
                 || lower.Equals("bge")
@@ -67,6 +68,8 @@
                 || lower.Equals("mov")
                 || lower.Equals("movt")
                 || lower.Equals("movw")
+                || lower.Equals("orrs")
+                || lower.Equals("orrrs")
                 || lower.Equals("pop")
                 || lower.Equals("push")
                 || lower.Equals("ror")

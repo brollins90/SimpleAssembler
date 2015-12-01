@@ -31,7 +31,15 @@
 
             while (lexer.HasNext())
             {
-                ParseInstruction(lexer, true);
+                try
+                {
+                    ParseInstruction(lexer, true);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error {e.Message} on line {LineNumber}");
+                    throw;
+                }
             }
 
             // reset the stuff after the first go round that found the label locations
@@ -225,6 +233,13 @@
                             (lexer.Next() as NumberLexToken).IntValue());   // imm12 
                         break;
 
+                    case OperationType.ANDRS:
+                        encodedInstruction = EncodeANDRSInstruction(
+                            lexer.Next().Value(),                           // destinationRegister
+                            lexer.Next().Value(),                           // sourceRegister
+                            lexer.Next().Value());                          // andRegister 
+                        break;
+
                     case OperationType.ANDS:
                         encodedInstruction = EncodeANDSInstruction(
                             lexer.Next().Value(),                           // destinationRegister
@@ -332,6 +347,13 @@
                             (lexer.Next() as NumberLexToken).IntValue());   // imm12 
                         break;
 
+                    case OperationType.ORRRS:
+                        encodedInstruction = EncodeORRRSInstruction(
+                            lexer.Next().Value(),                           // destinationRegister
+                            lexer.Next().Value(),                           // sourceRegister
+                            lexer.Next().Value());                          // orRegister 
+                        break;
+
                     case OperationType.POP:
                         encodedInstruction = EncodePOPInstruction(
                             lexer.Next().Value());                           // destinationRegister
@@ -395,6 +417,13 @@
             string imm12String = Imm12Rotate(imm12);
 
             string instruction = $"e28{sourceRegister}{destinationRegister}{imm12String}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeANDRSInstruction(string destinationRegister, string sourceRegister, string andRegister)
+        {
+            string instruction = $"e01{sourceRegister}{destinationRegister}00{andRegister}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
@@ -582,6 +611,13 @@
             string imm12String = Imm12Rotate(imm12);
 
             string instruction = $"e39{sourceRegister}{destinationRegister}{imm12String}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeORRRSInstruction(string destinationRegister, string sourceRegister, string orRegister)
+        {
+            string instruction = $"e19{sourceRegister}{destinationRegister}00{orRegister}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }

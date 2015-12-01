@@ -142,11 +142,13 @@ MOVW a2, 0x0
 MOVT a2, 0x3f20 // GPIO Base
 
 LDR a1, a2, 0x4
-ORR a1, a1, 0x24000  // 7 set GPIO pin 14 to tx and 15 to rx
+ORRS a1, a1, 0x24000  // 7 set GPIO pin 14 to tx and 15 to rx
 STR a1, a2, 0x4
 
 LDR a1, a2, 0x94
-ORR a1, a1, 0xfffcffff
+MOVW a3, 0xffff
+MOVT a3, 0xfffc
+ORRRS a1, a1, a3
 STR a1, a2, 0x94 // turn off the pull up down for pins 14 and 15
 
 // delay for 150 cycles
@@ -156,7 +158,9 @@ BL delay
 POP a3
 
 LDR a1, a2, 0x98
-ORR a1, a1, 0xffff3fff
+MOVW a3, 0x3fff
+MOVT a3, 0xffff
+ORRRS a1, a1, a3
 STR a1, a2, 0x98 // turn off the pull up down for pins 14 and 15
 
 // delay for 150 cycles
@@ -175,32 +179,40 @@ BL delay
 POP a3
 
 LDR a1, a2, 0x98
-ORR a1, a1, 0xffff3fff
+MOVW a3, 0x3fff
+MOVT a3, 0xffff
+ORRRS a1, a1, a3
 STR a1, a2, 0x98 // turn off the pull up down for pins 14 and 15
 
+
+MOVW a2, 0x1000
+MOVT a2, 0x3f20
+
 MOVW a1, 0x0
-STR a1, a2, 0x1000 // disable the UART
+STR a1, a2, 0x0 // disable the UART
 
 MOVW a3, 0x8
 MOVW a4, 0x0
 uart_stop_sending_loop:
-LDR a1, a2, 0x1018
-ANDS a1, a1, a3
+LDR a1, a2, 0x18
+ANDRS a1, a1, a3
 CMPI a1, 0x0
 BNE uart_stop_sending_loop
 
-LDR a1, a2, 0x102c
-ANDS a1, a1, 0xffffffef
-STR a1, a2, 0x102c  // flush transmit FIFO
+LDR a1, a2, 0x2c
+MOVW a3, 0xffef
+MOVT a3, 0xffff
+ANDRS a1, a1, a3
+STR a1, a2, 0x2c  // flush transmit FIFO
 
 MOVW a1, 0x7ff
-STR a1, a2, 0x1044 // clear any pending interrupts
+STR a1, a2, 0x44 // clear any pending interrupts
 
 // set baud stuff
 MOVW a1, 0x1
-STR a1, a2, 0x1024 // write(UART0_IBRD, #1)
+STR a1, a2, 0x24 // write(UART0_IBRD, #1)
 MOVW a1, #40
-STR a1, a2, 0x1028 // write(UART0_FBRD, #40)
+STR a1, a2, 0x28 // write(UART0_FBRD, #40)
 
 //MOVW a3, #70 // enable fifo & 8 bit data transmission (1 stop bit, no parity)
 MOVW a1, 0x60 // only enables 8-bit xfer, not FIFOs
@@ -210,13 +222,13 @@ STR a1, a2, 0x2c // write(UART0_LCHR, (1<<4) | (1<<5) | (1<<6))
 
 
 MOVW a1, 0x301
-STR a1, a2, 0x1030 // enable rx and tx on the uart
+STR a1, a2, 0x30 // enable rx and tx on the uart
 
 MOVW a1, 0x0
-STR a1, a1, 0x1034 // set fifo lengths to 1/8 and 1/8
+STR a1, a1, 0x34 // set fifo lengths to 1/8 and 1/8
 
 MOVW a1, 0x10
-STR a1, a2, 0x1038 // enable fifo interupts
+STR a1, a2, 0x38 // enable fifo interupts
 
 CPSIE 0x111
 

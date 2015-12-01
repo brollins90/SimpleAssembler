@@ -19,6 +19,8 @@
                 return OperationType.ADDI;
             else if (value.Equals("ands", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.ANDS;
+            else if (value.Equals("andrs", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.ANDRS;
             else if (value.Equals("bal", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.BAL;
             else if (value.Equals("beq", StringComparison.InvariantCultureIgnoreCase))
@@ -49,6 +51,8 @@
                 return OperationType.MOVW;
             else if (value.Equals("orrs", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.ORRS;
+            else if (value.Equals("orrrs", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.ORRRS;
             else if (value.Equals("pop", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.POP;
             else if (value.Equals("push", StringComparison.InvariantCultureIgnoreCase))
@@ -68,6 +72,7 @@
     {
         ADDI,
         ANDS,
+        ANDRS,
         BAL,
         BEQ,
         BGE,
@@ -83,6 +88,7 @@
         MOVT,
         MOVW,
         ORRS,
+        ORRRS,
         POP,
         PUSH,
         ROR,
