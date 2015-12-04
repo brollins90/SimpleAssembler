@@ -7,7 +7,7 @@
 
     public class Parser : IParser
     {
-        int KERNEL_SIZE = 0x3000;
+        int KERNEL_SIZE = 0x9000;
 
         public List<uint> Kernel { get; private set; }
         public uint KernelIndex { get; private set; }
@@ -109,6 +109,7 @@
                     && address is NumberLexToken)
                 {
                     KernelIndex = (uint)(address as NumberLexToken).IntValue() / 4; // TODO make a uintvalue method
+                    Console.WriteLine($"--{token.Value()}: {KernelIndex}---0x{Convert.ToString(KernelIndex, 16)}");
                 }
             }
         }
@@ -156,7 +157,7 @@
 
                     var data = $"{a4.Value().Substring(2).PadLeft(2, '0')}{a3.Value().Substring(2).PadLeft(2, '0')}{a2.Value().Substring(2).PadLeft(2, '0')}{a1.Value().Substring(2).PadLeft(2, '0')}";
                     var encoded = Convert.ToUInt32(data, 16);
-                    WriteInstructionToKernel(encoded);
+                    WriteInstructionToKernel(encoded, $"{token.Value()}: {a1.Value()}, {a2.Value()}, {a3.Value()}, {a4.Value()}");
 
                     a1 = lexer.Next();
                 }
@@ -387,7 +388,7 @@
                 }
             }
 
-            WriteInstructionToKernel(encodedInstruction);
+            WriteInstructionToKernel(encodedInstruction, token.Value());
             return encodedInstruction;
         }
 
@@ -503,7 +504,7 @@
             string I = ((flags & 0x010) == 0x010) ? "1" : "0";
             string F = ((flags & 0x001) == 0x001) ? "1" : "0";
 
-            string flagString = $"0000000{A}{I}{F}00";
+            string flagString = $"000000011100";
             int t = Convert.ToInt32(flagString, 2);
             flagString = $"{IntToHexString(t, 1)}{IntToHexString(t, 0)}";
 
@@ -523,11 +524,12 @@
             string I = ((flags & 0x010) == 0x010) ? "1" : "0";
             string F = ((flags & 0x001) == 0x001) ? "1" : "0";
 
-            string flagString = $"0000000{A}{I}{F}00";
+            string flagString = $"000000011100";
             int t = Convert.ToInt32(flagString, 2);
             flagString = $"{IntToHexString(t, 1)}{IntToHexString(t, 0)}";
 
             string instruction = $"f1080{flagString}0";
+            //instruction = $"e12ff000";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
@@ -712,9 +714,11 @@
             return Convert.ToString(ret, 16);
         }
 
-        private void WriteInstructionToKernel(uint instruction)
+        private void WriteInstructionToKernel(uint instruction, string code = "")
         {
-            Console.WriteLine($"{KernelIndex}: {Convert.ToString(instruction, 16)}");
+            code = string.IsNullOrEmpty(code) ? Environment.NewLine : $" - {code}{Environment.NewLine}";
+            Console.Write($"{KernelIndex}: {Convert.ToString(instruction, 16)}{code}");            
+                
             Kernel[(int)KernelIndex++] = instruction;
         }
     }

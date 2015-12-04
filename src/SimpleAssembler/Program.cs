@@ -36,10 +36,15 @@
                         binaryWriter.Write(i);
                     }
                 }
+                Console.WriteLine("***********");
+                foreach(var labelPair in parser.LabelTable)
+                {
+                    Console.WriteLine($"{labelPair.Key}: {labelPair.Value}");
+                }
             }
             catch
             {
-
+                Console.WriteLine("error");
             }
         }
     }
