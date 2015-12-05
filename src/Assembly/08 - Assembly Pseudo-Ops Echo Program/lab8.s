@@ -1,14 +1,3 @@
-MOVW v1, 0x0
-MOVT v1, 0x3f20 // put 0x3f200000 in v1
-MOVW v2, 0x0
-MOVT v2, 0x20   // put 0x200000 in v2
-
-STR v2, v1, 0x10 // enable gpio
-
-BAL led_on
-
-
-
 // interrupt vector
 MOVW a1, 0x1ffe
 MOVT a1, 0xea00
@@ -17,56 +6,72 @@ STR a1, a2, 0x0
 
 MOVW a1, 0x217d
 MOVT a1, 0xea00
-MOVW a2, 0x4
-STR a1, a2, 0x0
+STR a1, a2, 0x4
 
 MOVW a1, 0x217c
 MOVT a1, 0xea00
-MOVW a2, 0x8
-STR a1, a2, 0x0
+STR a1, a2, 0x8
 
 MOVW a1, 0x217b
 MOVT a1, 0xea00
-MOVW a2, 0xc
-STR a1, a2, 0x0
+STR a1, a2, 0xc
 
 MOVW a1, 0x217a
 MOVT a1, 0xea00
-MOVW a2, 0x10
-STR a1, a2, 0x0
+STR a1, a2, 0x10
 
 MOVW a1, 0x2179
 MOVT a1, 0xea00
-MOVW a2, 0x14
-STR a1, a2, 0x0
+STR a1, a2, 0x14
 
-MOVW a1, 0x2178
+MOVW a1, 0x2138
 MOVT a1, 0xea00
-MOVW a2, 0x18
-STR a1, a2, 0x0
+STR a1, a2, 0x18 // for some reason this is the one that fires
 
 MOVW a1, 0x2137
 MOVT a1, 0xea00
-MOVW a2, 0x1c
-STR a1, a2, 0x0
+STR a1, a2, 0x1c
 
 
-
-// MRS 0xc0
 CPSID 0x111        // Disable interrupts 
-CPS 0x12           // Switch to IRQ mode
-MOVW sp, 0x8c18    // start IRQ stack at 0x8c18
-CPS 0x13           // Switch to supervisor mode
-MOVW sp, 0x9000    // start stack at 0x9000
+CPS 0x12          // Switch to IRQ mode
+MOVW sp, 0x8c18   // start IRQ stack at 0x8c18
+CPS 0x13          // Switch to supervisor mode
+MOVW sp, 0x9000   // start stack at 0x9000
+
+
+
+BL uart_init
+
+
+main_loop:
+
+// Print a '*'
+MOVW a1, 0x2a
+PUSH a1
+BL write_char
+POP a1
+
+//BL interrupt_handle
+
+// Delay for 0x10 0000 cycles
+MOVW a1, 0x0
+MOVT a1, 0x10
+PUSH a1
+BL delay
+POP a1
+
+BAL main_loop
 
 
 
 
-MOVW a1, 0x32 //   '2'
-MOVW a2, 0x1000
-MOVT a2, 0x3f20
-STR a1, a2, 0x0 // write character to UART
 
+
+
+
+uart_init:
+PUSH lr
 
 MOVW v1, 0x0
 MOVT v1, 0x3f20
@@ -80,6 +85,7 @@ MOVT v3, 0x3f00
 MOVW v4, 0x5000
 MOVT v4, 0x3f21
 
+// 6: Disable interrupts
 MOVW a1, 0xffff
 MOVT a1, 0xffff
 STR a1, v3, 0x1c  // 0x3f00 b21c <- 0xffff ffff
@@ -87,144 +93,116 @@ STR a1, v3, 0x1c  // 0x3f00 b21c <- 0xffff ffff
 
 STR a1, v3, 0x20  // 0x3f00 b220 <- 0xffff ffff
                   // IRQ_DISABLE2
-
-
+                  
 MOVW a1, 0x0
 MOVT a1, 0x200
 STR a1, v3, 0x14  // 0x3f00 b214 <- 0x0200 0000
                   // IRQ_ENABLE2
 
-// init gpio
-LDR a1, v1, 0x10
-ORRS a1, a1, 0x20
-STR a1, v1, 0x10
-
-
-
-// fffdbfff
+// 7: Set GPIO pin 14 to TX and 15 to RX modes
 LDR a1, v1, 0x4   // a1 <- 0x3f20 0004
+MOVW a4, 0xbfff
+MOVT a4, 0xfffd
+ANDRS a1, a1, a4
 MOVW a4, 0x4000
 MOVT a4, 0x2      // 0x24000 (1<<15)|(1<<18)
 ORRRS a1, a1, a4  // a1 | 0x0002 4000
 STR a1, v1, 0x4   // 0x3f20 0004 <- a1
                   // GPFSEL1
 
-
-// 8a
+// 8a: Turn off pull up/down for pins 14 and 15
 LDR a1, v1, 0x94  // a1 <- 0x3f20 0094
-MOVW a4, 0xfffc
-MOVT a4, 0xffff
-//ANDRS a1, a1, a4  // a1 & 0xffff fffc
+MOVW a4, 0xffff
+MOVT a4, 0xfffc
+ANDRS a1, a1, a4  // a1 & 0xfffc ffff
 STR a1, v1, 0x94  // 0x3f20 0094 <- 1a
                   // GPPUD
 
-MOVW a3, 0x96     // delay for 150 cycles
+// 8b: delay
+MOVW a3, 0x96
 PUSH a3
 BL delay
 POP a3
 
+// 8c: Clock CPIO pins
 LDR a1, v1, 0x98  // a1 <- 0x3f20 0098
-MOVW a4, 0xc000
-ANDRS a1, a1, a4  // a1 & 0xc000
-STR a1, v1, 0x98  // 0x3f20 0098 <- 1a
-                  // GPPUDCLK0
-
-MOVW a3, 0x96     // delay for 150 cycles
-PUSH a3
-BL delay
-POP a3
-
-MOVW a1, 0x0
-STR a1, v1, 0x94  // 0x3f20 0094 <- 0x0
-                  // GPPUD
-
-MOVW a3, 0x96     // delay for 150 cycles
-PUSH a3
-BL delay
-POP a3
-
-LDR a1, v1, 0x98  // a1 <- 0x3f20 0098
-MOVW a4, 0x0
+MOVW a4, 0x3fff
+MOVT a4, 0xffff
 ANDRS a1, a1, a4  // a1 & 0xffff 3fff
 STR a1, v1, 0x98  // 0x3f20 0098 <- 1a
                   // GPPUDCLK0
 
-// 9
-MOVW a1, 0x0 // disable uart
-STR a1, v2, 0x30
+// 8d: delay
+MOVW a3, 0x96
+PUSH a3
+BL delay
+POP a3
 
-//10
-loop10:
-LDR a1, v2, 0x18
-ANDS a1, a1, 0x8
-BNE loop10
+// 8e:
+MOVW a4, 0x0
+STR a1, v1, 0x94  // 0x3f20 0094 <- 0x0
+                  // GPPUD
 
+// 8f: delay
+MOVW a3, 0x96
+PUSH a3
+BL delay
+POP a3
 
-// 11 flush the FIFO
-LDR a1, v2, 0x2c
-MOVW a2, 0xffef
-MOVT a2, 0xffff
-ANDRS a1, a1, a2
-STR a1, v2, 0x2c
+// 8g: 
+LDR a1, v1, 0x98  // a1 <- 0x3f20 0098
+MOVW a4, 0x3fff
+MOVT a4, 0xffff
+ANDRS a1, a1, a4  // a1 & 0xffff 3fff
+STR a1, v1, 0x98  // 0x3f20 0098 <- 1a
+                  // GPPUDCLK0
 
-MOVW a1, 0x7ff
-STR a1, v2, 0x44  // 0x3f20 1044 <- 0x7ff  /// first 11 bits clear all interrupts
-                  // UART0_ICR
+// 9: disable the uart
+MOVW a1, 0x0
+STR a1, v2, 0x0
 
-// 13
-MOVW a1, #1       /// baud stuff
-STR a1, v2, 0x24  // write(UART0_IBRD, #1)
+// 10: wait for uart to stop receiving
+
+// 11: flush the transmit FIFO
+
+// 12: Clear pending interrupts
+
+// 13: Set the BAUD rate
+MOVW a1, #1
+STR a1, v2, 0x24 // write(UART0_IBRD, #1)
 MOVW a1, #40
-STR a1, v2, 0x28  // write(UART0_FBRD, #40)
+STR a1, v2, 0x28 // write(UART0_FBRD, #40)
 
-
+// 14: Enable FIFOs
 MOVW a1, 0x60
 STR a1, v2, 0x2c  // 0x3f20 102c <- 0x60   // bit 5 and 6 set 8 bit word size (do while uart is disabled)
                   // UART0_LCRH
 
+// 15: Enable The UART and enable pins 14 and 15
 MOVW a1, 0x301
 STR a1, v2, 0x30  // 0x3f20 1030 <- 0x301    /// enable uart (1<<0) enable tx and rx (1<<8)(1<<9)
                   // UART_CR
 
+// 16: Set FIFO lengths to 1/8
 MOVW a1, 0x0
 STR a1, v2, 0x34  // 0x3f20 1034 <- 0x0   //  set fifo interrupt on 1/8 full
                   // UART0_IFLS
 
+// 17: Enable FIFO interrupts
 MOVW a1, 0x10
 STR a1, v2, 0x38  // 0x3f20 1038 <- 0x10 // set receive interrupt mask bit
                   // UART0_IMSC
 
-MOVW a1, 0xff7f
-MOVT a1, 0xffff
+// 18: Turn on CPU interrupts
+//MOVW a1, 0xff7f
+//MOVT a1, 0xffff
 //word: 0xe12ff000
 CPSIE 0x111
 
-//fffff7f
-
-MOVW a1, 0x4
-MOV pc, a1
+POP lr
+MOV pc, lr
 
 
-
-main_loop:
-
-MOVW a1, 0x2a // '*'
-PUSH a1
-BL write_char
-POP a1
-
-//BL interrupt_handle
-
-MOVW a1, 0x0
-MOVT a1, 0x20
-PUSH a1
-BL delay
-POP a1
-
-
-
-
-BAL main_loop
 
 
 
@@ -327,14 +305,15 @@ MOV pc, lr
 
 
 
+
 address: 0x500 // 0x9100 // 0x2440
 interrupt_handle:
-SUBS lr, lr, 0x4
+//SUBS lr, lr, 0x4
 PUSH lr
 PUSH a1
-//BL read_char
-//POP a1
-MOVW a1, 0x49 // 'I'
+BL read_char
+POP a1
+//MOVW a1, 0x49 // 'I'
 PUSH a1
 BL write_char
 POP a1
@@ -356,14 +335,41 @@ POP lr
 mov pc, lr
 
 
-//address: 0x1300 // 0x9300
-//WORD: 0xea001ffe, 0xea00233a, 0xea002336, 0xea002332, 0xea00232e, 0xea00232a, 0xea002326, 0xea002322
-
 address: 0x600
 led_on:
-MOVW v5, 0x0
-MOVW v5, 0x3f20
-MOVW v6, 0x8000
-STR v6, v5, 0x20
-wait2:
-BAL wait2
+PUSH lr
+PUSH a1
+PUSH a2
+PUSH a3
+PUSH a4
+MOVW a2, 0x0
+MOVT a2, 0x3f20
+MOVW a1, 0x0
+MOVT a1, 0x20
+STR a1, a2, 0x10
+
+led_on_loop: 
+MOVW a2, 0x0
+MOVT a2, 0x3f20
+MOVW a3, 0x8000
+STR a3, a2, 0x20
+
+MOVW a1, 0x4f // 'O'
+PUSH a1
+BL write_char
+POP a1
+MOVW a1, 0x50 // 'P'
+PUSH a1
+BL write_char
+POP a1
+
+MOVW a1, 0x0
+MOVT a1, 0x10
+PUSH a1
+BL delay
+
+STR a3, a2, 0x2c
+BL delay
+POP a1
+
+BAL led_on_loop

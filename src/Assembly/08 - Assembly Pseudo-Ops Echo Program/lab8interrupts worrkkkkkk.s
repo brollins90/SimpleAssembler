@@ -38,7 +38,17 @@ MOVT r1, 0x20
 STR r1, r0, 0x10
 MOVW r2, 0x8000
 
-led_on_loop: STR r2, r0, 0x20
+led_on_loop: 
+MOVW a1, 0x4f // 'O'
+PUSH a1
+BL write_char
+POP a1
+MOVW a1, 0x50 // 'P'
+PUSH a1
+BL write_char
+POP a1
+
+STR r2, r0, 0x20
 MOVW r3, 0x0
 MOVT r3, 0x10
 led_on_loop_wait1: SUBS r3, r3, 0x01

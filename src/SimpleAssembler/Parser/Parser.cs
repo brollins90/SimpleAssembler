@@ -657,6 +657,21 @@
 
         public uint EncodeSTRInstruction(string sourceRegister, string baseRegister, int imm12)
         {
+            ////// p 0 = post, 1 = pre (when using immediate, p=1
+            ////// u 0 = down, 1 = up, (is imm12 positive or negative)
+            ////// b 0 = word, 1 = byte
+            ////// w 0 = no write back, 1 = write back (when using immediate, w=0)
+            ////// l 0 = store, 1 = load
+
+            ////// A8.8.204
+            ////// {cond}010{P}{U}0{W}1{Rn}{Rt}{imm12}
+            ////// 1110  0101   1 0 0 1 
+            ////// 1110  0101   1001    rn rt imm12
+            ////// e     5      9     
+            //////
+            ////// e58{rn}{rt}{imm12}  // when imm12 is positive
+            ////// e50{rn}{rt}{imm12}  // when imm12 is negitive
+
             // p 0 = post, 1 = pre
             // u 0 = down, 1 = up,
             // b 0 = word, 1 = byte
@@ -667,10 +682,13 @@
             // {cond}010{P}{U}0{W}0{Rn}{Rt}{imm12}
             // 1110  0101   0000    rn rt imm12
             // e     5      0     
+            
+            string posNeg = (imm12 < 0) ? "0" : "8";
 
             string imm12String = Imm12Rotate(imm12);
 
-            string instruction = $"e50{baseRegister}{sourceRegister}{imm12String}";
+            string instruction = $"e5{posNeg}{baseRegister}{sourceRegister}{imm12String}";
+
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
