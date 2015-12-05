@@ -74,30 +74,24 @@ uart_init:
 PUSH lr
 
 MOVW v1, 0x0
-MOVT v1, 0x3f20
+MOVT v1, 0x3f20 // GPIO_BASE (0x3f20 0000)
 
 MOVW v2, 0x1000
-MOVT v2, 0x3f20
+MOVT v2, 0x3f20 // UART_BASE (0x3f20 1000)
 
 MOVW v3, 0xb200
 MOVT v3, 0x3f00
 
-MOVW v4, 0x5000
-MOVT v4, 0x3f21
-
-// 6: Disable interrupts
+// 6a: Disable interrupts
 MOVW a1, 0xffff
 MOVT a1, 0xffff
-STR a1, v3, 0x1c  // 0x3f00 b21c <- 0xffff ffff
-                  // IRQ_DISABLE1
+STR a1, v3, 0x1c  // IRQ_DISABLE1 (0x3f00 b21c) <- 0xffff ffff
+STR a1, v3, 0x20  // IRQ_DISABLE2 (0x3f00 b220) <- 0xffff ffff
 
-STR a1, v3, 0x20  // 0x3f00 b220 <- 0xffff ffff
-                  // IRQ_DISABLE2
-                  
+// 6b: Enable UART interrupts
 MOVW a1, 0x0
 MOVT a1, 0x200
-STR a1, v3, 0x14  // 0x3f00 b214 <- 0x0200 0000
-                  // IRQ_ENABLE2
+STR a1, v3, 0x14  // IRQ_ENABLE2 (0x3f00 b214) <- 0x0200 0000
 
 // 7: Set GPIO pin 14 to TX and 15 to RX modes
 LDR a1, v1, 0x4   // a1 <- 0x3f20 0004
@@ -211,7 +205,8 @@ MOV pc, lr
 
 
 
-read_char: PUSH lr
+read_char: 
+PUSH lr
 PUSH a1
 PUSH a2
 MOVW a2, 0x1000
@@ -236,7 +231,8 @@ MOV pc, lr
 
 
 // Writes a character to the UART
-write_char: PUSH lr
+write_char: 
+PUSH lr
 PUSH a1
 PUSH a2
 LDR a1, sp, 0xc // character
@@ -253,7 +249,8 @@ MOV pc, lr
 
 
 // waits for arg1 number of cycles
-delay: PUSH lr
+delay: 
+PUSH lr
 PUSH a1
 LDR a1, sp, 0x8
 
@@ -269,7 +266,8 @@ MOV pc, lr
 
 
 
-write_hex: PUSH lr
+write_hex: 
+PUSH lr
 PUSH a1
 PUSH a2
 PUSH a3
@@ -308,31 +306,32 @@ MOV pc, lr
 
 address: 0x500 // 0x9100 // 0x2440
 interrupt_handle:
-//SUBS lr, lr, 0x4
+SUBS lr, lr, 0x4
 PUSH lr
 PUSH a1
+
 BL read_char
-POP a1
+POP a1 // get result from read_char and put it in a1
 //MOVW a1, 0x49 // 'I'
+
 PUSH a1
 BL write_char
 POP a1
 
-MOVW a1, 0x0
-MOVT a1, 0x20
-PUSH a1
-BL delay
-POP a1
+//MOVW a1, 0x0
+//MOVT a1, 0x20
+//PUSH a1
+//BL delay
+//POP a1
 
-MOV a1, lr
-PUSH a1
-BL write_hex
-POP a1
-
-
+//MOV a1, lr
+//PUSH a1
+//BL write_hex
+//POP a1
 POP a1
 POP lr
 mov pc, lr
+
 
 
 address: 0x600
