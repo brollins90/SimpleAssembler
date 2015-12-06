@@ -1,22 +1,22 @@
-MOVW v1, 0x0
-MOVT v1, 0x3f20 // put 0x3f200000 in v1
-MOVW v2, 0x0
-MOVT v2, 0x20   // put 0x200000 in v2
-MOVW v3, 0x8000 // put 0x8000 in v3
+MOVW r0, 0x0
+MOVT r0, 0x3f20
+MOVW r1, 0x0
+MOVT r1, 0x20
 
-STR v2, v1, 0x10 // enable gpio
+STR r1, r0, 0x10
+MOVW r2, 0x8000
 
-loop: STR v3, v1, 0x20 // turn on led
+loop: STR r2, r0, 0x20
+MOVW r3, 0x0
+MOVT r3, 0x10
+wait1: SUBS r3, r3, 0x01
+BNE wait1
 
-MOVW a1, 0x0
-MOVT a1, 0x10 // put 0x100000 in a1
-wait1: SUBS a1, a1, #1 // subtract 1 from a1 and set the condition bits
-BNE wait1 // go back to wait1
+STR r2, r0, 0x2c
 
-STR v3, v1, 0x2c // turn off led
-MOVW a1, 0x0
-MOVT a1, 0x10 // put 0x100000 in a1
-wait2: SUBS a1, a1, #1 // subtract 1 from a1 and set the condition bits
-BNE wait2 // go back to wait2
+MOVW r3, 0x0
+MOVT r3, 0x10
+wait2: SUBS r3, r3, 0x01
+BNE wait2
 
 BAL loop

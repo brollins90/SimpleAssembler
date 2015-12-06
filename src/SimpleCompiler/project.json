@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "SimpleAssembler Console Application",
+  "description": "SimpleCompiler Console Application",
   "authors": [ "brollins" ],
   "tags": [ "" ],
   "projectUrl": "",
@@ -12,7 +12,7 @@
   },
 
   "commands": {
-    "SimpleAssembler": "SimpleAssembler"
+    "SimpleCompiler": "SimpleCompiler"
   },
 
   "frameworks": {

@@ -1,5 +1,6 @@
 ﻿namespace SimpleAssembler.Lexer.LexTokens
 {
+    using Simple;
     using System;
 
     public class OpCodeLexToken : LexToken
@@ -18,6 +19,8 @@
                 return OperationType.ADDI;
             else if (value.Equals("ands", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.ANDS;
+            else if (value.Equals("andrs", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.ANDRS;
             else if (value.Equals("bal", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.BAL;
             else if (value.Equals("beq", StringComparison.InvariantCultureIgnoreCase))
@@ -30,6 +33,12 @@
                 return OperationType.BNE;
             else if (value.Equals("cmpi", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.CMPI;
+            else if (value.Equals("cps", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.CPS;
+            else if (value.Equals("cpsid", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.CPSID;
+            else if (value.Equals("cpsie", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.CPSIE;
             else if (value.Equals("ldr", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.LDR;
             else if (value.Equals("ldrb", StringComparison.InvariantCultureIgnoreCase))
@@ -40,6 +49,10 @@
                 return OperationType.MOVT;
             else if (value.Equals("movw", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.MOVW;
+            else if (value.Equals("orrs", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.ORRS;
+            else if (value.Equals("orrrs", StringComparison.InvariantCultureIgnoreCase))
+                return OperationType.ORRRS;
             else if (value.Equals("pop", StringComparison.InvariantCultureIgnoreCase))
                 return OperationType.POP;
             else if (value.Equals("push", StringComparison.InvariantCultureIgnoreCase))
@@ -59,17 +72,23 @@
     {
         ADDI,
         ANDS,
+        ANDRS,
         BAL,
         BEQ,
         BGE,
         BL,
         BNE,
         CMPI,
+        CPS,
+        CPSID,
+        CPSIE,
         LDR,
         LDRB,
         MOV,
         MOVT,
         MOVW,
+        ORRS,
+        ORRRS,
         POP,
         PUSH,
         ROR,

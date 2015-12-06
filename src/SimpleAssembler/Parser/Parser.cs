@@ -1,12 +1,13 @@
 ﻿namespace SimpleAssembler.Parser
 {
     using Lexer.LexTokens;
+    using Simple;
     using System;
     using System.Collections.Generic;
 
     public class Parser : IParser
     {
-        int KERNEL_SIZE = 0x3000;
+        int KERNEL_SIZE = 0x9000;
 
         public List<uint> Kernel { get; private set; }
         public uint KernelIndex { get; private set; }
@@ -15,8 +16,6 @@
 
         public Parser()
         {
-            //Kernel = new List<uint>(KERNEL_SIZE);
-            //for (int i = 0; i < KERNEL_SIZE; i++) { Kernel.Add(0); }
             KernelIndex = 0;
             LineNumber = 1;
             LabelTable = new Dictionary<string, uint>();
@@ -32,7 +31,15 @@
 
             while (lexer.HasNext())
             {
-                ParseInstruction(lexer, true);
+                try
+                {
+                    ParseInstruction(lexer, true);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error {e.Message} on line {LineNumber}");
+                    throw;
+                }
             }
 
             // reset the stuff after the first go round that found the label locations
@@ -62,6 +69,10 @@
             else if (operation is ByteDataStatementLexToken)
             {
                 ParseByteDataStatement(lexer);
+            }
+            else if (operation is IfStatementLexToken)
+            {
+                ParseIfStatement(lexer, buildingLabelTable);
             }
             else if (operation is LabelDeclarationLexToken)
             {
@@ -98,6 +109,7 @@
                     && address is NumberLexToken)
                 {
                     KernelIndex = (uint)(address as NumberLexToken).IntValue() / 4; // TODO make a uintvalue method
+                    Console.WriteLine($"--{token.Value()}: {KernelIndex}---0x{Convert.ToString(KernelIndex, 16)}");
                 }
             }
         }
@@ -145,11 +157,37 @@
 
                     var data = $"{a4.Value().Substring(2).PadLeft(2, '0')}{a3.Value().Substring(2).PadLeft(2, '0')}{a2.Value().Substring(2).PadLeft(2, '0')}{a1.Value().Substring(2).PadLeft(2, '0')}";
                     var encoded = Convert.ToUInt32(data, 16);
-                    WriteInstructionToKernel(encoded);
+                    WriteInstructionToKernel(encoded, $"{token.Value()}: {a1.Value()}, {a2.Value()}, {a3.Value()}, {a4.Value()}");
 
                     a1 = lexer.Next();
                 }
                 lexer.UnGet(a1);
+            }
+        }
+
+        public void ParseIfStatement(Lexer.Lexer lexer, bool buildingLabelTable)
+        {
+            var token = lexer.Next();
+            if (token != null
+                && token is IfStatementLexToken)
+            {
+                var operand1 = (lexer.Next() as RegisterLexToken);
+                var op = (lexer.Next() as OperatorLexToken);
+                var operand2 = lexer.Next();
+                var thenStatement = lexer.Next();
+                var thenLabel = (lexer.Next() as LabelReferenceLexToken);
+                var elseStatement = lexer.Next();
+                var elseLabel = (lexer.Next() as LabelReferenceLexToken);
+
+                bool op2IsNumber = (operand2 is NumberLexToken);
+
+                //if (op2IsNumber)
+                WriteInstructionToKernel(EncodeCMPIInstruction(operand1.Value(), (operand2 as NumberLexToken).IntValue()));
+                //else
+                //    EncodeCMPInstruction(operand1.Value(), operand2.Value());
+
+                WriteInstructionToKernel(EncodeBranchInstruction(op.Condition, "a", thenLabel.Value(), buildingLabelTable));
+                WriteInstructionToKernel(EncodeBranchInstruction("e", "a", elseLabel.Value(), buildingLabelTable));
             }
         }
 
@@ -194,6 +232,13 @@
                             lexer.Next().Value(),                           // destinationRegister
                             lexer.Next().Value(),                           // sourceRegister
                             (lexer.Next() as NumberLexToken).IntValue());   // imm12 
+                        break;
+
+                    case OperationType.ANDRS:
+                        encodedInstruction = EncodeANDRSInstruction(
+                            lexer.Next().Value(),                           // destinationRegister
+                            lexer.Next().Value(),                           // sourceRegister
+                            lexer.Next().Value());                          // andRegister 
                         break;
 
                     case OperationType.ANDS:
@@ -249,6 +294,21 @@
                             (lexer.Next() as NumberLexToken).IntValue());   // imm16 
                         break;
 
+                    case OperationType.CPS:
+                        encodedInstruction = EncodeCPSInstruction(
+                            (lexer.Next() as NumberLexToken).IntValue());   // mode 
+                        break;
+
+                    case OperationType.CPSID:
+                        encodedInstruction = EncodeCPSIDInstruction(
+                            (lexer.Next() as NumberLexToken).IntValue());   // flags 
+                        break;
+
+                    case OperationType.CPSIE:
+                        encodedInstruction = EncodeCPSIEInstruction(
+                            (lexer.Next() as NumberLexToken).IntValue());   // flags 
+                        break;
+
                     case OperationType.LDR:
                         encodedInstruction = EncodeLDRInstruction(
                             lexer.Next().Value(),                           // sourceRegister
@@ -279,6 +339,20 @@
                         encodedInstruction = EncodeMOVWInstruction(
                             lexer.Next().Value(),                           // destinationRegister
                             (lexer.Next() as NumberLexToken).IntValue());   // imm16 
+                        break;
+
+                    case OperationType.ORRS:
+                        encodedInstruction = EncodeORRSInstruction(
+                            lexer.Next().Value(),                           // destinationRegister
+                            lexer.Next().Value(),                           // sourceRegister
+                            (lexer.Next() as NumberLexToken).IntValue());   // imm12 
+                        break;
+
+                    case OperationType.ORRRS:
+                        encodedInstruction = EncodeORRRSInstruction(
+                            lexer.Next().Value(),                           // destinationRegister
+                            lexer.Next().Value(),                           // sourceRegister
+                            lexer.Next().Value());                          // orRegister 
                         break;
 
                     case OperationType.POP:
@@ -314,7 +388,7 @@
                 }
             }
 
-            WriteInstructionToKernel(encodedInstruction);
+            WriteInstructionToKernel(encodedInstruction, token.Value());
             return encodedInstruction;
         }
 
@@ -341,28 +415,25 @@
 
         public uint EncodeADDIInstruction(string destinationRegister, string sourceRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On ADDI, op2 cannot be larger than 0xFFF");
-            }
+            string imm12String = Imm12Rotate(imm12);
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
+            string instruction = $"e28{sourceRegister}{destinationRegister}{imm12String}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
 
-            string instruction = $"e28{destinationRegister}{sourceRegister}{imm12String}";
+        public uint EncodeANDRSInstruction(string destinationRegister, string sourceRegister, string andRegister)
+        {
+            string instruction = $"e01{sourceRegister}{destinationRegister}00{andRegister}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
 
         public uint EncodeANDSInstruction(string destinationRegister, string sourceRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On ANDS, op2 cannot be larger than 0xFFF");
-            }
+            string imm12String = Imm12Rotate(imm12);
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
-
-            string instruction = $"e21{destinationRegister}{sourceRegister}{imm12String}";
+            string instruction = $"e21{sourceRegister}{destinationRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
@@ -397,27 +468,74 @@
             return encodedOperation;
         }
 
-        public uint EncodeCMPIInstruction(string destinationRegister, int imm16)
+        public uint EncodeCMPIInstruction(string sourceRegister, int imm12)
         {
-            if (imm16 > 0xfff)
-            {
-                throw new SyntaxException("On CMPI, op2 cannot be larger than 0xFFF");
-            }
-            
-            string imm12 = $"{IntToHexString(imm16, 2)}{IntToHexString(imm16, 1)}{IntToHexString(imm16, 0)}";
+            string imm12String = Imm12Rotate(imm12);
 
-            string instruction = $"e35{destinationRegister}0{imm12}";
+            string instruction = $"e35{sourceRegister}0{imm12String}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeCPSInstruction(int mode)
+        {
+            // 0x12 is IRQ, 0x13 is Super
+            if (mode != 0x12 && mode != 0x13)
+            {
+                throw new SyntaxException("On CPS, mode can only be 0x12 and 0x13");
+            }
+
+            string modeString = $"{IntToHexString(mode, 1)}{IntToHexString(mode, 0)}";
+            modeString = modeString.PadLeft(2, '0');
+
+            string instruction = $"f10200{modeString}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeCPSIDInstruction(int flags)
+        {
+            if (flags > 0x111)
+            {
+                throw new SyntaxException("On CPSID, mode can only have 3 digits");
+            }
+
+            string A = ((flags & 0x100) == 0x100) ? "1" : "0";
+            string I = ((flags & 0x010) == 0x010) ? "1" : "0";
+            string F = ((flags & 0x001) == 0x001) ? "1" : "0";
+
+            string flagString = $"000000011100";
+            int t = Convert.ToInt32(flagString, 2);
+            flagString = $"{IntToHexString(t, 1)}{IntToHexString(t, 0)}";
+
+            string instruction = $"f10c0{flagString}0";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeCPSIEInstruction(int flags)
+        {
+            if (flags > 0x111)
+            {
+                throw new SyntaxException("On CPSIE, mode can only have 3 digits");
+            }
+
+            string A = ((flags & 0x100) == 0x100) ? "1" : "0";
+            string I = ((flags & 0x010) == 0x010) ? "1" : "0";
+            string F = ((flags & 0x001) == 0x001) ? "1" : "0";
+
+            string flagString = $"000000011100";
+            int t = Convert.ToInt32(flagString, 2);
+            flagString = $"{IntToHexString(t, 1)}{IntToHexString(t, 0)}";
+
+            string instruction = $"f1080{flagString}0";
+            //instruction = $"e12ff000";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
 
         public uint EncodeLDRInstruction(string sourceRegister, string baseRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On LDR, op2 cannot be larger than 0xFFF");
-            }
-
             // p 0 = post, 1 = pre (when using immediate, p=1
             // u 0 = down, 1 = up, (is imm12 positive or negative)
             // b 0 = word, 1 = byte
@@ -435,7 +553,7 @@
 
             string posNeg = (imm12 < 0) ? "1" : "9";
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
+            string imm12String = Imm12Rotate(imm12);
 
             string instruction = $"e5{posNeg}{baseRegister}{sourceRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
@@ -444,14 +562,9 @@
 
         public uint EncodeLDRBInstruction(string sourceRegister, string baseRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On LDRB, op2 cannot be larger than 0xFFF");
-            }
-
             string posNeg = (imm12 < 0) ? "5" : "d";
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
+            string imm12String = Imm12Rotate(imm12);
 
             string instruction = $"e5{posNeg}{baseRegister}{sourceRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
@@ -495,9 +608,24 @@
             return encodedOperation;
         }
 
+        public uint EncodeORRSInstruction(string destinationRegister, string sourceRegister, int imm12)
+        {
+            string imm12String = Imm12Rotate(imm12);
+
+            string instruction = $"e39{sourceRegister}{destinationRegister}{imm12String}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeORRRSInstruction(string destinationRegister, string sourceRegister, string orRegister)
+        {
+            string instruction = $"e19{sourceRegister}{destinationRegister}00{orRegister}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
         public uint EncodePOPInstruction(string destinationRegister)
         {
-
             string instruction = $"e49d{destinationRegister}004";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
@@ -529,10 +657,20 @@
 
         public uint EncodeSTRInstruction(string sourceRegister, string baseRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On STR, op2 cannot be larger than 0xFFF");
-            }
+            ////// p 0 = post, 1 = pre (when using immediate, p=1
+            ////// u 0 = down, 1 = up, (is imm12 positive or negative)
+            ////// b 0 = word, 1 = byte
+            ////// w 0 = no write back, 1 = write back (when using immediate, w=0)
+            ////// l 0 = store, 1 = load
+
+            ////// A8.8.204
+            ////// {cond}010{P}{U}0{W}1{Rn}{Rt}{imm12}
+            ////// 1110  0101   1 0 0 1 
+            ////// 1110  0101   1001    rn rt imm12
+            ////// e     5      9     
+            //////
+            ////// e58{rn}{rt}{imm12}  // when imm12 is positive
+            ////// e50{rn}{rt}{imm12}  // when imm12 is negitive
 
             // p 0 = post, 1 = pre
             // u 0 = down, 1 = up,
@@ -544,26 +682,42 @@
             // {cond}010{P}{U}0{W}0{Rn}{Rt}{imm12}
             // 1110  0101   0000    rn rt imm12
             // e     5      0     
+            
+            string posNeg = (imm12 < 0) ? "0" : "8";
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
+            string imm12String = Imm12Rotate(imm12);
 
-            string instruction = $"e50{baseRegister}{sourceRegister}{imm12String}";
+            string instruction = $"e5{posNeg}{baseRegister}{sourceRegister}{imm12String}";
+
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }
 
         public uint EncodeSUBSInstruction(string destinationRegister, string sourceRegister, int imm12)
         {
-            if (imm12 > 0xfff)
-            {
-                throw new SyntaxException("On SUBS, op2 cannot be larger than 0xFFF");
-            }
+            string imm12String = Imm12Rotate(imm12);
 
-            string imm12String = $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}";
-
-            string instruction = $"e25{destinationRegister}{sourceRegister}{imm12String}";
+            string instruction = $"e25{sourceRegister}{destinationRegister}{imm12String}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
+        }
+
+        // http://stackoverflow.com/a/17763652/148256
+        public string Imm12Rotate(int imm12)
+        {
+            uint encode = Convert.ToUInt32(imm12);
+            uint rotate;
+            for (rotate = 0; rotate < 32; rotate += 2)
+            {
+                var res = (encode & ~0xff);
+                if (res >= 0 && res <= 0xff)
+                {
+                    return $"{IntToHexString(rotate / 2, 0)}{IntToHexString(encode, 1)}{IntToHexString(encode, 0)}";
+                }
+                encode = (encode << 2) | (encode >> 30);
+            }
+            throw new SyntaxException($"The number {imm12} is not the correct size to fit in 12 bits");
+            //return $"{IntToHexString(imm12, 2)}{IntToHexString(imm12, 1)}{IntToHexString(imm12, 0)}".PadLeft(3, '0');
         }
 
         private string IntToHexString(int i, int nibble)
@@ -572,9 +726,17 @@
             return Convert.ToString(ret, 16);
         }
 
-        private void WriteInstructionToKernel(uint instruction)
+        private string IntToHexString(uint i, int nibble)
         {
-            Console.WriteLine($"{KernelIndex}: {Convert.ToString(instruction, 16)}");
+            uint ret = (i >> (4 * nibble)) & 0xF;
+            return Convert.ToString(ret, 16);
+        }
+
+        private void WriteInstructionToKernel(uint instruction, string code = "")
+        {
+            code = string.IsNullOrEmpty(code) ? Environment.NewLine : $" - {code}{Environment.NewLine}";
+            Console.Write($"{KernelIndex}: {Convert.ToString(instruction, 16)}{code}");            
+                
             Kernel[(int)KernelIndex++] = instruction;
         }
     }

@@ -25,14 +25,26 @@
 
             string fileText = File.ReadAllText(inputFile);
 
-            var outputArray = parser.Parse(fileText);
-
-            using (BinaryWriter binaryWriter = new BinaryWriter(File.Open(outputFile, FileMode.Create)))
+            try
             {
-                foreach (int i in outputArray)
+                var outputArray = parser.Parse(fileText);
+
+                using (BinaryWriter binaryWriter = new BinaryWriter(File.Open(outputFile, FileMode.Create)))
                 {
-                    binaryWriter.Write(i);
+                    foreach (int i in outputArray)
+                    {
+                        binaryWriter.Write(i);
+                    }
                 }
+                Console.WriteLine("***********");
+                foreach(var labelPair in parser.LabelTable)
+                {
+                    Console.WriteLine($"{labelPair.Key}: {labelPair.Value}");
+                }
+            }
+            catch
+            {
+                Console.WriteLine("error");
             }
         }
     }

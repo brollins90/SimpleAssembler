@@ -1,9 +1,10 @@
 ﻿namespace SimpleAssembler.Lexer
 {
     using LexTokens;
+    using Simple;
+    using Simple.Tokenizer;
+    using Simple.Tokenizer.Tokens;
     using System.Collections.Generic;
-    using Tokenizer;
-    using Tokenizer.Tokens;
 
     public class Lexer : ILexer
     {
@@ -75,6 +76,56 @@
                 {
                     var t1Val = (t1 as AlphaNumToken).Value().ToLowerInvariant();
 
+                    if (t1Val.Equals("if"))
+                    {
+                        var operand1 = _tokenStream.Next();
+                        var operation = _tokenStream.Next();
+                        var operand2 = _tokenStream.Next();
+                        var thenStatement = _tokenStream.Next();
+                        var thenLabel = _tokenStream.Next();
+                        var elseStatement = _tokenStream.Next();
+                        var elseLabel = _tokenStream.Next();
+
+                        if (operand1 != null
+                            && operand1 is AlphaNumToken
+                            && (operand1 as AlphaNumToken).IsRegister()
+                            && operation != null
+                            && operation is SpecialToken
+                            && (operation as SpecialToken).IsOperation()
+                            && operand2 != null
+                            && ((operand2 is AlphaNumToken && (operand2 as AlphaNumToken).IsRegister())
+                              || operand2 is NumberToken)
+                            && thenStatement != null
+                            && thenStatement is AlphaNumToken
+                            && thenLabel != null
+                            && (thenLabel is AlphaNumToken || thenLabel is AlphaNumUnderscoreToken)
+                            && elseStatement != null
+                            && (elseStatement is AlphaNumToken || elseStatement is AlphaNumUnderscoreToken)
+                            && elseLabel != null
+                            && (elseLabel is AlphaNumToken || elseLabel is AlphaNumUnderscoreToken))
+                        {
+                            _lexTokenStack.Push(new LabelReferenceLexToken(elseLabel.Value()));
+                            _lexTokenStack.Push(new ElseStatementLexToken(elseStatement.Value()));
+                            _lexTokenStack.Push(new LabelReferenceLexToken(thenLabel.Value()));
+                            _lexTokenStack.Push(new ThenStatementLexToken(thenStatement.Value()));
+                            if (operand2 is NumberToken)
+                            {
+                                _lexTokenStack.Push(new NumberLexToken(operand2.Value()));
+                            }
+                            else
+                            {
+                                _lexTokenStack.Push(new RegisterLexToken(operand2.Value()));
+                            }
+                            _lexTokenStack.Push(new OperatorLexToken(operation.Value()));
+                            _lexTokenStack.Push(new RegisterLexToken(operand1.Value()));
+                            return new IfStatementLexToken(t1.Value()); // return op
+                        }
+                        else
+                        {
+                            throw new SyntaxException($"Something is wrong with the if statement");
+                        }
+                    }
+
                     // here t1 is an alphanum
                     var t2 = _tokenStream.Next();
 
@@ -142,6 +193,7 @@
 
                         // if t1 is alphanum and t2 is alpha num, it could be a branch to label
                         if (t2 is AlphaNumToken)
+                        {
                             // if t1 is opcode
                             if ((t1 as AlphaNumToken).IsOpCode())
                             {
@@ -151,6 +203,7 @@
                                     || t1Val.Equals("ands")
                                     || t1Val.Equals("ldr")
                                     || t1Val.Equals("ldrb")
+                                    || t1Val.Equals("orrs")
                                     || t1Val.Equals("ror")
                                     || t1Val.Equals("str")
                                     || t1Val.Equals("subs"))
@@ -179,6 +232,38 @@
                                     else
                                     {
                                         throw new SyntaxException($"{t1Val} should be followed by a register, a comma, a register, a comma, and a number");
+                                    }
+                                }
+
+                                // if instuction is: $"{op} {reg}, {reg2}, {reg3}"
+                                else if ((t1Val.Equals("andrs")
+                                    || t1Val.Equals("orrrs"))
+                                    && (t2 as AlphaNumToken).IsRegister())
+                                {
+                                    var comma = _tokenStream.Next();
+                                    var reg2 = _tokenStream.Next();
+                                    var comma2 = _tokenStream.Next();
+                                    var reg3 = _tokenStream.Next();
+
+                                    if (comma != null
+                                        && comma is CommaToken
+                                        && reg2 != null
+                                        && reg2 is AlphaNumToken
+                                        && (reg2 as AlphaNumToken).IsRegister()
+                                        && comma2 != null
+                                        && comma2 is CommaToken
+                                        && reg3 != null
+                                        && reg3 is AlphaNumToken
+                                        && (reg3 as AlphaNumToken).IsRegister())
+                                    {
+                                        _lexTokenStack.Push(new RegisterLexToken(reg3.Value())); // keep reg3
+                                        _lexTokenStack.Push(new RegisterLexToken(reg2.Value())); // keep reg2
+                                        _lexTokenStack.Push(new RegisterLexToken(t2.Value())); // keep t2
+                                        return new OpCodeLexToken(t1.Value()); // return op
+                                    }
+                                    else
+                                    {
+                                        throw new SyntaxException($"{t1Val} should be followed by a register, a comma, and a register");
                                     }
                                 }
 
@@ -262,6 +347,20 @@
                             {
                                 _tokenStream.UnGet(t2);
                             }
+                        }
+                        else if (t2 is NumberToken)
+                        {
+                            // if instuction is: $"{op} {number}"
+                            if ((t1Val.Equals("cps")
+                                || t1Val.Equals("cpsid")
+                                || t1Val.Equals("cpsie"))
+                                && (t2 is NumberToken))
+                            {
+                                _lexTokenStack.Push(new NumberLexToken(t2.Value())); // keep t2
+                                return new OpCodeLexToken(t1.Value()); // return op
+                            }
+
+                        }
                         throw new SyntaxException($"t1: {t1.Value()}, t2: {t2.Value()}");
 
                     } // t2 is null

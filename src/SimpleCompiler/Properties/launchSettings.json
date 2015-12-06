@@ -1,7 +1,7 @@
 {
   "profiles": {
-    "SimpleAssembler": {
-      "commandName": "SimpleAssembler",
+    "SimpleCompiler": {
+      "commandName": "SimpleCompiler",
       "commandLineArgs": "-i\"C:\\_\\src\\Blake\\school\\SimpleAssembler\\src\\Assembly\\08 - Assembly Pseudo-Ops Echo Program\\lab8.s\" -o\"C:\\_pi-class\\kernel7.img\""
     }
   }

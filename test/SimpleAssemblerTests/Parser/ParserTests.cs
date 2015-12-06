@@ -1,5 +1,6 @@
 ﻿namespace SimpleAssemblerTests.Parser
 {
+    using Simple;
     using SimpleAssembler;
     using SimpleAssembler.Parser;
     using System;
@@ -323,6 +324,33 @@
 
             Assert.Equal((uint)0xe2822004, output[0]);
         }
+
+        [Fact]
+        public void ParserParseADDI2()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ADDI a1, a4, 0xfff" + Environment.NewLine;
+
+            Assert.Throws<SyntaxException>(() =>
+            {
+                var output = parser.Parse(myProgram);
+            });
+        }
+
+        [Fact]
+        public void ParserParseADDI3()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ADDI a1, a4, 0x3f000000" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal((uint)0xe283043f, output[0]);
+        }
         #endregion
 
         #region ANDS
@@ -341,6 +369,19 @@
         }
         #endregion
 
+
+        [Fact]
+        public void ParserParseANDRSRegister()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ANDRS r1, r4, r3" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe0141003, output[0]);
+        }
         #region BAL
         [Fact]
         public void ParserParseBALParseNoLabel()
@@ -533,11 +574,11 @@
             IParser parser = new Parser();
 
             var myProgram =
-                "CMPI a1, 0x4" + Environment.NewLine;
+                "CMPI a4, 0x4" + Environment.NewLine;
 
             var output = parser.Parse(myProgram);
 
-            Assert.Equal(0xe3500004, output[0]);
+            Assert.Equal(0xe3530004, output[0]);
         }
         #endregion
 
@@ -574,7 +615,7 @@
         #endregion
 
         #region LDRB
-            
+
         [Fact]
         public void ParserParseLDRBPositive()
         {
@@ -733,6 +774,33 @@
             });
         }
         #endregion
+
+
+        [Fact]
+        public void ParserParseORRSImmediate()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ORRS r1, r4, 0x01" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3941001, output[0]);
+        }
+
+        [Fact]
+        public void ParserParseORRRSRegister()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "ORRRS r1, r4, r3" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe1941003, output[0]);
+        }
 
         #region POP
 
@@ -899,7 +967,7 @@
         #endregion
 
         #region ROR
-            
+
         [Fact]
         public void ParserParseROR()
         {
@@ -913,6 +981,7 @@
             Assert.Equal(0xe1a01e62, output[0]);
         }
         #endregion
+
         #region STR
 
         [Fact]
@@ -926,20 +995,6 @@
             var output = parser.Parse(myProgram);
 
             Assert.Equal(0xe5001010, output[0]);
-        }
-
-        [Fact]
-        public void ParserParseSTRTooLarge()
-        {
-            IParser parser = new Parser();
-
-            var myProgram =
-                "STR r1, r2, 0x1000" + Environment.NewLine;
-
-            Assert.Throws(typeof(SyntaxException), () =>
-            {
-                var output = parser.Parse(myProgram);
-            });
         }
         #endregion
 
@@ -974,20 +1029,68 @@
             Assert.Equal(0xe2533001, output[0]);
         }
 
+        #endregion
+
+
         [Fact]
-        public void ParserParseSUBSTooLarge()
+        public void ParserIf()
         {
             IParser parser = new Parser();
 
             var myProgram =
-                "SUBS r3, r3, 0x10000" + Environment.NewLine;
+                "IF r1 == 0x4 THEN yes ELSE no" + Environment.NewLine +
+                "yes:" + Environment.NewLine +
+                "MOVW r0, 0x0" + Environment.NewLine +
+                "no:" + Environment.NewLine +
+                "MOVW r0, 0x0" + Environment.NewLine;
 
-            Assert.Throws(typeof(SyntaxException), () =>
-            {
-                var output = parser.Parse(myProgram);
-            });
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe3510004, output[0]);
+            Assert.Equal((uint)0x0a000000, output[1]);
+            Assert.Equal(0xea000000, output[2]);
+            Assert.Equal(0xe3000000, output[3]);
+            Assert.Equal(0xe3000000, output[4]);
         }
-        #endregion
+
+        [Fact]
+        public void ParseCPS()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "CPS 0x12" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xf1020012, output[0]);
+        }
+
+        [Fact]
+        public void ParseCPSID()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "CPSID 0x011" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xf10c00c0, output[0]);
+        }
+
+        [Fact]
+        public void ParseCPSIE()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "CPSIE 0x110" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xf1080180, output[0]);
+        }
 
         // Data-processing (immediate)
         // $"{cond[4]}001{op[5]}{Rn[4]}{imm16}

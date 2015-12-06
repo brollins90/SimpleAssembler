@@ -1,4 +1,6 @@
-﻿namespace SimpleAssembler.Lexer.LexTokens
+﻿using Simple;
+
+namespace SimpleAssembler.Lexer.LexTokens
 {
     public class RegisterLexToken : LexToken
     {
