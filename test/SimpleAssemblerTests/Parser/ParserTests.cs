@@ -80,14 +80,14 @@
             Assert.Equal(0xe3430f20, output[1]);
             Assert.Equal(0xe3001000, output[2]);
             Assert.Equal(0xe3401020, output[3]);
-            Assert.Equal(0xe5001010, output[4]);
+            Assert.Equal(0xe5801010, output[4]);
             Assert.Equal(0xe3082000, output[5]);
-            Assert.Equal(0xe5002020, output[6]);
+            Assert.Equal(0xe5802020, output[6]);
             Assert.Equal(0xe3003000, output[7]);
             Assert.Equal(0xe3403010, output[8]);
             Assert.Equal(0xe2533001, output[9]);
             Assert.Equal((uint)0x1afffffd, output[10]);
-            Assert.Equal(0xe500202c, output[11]);
+            Assert.Equal(0xe580202c, output[11]);
             Assert.Equal(0xe3003000, output[12]);
             Assert.Equal(0xe3403010, output[13]);
             Assert.Equal(0xe2533001, output[14]);
@@ -130,14 +130,14 @@
             Assert.Equal(0xe3430f20, output[1]);
             Assert.Equal(0xe3001000, output[2]);
             Assert.Equal(0xe3401020, output[3]);
-            Assert.Equal(0xe5001010, output[4]);
+            Assert.Equal(0xe5801010, output[4]);
             Assert.Equal(0xe3082000, output[5]);
-            Assert.Equal(0xe5002020, output[6]);
+            Assert.Equal(0xe5802020, output[6]);
             Assert.Equal(0xe3003000, output[7]);
             Assert.Equal(0xe3403010, output[8]);
             Assert.Equal(0xe2533001, output[9]);
             Assert.Equal((uint)0x1afffffd, output[10]);
-            Assert.Equal(0xe500202c, output[11]);
+            Assert.Equal(0xe580202c, output[11]);
             Assert.Equal(0xe3003000, output[12]);
             Assert.Equal(0xe3403010, output[13]);
             Assert.Equal(0xe2533001, output[14]);
@@ -994,7 +994,7 @@
 
             var output = parser.Parse(myProgram);
 
-            Assert.Equal(0xe5001010, output[0]);
+            Assert.Equal(0xe5801010, output[0]);
         }
         #endregion
 

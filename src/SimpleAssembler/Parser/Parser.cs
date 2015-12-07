@@ -504,7 +504,8 @@
             string I = ((flags & 0x010) == 0x010) ? "1" : "0";
             string F = ((flags & 0x001) == 0x001) ? "1" : "0";
 
-            string flagString = $"000000011100";
+            //string flagString = $"000000011100";
+            string flagString = $"0000000{A}{I}{F}00";
             int t = Convert.ToInt32(flagString, 2);
             flagString = $"{IntToHexString(t, 1)}{IntToHexString(t, 0)}";
 
@@ -524,7 +525,8 @@
             string I = ((flags & 0x010) == 0x010) ? "1" : "0";
             string F = ((flags & 0x001) == 0x001) ? "1" : "0";
 
-            string flagString = $"000000011100";
+            //string flagString = $"000000011100";
+            string flagString = $"0000000{A}{I}{F}00";
             int t = Convert.ToInt32(flagString, 2);
             flagString = $"{IntToHexString(t, 1)}{IntToHexString(t, 0)}";
 
