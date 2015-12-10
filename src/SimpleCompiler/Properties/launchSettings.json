@@ -2,7 +2,7 @@
   "profiles": {
     "SimpleCompiler": {
       "commandName": "SimpleCompiler",
-      "commandLineArgs": "-b\"C:\\_\\src\\Blake\\school\\SimpleAssembler\\src\\Assembly\\09 - Compiling a Constant Expression\\lab9.b\" -s\"C:\\_\\src\\Blake\\school\\SimpleAssembler\\src\\Assembly\\09 - Compiling a Constant Expression\\lab9.s\" -o\"C:\\_pi-class\\kernel7.img\""
+      "commandLineArgs": "-b\"C:\\_\\src\\Blake\\school\\SimpleAssembler\\src\\Assembly\\10 - Compiling a Arithmetic Expression\\lab10.b\" -s\"C:\\_\\src\\Blake\\school\\SimpleAssembler\\src\\Assembly\\10 - Compiling a Arithmetic Expression\\lab10.s\" -o\"C:\\_pi-class\\kernel7.img\""
     }
   }
 }
