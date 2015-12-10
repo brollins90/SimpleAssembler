@@ -45,9 +45,15 @@
                 // colon
                 // hypen ??
                 // leftcurly
+
                 // leftparan
+                if (current is LeftParenToken)
+                {
+                    return new LeftParenLexToken(current.Value());
+                }
+
                 // new line
-                if (current is NewLineToken)
+                else if (current is NewLineToken)
                 {
                     return new NewLineLexToken(current.Value());
                 }
@@ -60,6 +66,10 @@
 
                 // right curly
                 // right paren
+                else if (current is RightParenToken)
+                {
+                    return new RightParenLexToken(current.Value());
+                }
 
                 // special
                 else if (current is SpecialToken)

@@ -106,6 +106,24 @@
                             stillReading = false;
                         }
 
+                        // Left Paren
+                        else if (current == '(')
+                        {
+                            state = ReadState.LeftParen;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+
+                        // Right Paren
+                        else if (current == ')')
+                        {
+                            state = ReadState.RightParen;
+                            tokenString += current;
+                            _index++;
+                            stillReading = false;
+                        }
+
                         // Hypen Curly
                         else if (current == '-')
                         {
@@ -161,7 +179,7 @@
                             tokenString += current;
                             _index++;
                         }
-                        else if (current == '}' || current == '-' || current == ':' || current == ',' || current == ' ' || current == '\t')
+                        else if (current == '}' || current == ')' || current == '-' || current == ':' || current == ',' || current == ' ' || current == '\t')
                         {
                             stillReading = false;
                         }
@@ -243,7 +261,7 @@
                             tokenString += current;
                             _index++;
                         }
-                        else if (current == '\r' || current == '\n' || current == ' ' || current == '\t')
+                        else if (current == '\r' || current == '\n' || current == ' ' || current == '\t' || current == ')' || current == '}')
                         {
                             stillReading = false;
                         }
@@ -355,6 +373,8 @@
                     return new HyphenToken(tokenString);
                 case ReadState.LeftCurly:
                     return new LeftCurlyToken(tokenString);
+                case ReadState.LeftParen:
+                    return new LeftParenToken(tokenString);
                 case ReadState.HexNumber:
                 case ReadState.DecimalNumber:
                     return new NumberToken(tokenString);
@@ -362,6 +382,8 @@
                     return new NewLineToken(tokenString);
                 case ReadState.RightCurly:
                     return new RightCurlyToken(tokenString);
+                case ReadState.RightParen:
+                    return new RightParenToken(tokenString);
                 case ReadState.Hex0:
                     throw new SyntaxException($"A '{state}' is not a valid state");
                 case ReadState.Operation:
@@ -396,9 +418,11 @@
         HexNumber,
         Hyphen,
         LeftCurly,
+        LeftParen,
         NewLineR,
         NewLine,
         Operation,
-        RightCurly
+        RightCurly,
+        RightParen
     }
 }

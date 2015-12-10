@@ -59,17 +59,6 @@
             //return Kernel.ToArray();
         }
 
-
-        public Expression ParseExpression(Lexer lexer)
-        {
-            var LHS = ParsePrimary(lexer);
-            if (LHS == null)
-            {
-                return null;
-            }
-            return ParseBinaryOperationRHS(lexer, 0, LHS);
-        }
-
         // IntegerExpression ::= {integer}
         public IntegerExpression ParseIntegerExpression(Lexer lexer)
         {
@@ -85,26 +74,36 @@
             }
         }
 
-        // parenexpression ::= '(' expression ')'
+        // ParenExpression ::= '(' expression ')'
         public Expression ParseParenExpression(Lexer lexer)
         {
-            return null;
-        }
-
-        public Expression ParsePrimary(Lexer lexer)
-        {
             var current = lexer.Next();
-            lexer.UnGet(current);
-
-            if (current == null)
-                throw new SyntaxException($"something is wrong here");
-            else if (current is NumberLexToken)
-                return ParseIntegerExpression(lexer);
+            if (current is LeftParenLexToken)
+            {
+                // dont put current baack
+                var insideParens = ParseExpression(lexer);
+                if (insideParens == null)
+                {
+                    throw new SyntaxException("Should have a valid expression inside the parens");
+                }
+                current = lexer.Next();
+                if (current is RightParenLexToken)
+                {
+                    return insideParens;
+                }
+                else
+                {
+                    throw new SyntaxException("expecting a right paren");
+                }
+            }
             else
+            {
+                lexer.UnGet(current);
                 return null;
+            }
         }
 
-        // binaryoperationrhs ::= ('+' primary)*
+        // BinaryOperationRHS ::= ('+' primary)*
         private Expression ParseBinaryOperationRHS(Lexer lexer, int previousPrecedence, Expression LHS)
         {
             while (true)
@@ -115,14 +114,18 @@
 
                 // if the current precedence is less that the previous, return LHS as it is
                 if (currentPrecedence < previousPrecedence)
+                {
+                    lexer.UnGet(currentToken);
                     return LHS;
-
+                }
 
                 var operation = (currentToken as BinaryOperatorLexToken).Value();
                 // otherwise, parse out the RHS
                 var RHS = ParsePrimary(lexer);
                 if (RHS == null)
+                {
                     return null;
+                }
 
                 // If BinOp binds less tightly with RHS than the operator after RHS, let
                 // the pending operator take RHS as its LHS.
@@ -137,6 +140,36 @@
                 // merge LHS and RHS
                 LHS = new BinaryOperatorExpression(operation, LHS, RHS);
             }
+        }
+
+        // Primary
+        //   ::= IntegerExpression
+        ///   ::= ParenExpression
+        ///   ::= IdentifierExpression
+        public Expression ParsePrimary(Lexer lexer)
+        {
+            var current = lexer.Next();
+            lexer.UnGet(current);
+
+            if (current == null)
+                throw new SyntaxException($"something is wrong here");
+            else if (current is NumberLexToken)
+                return ParseIntegerExpression(lexer);
+            else if (current is LeftParenLexToken)
+                return ParseParenExpression(lexer);
+            else
+                return null;
+        }
+
+        // Expression ::= Primary BinaryOperationRHS
+        public Expression ParseExpression(Lexer lexer)
+        {
+            var LHS = ParsePrimary(lexer);
+            if (LHS == null)
+            {
+                return null;
+            }
+            return ParseBinaryOperationRHS(lexer, 0, LHS);
         }
 
         private int GetTokenPrecedence(LexToken current)
