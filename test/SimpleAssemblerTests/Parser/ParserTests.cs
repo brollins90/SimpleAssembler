@@ -1092,6 +1092,19 @@
             Assert.Equal(0xf1080180, output[0]);
         }
 
+        [Fact]
+        public void ParserParseMULRSParser0r0()
+        {
+            IParser parser = new Parser();
+
+            var myProgram =
+                "MULRS r0, r0, r1" + Environment.NewLine;
+
+            var output = parser.Parse(myProgram);
+
+            Assert.Equal(0xe0001090, output[0]);
+        }
+
         // Data-processing (immediate)
         // $"{cond[4]}001{op[5]}{Rn[4]}{imm16}
         //

@@ -41,6 +41,10 @@
             {
                 sb.AppendLine("SUBRS a1, a1, a2");
             }
+            else if (Operation.Equals("*", StringComparison.InvariantCultureIgnoreCase))
+            {
+                sb.AppendLine("MULRS a1, a1, a2");
+            }
             sb.AppendLine("PUSH a1");
             return sb.ToString();
         }

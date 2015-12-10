@@ -68,6 +68,7 @@
                 || lower.Equals("mov")
                 || lower.Equals("movt")
                 || lower.Equals("movw")
+                || lower.Equals("mulrs")
                 || lower.Equals("orrs")
                 || lower.Equals("orrrs")
                 || lower.Equals("pop")

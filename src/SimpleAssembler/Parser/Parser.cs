@@ -341,6 +341,13 @@
                             (lexer.Next() as NumberLexToken).IntValue());   // imm16 
                         break;
 
+                    case OperationType.MULRS:
+                        encodedInstruction = EncodeMULRSInstruction(
+                            lexer.Next().Value(),                           // destinationRegister
+                            lexer.Next().Value(),                           // sourceRegister
+                            lexer.Next().Value());                          // orRegister 
+                        break;
+
                     case OperationType.ORRS:
                         encodedInstruction = EncodeORRSInstruction(
                             lexer.Next().Value(),                           // destinationRegister
@@ -606,6 +613,13 @@
             string imm12 = $"{IntToHexString(imm16, 2)}{IntToHexString(imm16, 1)}{IntToHexString(imm16, 0)}";
 
             string instruction = $"e30{imm4}{destinationRegister}{imm12}";
+            uint encodedOperation = Convert.ToUInt32(instruction, 16);
+            return encodedOperation;
+        }
+
+        public uint EncodeMULRSInstruction(string destinationRegister, string sourceRegister, string orRegister)
+        {
+            string instruction = $"e00{destinationRegister}{orRegister}09{sourceRegister}";
             uint encodedOperation = Convert.ToUInt32(instruction, 16);
             return encodedOperation;
         }

@@ -222,6 +222,25 @@
         }
 
         [Fact]
+        public void LexerMulrsInstruction()
+        {
+            ILexer lexer = new Lexer("MULRS r0, r0, r1");
+            var token1 = lexer.Next();
+            var token2 = lexer.Next();
+            var token3 = lexer.Next();
+            var token4 = lexer.Next();
+
+            Assert.IsType(typeof(OpCodeLexToken), token1);
+            Assert.Equal(OperationType.MULRS, (token1 as OpCodeLexToken).OperationType);
+            Assert.IsType(typeof(RegisterLexToken), token2);
+            Assert.Equal("0", token2.Value());
+            Assert.IsType(typeof(RegisterLexToken), token3);
+            Assert.Equal("0", token3.Value());
+            Assert.IsType(typeof(RegisterLexToken), token4);
+            Assert.Equal("1", token4.Value());
+        }
+
+        [Fact]
         public void LexerMOVWInstruction0x0()
         {
             ILexer lexer = new Lexer("MOVW a1, 0x0");

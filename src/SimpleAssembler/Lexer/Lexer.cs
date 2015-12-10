@@ -237,6 +237,7 @@
 
                                 // if instuction is: $"{op} {reg}, {reg2}, {reg3}"
                                 else if ((t1Val.Equals("andrs")
+                                    || t1Val.Equals("mulrs")
                                     || t1Val.Equals("orrrs"))
                                     && (t2 as AlphaNumToken).IsRegister())
                                 {

@@ -198,5 +198,31 @@
             Assert.Equal("ADDRS a1, a1, a2", results[12]);
             Assert.Equal("PUSH a1", results[13]);
         }
+
+        [Fact]
+        public void BasicMathParen6()
+        {
+            ICompiler comiler = new Compiler();
+
+            var myProgram = "1 * (2 - 3)";
+
+            var output = comiler.Compile(myProgram);
+            var results = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            Assert.Equal("MOVW a1, 0x1", results[0]);
+            Assert.Equal("PUSH a1", results[1]);
+            Assert.Equal("MOVW a1, 0x2", results[2]);
+            Assert.Equal("PUSH a1", results[3]);
+            Assert.Equal("MOVW a1, 0x3", results[4]);
+            Assert.Equal("PUSH a1", results[5]);
+            Assert.Equal("POP a1", results[6]);
+            Assert.Equal("POP a2", results[7]);
+            Assert.Equal("SUBRS a1, a1, a2", results[8]);
+            Assert.Equal("PUSH a1", results[9]);
+            Assert.Equal("POP a1", results[10]);
+            Assert.Equal("POP a2", results[11]);
+            Assert.Equal("MULRS a1, a1, a2", results[12]);
+            Assert.Equal("PUSH a1", results[13]);
+        }
     }
 }
