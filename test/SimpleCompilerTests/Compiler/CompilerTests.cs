@@ -63,7 +63,7 @@
             Assert.Equal("PUSH a1", results[3]);
             Assert.Equal("POP a1", results[4]);
             Assert.Equal("POP a2", results[5]);
-            Assert.Equal("ADDS a1, a1, a2", results[6]);
+            Assert.Equal("ADDRS a1, a1, a2", results[6]);
             Assert.Equal("PUSH a1", results[7]);
         }
 
@@ -83,7 +83,7 @@
             Assert.Equal("PUSH a1", results[3]);
             Assert.Equal("POP a1", results[4]);
             Assert.Equal("POP a2", results[5]);
-            Assert.Equal("SUBS a1, a1, a2", results[6]);
+            Assert.Equal("SUBRS a1, a1, a2", results[6]);
             Assert.Equal("PUSH a1", results[7]);
         }
 
@@ -103,7 +103,7 @@
             Assert.Equal("PUSH a1", results[3]);
             Assert.Equal("POP a1", results[4]);
             Assert.Equal("POP a2", results[5]);
-            Assert.Equal("ADDS a1, a1, a2", results[6]);
+            Assert.Equal("ADDRS a1, a1, a2", results[6]);
             Assert.Equal("PUSH a1", results[7]);
         }
 
@@ -123,7 +123,7 @@
             Assert.Equal("PUSH a1", results[3]);
             Assert.Equal("POP a1", results[4]);
             Assert.Equal("POP a2", results[5]);
-            Assert.Equal("ADDS a1, a1, a2", results[6]);
+            Assert.Equal("ADDRS a1, a1, a2", results[6]);
             Assert.Equal("PUSH a1", results[7]);
         }
 
@@ -143,7 +143,7 @@
             Assert.Equal("PUSH a1", results[3]);
             Assert.Equal("POP a1", results[4]);
             Assert.Equal("POP a2", results[5]);
-            Assert.Equal("ADDS a1, a1, a2", results[6]);
+            Assert.Equal("ADDRS a1, a1, a2", results[6]);
             Assert.Equal("PUSH a1", results[7]);
         }
 
@@ -165,11 +165,11 @@
             Assert.Equal("PUSH a1", results[5]);
             Assert.Equal("POP a1", results[6]);
             Assert.Equal("POP a2", results[7]);
-            Assert.Equal("ADDS a1, a1, a2", results[8]);
+            Assert.Equal("ADDRS a1, a1, a2", results[8]);
             Assert.Equal("PUSH a1", results[9]);
             Assert.Equal("POP a1", results[10]);
             Assert.Equal("POP a2", results[11]);
-            Assert.Equal("ADDS a1, a1, a2", results[12]);
+            Assert.Equal("ADDRS a1, a1, a2", results[12]);
             Assert.Equal("PUSH a1", results[13]);
         }
 
@@ -191,11 +191,11 @@
             Assert.Equal("PUSH a1", results[5]);
             Assert.Equal("POP a1", results[6]);
             Assert.Equal("POP a2", results[7]);
-            Assert.Equal("SUBS a1, a1, a2", results[8]);
+            Assert.Equal("SUBRS a1, a1, a2", results[8]);
             Assert.Equal("PUSH a1", results[9]);
             Assert.Equal("POP a1", results[10]);
             Assert.Equal("POP a2", results[11]);
-            Assert.Equal("ADDS a1, a1, a2", results[12]);
+            Assert.Equal("ADDRS a1, a1, a2", results[12]);
             Assert.Equal("PUSH a1", results[13]);
         }
     }

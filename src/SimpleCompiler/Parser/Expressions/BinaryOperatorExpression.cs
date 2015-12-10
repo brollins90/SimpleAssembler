@@ -35,11 +35,11 @@
 
             if (Operation.Equals("+", StringComparison.InvariantCultureIgnoreCase))
             {
-                sb.AppendLine("ADDS a1, a1, a2");
+                sb.AppendLine("ADDRS a1, a1, a2");
             }
             else if (Operation.Equals("-", StringComparison.InvariantCultureIgnoreCase))
             {
-                sb.AppendLine("SUBS a1, a1, a2");
+                sb.AppendLine("SUBRS a1, a1, a2");
             }
             sb.AppendLine("PUSH a1");
             return sb.ToString();

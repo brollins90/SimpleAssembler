@@ -43,34 +43,8 @@
 
         public string CompileTree(Expression tree)
         {
-            // http://stackoverflow.com/questions/28708398/creating-and-implementing-abstract-syntax-tree-in-assembly-86x
-            string result = "";
-            //if (tree is IntegerExpression)
-            //{
-            //    result = EncodeIntegerExpression(tree as IntegerExpression);
-            //}
-            //else if (tree is BinaryOperatorExpression)
-            //{
-            //    result = EncodeBinaryOperatorExpression(tree as BinaryOperatorExpression);
-            //}
-            result = tree.GenerateCode();
+            string result = tree.GenerateCode();
             return result;
         }
-
-        //public string EncodeIntegerExpression(IntegerExpression integerExpression)
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    sb.AppendLine($"MOVW a1, {integerExpression.Value}");
-        //    sb.AppendLine($"PUSH a1");
-        //    return sb.ToString();
-        //}
-
-        //public string EncodeBinaryOperatorExpression(BinaryOperatorExpression binaryOperatorExpression)
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    //sb.AppendLine($"MOVW a1, {binaryOperatorExpression.Value}");
-        //    //sb.AppendLine($"PUSH a1");
-        //    return sb.ToString();
-        //}
     }
 }
