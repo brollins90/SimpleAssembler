@@ -29,11 +29,11 @@ BAL loop
 
 subroutine:
 PUSH lr
-PUSH a3
-POP a3
+PUSH a1
+LDR a1, sp, 0x8
 
-wait: SUBS a3, a3, 0x01
+wait: SUBS a1, a1, 0x01
 BNE wait
-POP a3
+POP a1
 POP lr
 MOV pc, lr
